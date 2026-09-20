@@ -161,6 +161,7 @@
   .link-btn:hover{color:var(--accent-strong);}
   .row-unmatched-notice{margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .row-unmatched-notice[hidden]{display:none;}
+  tr.ac-open .row-unmatched-notice{display:none;}
   .row-unmatched-notice .unmatched-msg{font-size:11px; color:var(--warn);}
   .row-unmatched-notice .btn{padding:3px 9px; font-size:11px; border-radius:6px;}
   .add-row-btn{margin-top:10px;}
@@ -298,6 +299,26 @@
     border-radius:6px; padding:8px 10px; font-size:13.5px; min-height:37px; display:flex; align-items:center;
   }
   .reorder-controls{display:flex; gap:4px; margin-bottom:8px;}
+  .proc-chips{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px;}
+  .pd-code{display:inline-block; margin-left:8px; padding:2px 8px; border:1px solid var(--border); border-radius:6px;
+    font-family:inherit; font-size:12px; font-weight:600; color:var(--ink-soft); vertical-align:middle;}
+  .pd-receipt-wrap{max-width:420px;}
+  .pd-section{margin-top:14px;}
+  .rline.tap{cursor:pointer;}
+  .rline.tap:hover{background:var(--surface-2);}
+  .tap-mark{font-size:11px; color:var(--accent-strong); margin-left:4px;}
+  .proc-chip{display:flex; flex-direction:column; align-items:flex-start; gap:1px; cursor:pointer;
+    border:1px solid var(--border); border-radius:8px; padding:6px 10px; background:var(--surface);
+    font-family:inherit; font-size:12px; color:var(--ink); text-align:left; min-width:104px;}
+  .proc-chip b{font-size:13px;}
+  .proc-chip-role{font-size:11px; font-weight:600;}
+  .proc-chip-min{font-size:10.5px; color:var(--ink-faint);}
+  .proc-chip.batch{border-color:var(--accent); background:var(--accent-soft);}
+  .proc-chip.batch .proc-chip-role{color:var(--accent-strong);}
+  .proc-chip.finish{border-color:var(--good); background:var(--good-soft);}
+  .proc-chip.finish .proc-chip-role{color:var(--good);}
+  .proc-chip.off{opacity:.55;}
+  .proc-chip.off .proc-chip-role{color:var(--ink-faint);}
 
   /* ---------- iPad landscape: avoid squeezing the receipt column ---------- */
   @media (max-width: 1180px){
@@ -342,7 +363,6 @@
     <div class="nav">
       <button data-view="blockwork" class="active"><span class="ico">📋</span><span class="label">ブロックワーク</span></button>
       <button data-view="products"><span class="ico">📖</span><span class="label">登録済み商品</span></button>
-      <button data-view="calc"><span class="ico">🧮</span><span class="label">新規原価計算</span></button>
       <button data-view="materials"><span class="ico">🧺</span><span class="label">原材料マスタ</span></button>
       <button data-view="settings"><span class="ico">⚙️</span><span class="label">設定</span></button>
     </div>
@@ -360,6 +380,7 @@
 
     <!-- ===================== CALC VIEW ===================== -->
     <section class="view" id="view-calc">
+      <button class="btn btn-ghost btn-sm detail-back" data-view="products">← 登録済み商品一覧に戻る</button>
       <div class="page-head">
         <div>
           <h2 id="calc-heading">新規原価計算</h2>
@@ -426,14 +447,6 @@
             </div>
             <div class="row-inline" style="margin-top:14px;">
               <div class="field" style="max-width:150px;">
-                <label>仕込みの製造工賃（分）<span style="font-weight:400; color:var(--ink-faint);">— 生地作り・焼成など</span></label>
-                <input id="f-batch-labor-min" type="number" min="0" step="any" value="0" style="max-width:90px;">
-              </div>
-              <div class="field" style="max-width:150px;">
-                <label>うち段取り時間（分）<span style="font-weight:400; color:var(--ink-faint);">— 倍にしても増えない分</span></label>
-                <input id="f-batch-setup-min" type="number" min="0" step="any" value="0" style="max-width:90px;">
-              </div>
-              <div class="field" style="max-width:150px;">
                 <label>仕込みの製造間接費（分）<span style="font-weight:400; color:var(--ink-faint);">&nbsp;</span></label>
                 <input id="f-batch-overhead-min" type="number" min="0" step="any" value="0" style="max-width:90px;">
               </div>
@@ -443,27 +456,23 @@
               </div>
             </div>
 
-            <h4 style="margin:20px 0 2px; font-size:14px;">工程<span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワーク連携・表示のみ）</span></h4>
+            <h4 style="margin:20px 0 2px; font-size:14px;">工程<span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（時間はブロックワークの数字／タップで 製造→仕上げ→使わない）</span></h4>
             <div id="proc-readonly-wrap"></div>
-            <label id="proc-cost-toggle-wrap" style="display:none; align-items:center; gap:8px; font-weight:400; font-size:13px; color:var(--ink-soft); margin-top:8px;">
-              <input type="checkbox" id="f-include-proc-cost" style="width:auto;">
-              この工程の製造費を原価に含める（「仕込みの製造工賃」と二重に計上しないようご注意ください）
-            </label>
           </div>
           <div class="card section-card">
             <h3>② 1包装あたりの資材・仕上げ</h3>
             <p class="hint">①の焼き上がりのうち、商品1つに入れる数と、袋・ラベルなどの資材を入力してください。</p>
             <div class="row-inline" style="margin-bottom:14px;">
-              <div class="field" style="max-width:200px;">
+              <div class="field" style="max-width:150px;">
                 <label>1商品に入れる数<span style="font-weight:400; color:var(--ink-faint);">（例：2枚入り→2）</span></label>
                 <div style="display:flex; gap:8px; align-items:center;">
-                  <input id="f-pack-count" type="number" min="0" step="any" value="1">
+                  <input id="f-pack-count" type="number" min="0" step="any" value="1" style="max-width:70px;">
                   <span style="color:var(--ink-faint); font-size:13px;" id="f-pack-unit-echo">個</span>
                 </div>
               </div>
-              <div class="field">
-                <label>→ 仕込み原価（自動）</label>
-                <input disabled id="disp-pack-material-cost" value="¥0">
+              <div class="field" style="max-width:150px;">
+                <label>→ 仕込み原価（自動）<span style="font-weight:400; color:var(--ink-faint);">&nbsp;</span></label>
+                <input disabled id="disp-pack-material-cost" value="¥0" style="max-width:110px;">
               </div>
             </div>
 
@@ -478,23 +487,7 @@
             </div>
             <button class="btn btn-sm add-row-btn" data-add="pkg">＋資材</button>
 
-            <div class="row-inline" style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--border);">
-              <div class="field">
-                <label>仕上げの製造工賃（分）<span style="font-weight:400; color:var(--ink-faint);">— 袋詰め・ラベル貼りなど</span></label>
-                <input id="f-labor-min" type="number" min="0" step="any" value="0">
-              </div>
-              <div class="field">
-                <label>仕上げの製造間接費（分）</label>
-                <input id="f-overhead-min" type="number" min="0" step="any" value="0">
-              </div>
-              <div class="field">
-                <label>希望原価率</label>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input id="f-margin" type="number" min="1" max="99" step="0.5" value="35">
-                  <span style="color:var(--ink-faint);">%</span>
-                </div>
-              </div>
-            </div>
+            <p class="hint" id="finish-proc-note" style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--border);">袋詰め・ラベル貼りなどの仕上げ時間は、①の工程で「仕上げ」に切り替えた工程から自動計算します。</p>
           </div>
 
           <div class="card section-card">
@@ -563,6 +556,13 @@
             <div class="rdiv"></div>
             <div class="rtotal"><span class="lbl">原価合計</span><span class="val amt" id="r-total">¥0</span></div>
 
+            <div class="rline" style="margin-top:10px;"><span>希望原価率</span>
+              <span style="display:flex; align-items:center; gap:4px;">
+                <input id="f-margin" type="number" min="1" max="99" step="0.5" value="35" style="max-width:70px; text-align:right;">
+                <span style="color:var(--ink-faint);">%</span>
+              </span>
+            </div>
+
             <div class="price-block">
               <div class="main-price amt" id="r-price-in">¥0</div>
               <div class="sub-price">希望原価率 <span id="r-margin-pct">35</span>%（税抜 <b class="amt" id="r-price-ex">¥0</b>）</div>
@@ -588,6 +588,7 @@
         <input id="product-search" type="text" placeholder="商品名で検索…（例：クッキー、フィナンシェ）">
         <select id="product-category-filter"><option value="">すべてのカテゴリ</option></select>
         <button type="button" class="btn btn-sm" id="btn-toggle-reorder">並び替え</button>
+        <button type="button" class="btn btn-sm" id="btn-import-bw-products">ブロックワークの商品を取り込む</button>
       </div>
       <div id="product-list" class="product-list"></div>
     </section>
@@ -1687,8 +1688,8 @@
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td class="col-name">' +
-        '<div class="ing-manual" style="position:relative;"><input class="row-name" autocomplete="off" placeholder="材料名を入力…（候補から選べます）"><div class="ac-list" hidden></div></div>' +
-        '<div class="ing-pick" hidden>' +
+        '<div class="ing-manual" style="position:relative;" hidden><input class="row-name" autocomplete="off" placeholder="材料名を入力…（候補から選べます）"><div class="ac-list" hidden></div></div>' +
+        '<div class="ing-pick">' +
           '<select class="row-cat-select"><option value="">カテゴリ</option></select>' +
           '<select class="row-mat-select" disabled><option value="">材料を選択…</option></select>' +
         '</div>' +
@@ -1705,7 +1706,7 @@
         '<button class="icon-btn row-up" title="上へ">↑</button>' +
         '<button class="icon-btn row-down" title="下へ">↓</button>' +
         '<button class="icon-btn row-del" title="削除">✕</button>' +
-        '<button type="button" class="icon-btn row-manual-toggle" title="カテゴリから選んで入力する">📂</button>' +
+        '<button type="button" class="icon-btn row-manual-toggle" title="キーボードで名前を入力する">⌨️</button>' +
       '</td>';
     tr.dataset.kind = kind;
 
@@ -1814,6 +1815,7 @@
   function hideSuggestions(tr){
     var list = tr.querySelector('.ac-list');
     if(list){ list.hidden = true; list.innerHTML = ''; }
+    tr.classList.remove('ac-open');
   }
   function showSuggestions(tr, kind){
     var input = tr.querySelector('.row-name');
@@ -1834,8 +1836,17 @@
         '</div>';
     }).join('');
     list.hidden = false;
+    tr.classList.add('ac-open');        // 候補が出ているあいだは下の通知ボタンを隠す（誤タップ防止）
     list.querySelectorAll('.ac-item').forEach(function(el){
-      el.addEventListener('mousedown', function(e){ e.preventDefault(); chooseSuggestion(tr, el.dataset.name); });
+      var pick = function(e){
+        if(e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        chooseSuggestion(tr, el.dataset.name);
+      };
+      // iPadのタップでも確実に選べるように、touch と mouse の両方を見る
+      el.addEventListener('touchend', pick);
+      el.addEventListener('mousedown', pick);
+      el.addEventListener('click', function(e){ e.stopPropagation(); });
     });
   }
   function moveActive(tr, dir){
@@ -2080,51 +2091,84 @@
     var p = bw.procs.find(function(x){ return x && x.id === procId; });
     return p ? p.label : procId;
   }
-  // トモヒロさんの工程時間（段取り・1個あたり）を集計し、この仕込みの製造費（自動）を出す
-  function getProcessCosting(name, yieldCount){
+  // 工程ごとの役割（製造／仕上げ／使わない）。商品ごとに持ち、保存・復元する。
+  var procRoles = {};                       // {procId: 'batch' | 'finish' | 'off'}
+  var PROC_ROLE_LABEL = {batch:'製造', finish:'仕上げ', off:'使わない'};
+  var PROC_ROLE_NEXT  = {batch:'finish', finish:'off', off:'batch'};
+  function procRoleOf(procId){
+    var r = procRoles[procId];
+    return (r === 'finish' || r === 'off') ? r : 'batch';   // 既定は製造
+  }
+
+  // トモヒロさんの工程時間を集計する。
+  // setup … 倍数が変わっても増えない段取り時間／per … 1倍あたり（仕込み倍数に比例）の時間
+  function getProcessCosting(name, multiplier){
     var found = findBlockworkProduct(name);
     if(!found) return null;
     var bw = found.bw, product = found.product;
     var staffId = tomohiroStaffId(bw);
     var order = Array.isArray(product.procOrder) ? product.procOrder : [];
+    var mult = Number(multiplier) || 1;
+    if(mult <= 0) mult = 1;
     var rows = [];
-    var totalSetup = 0, totalPer = 0;
+    var sum = {batch:0, finish:0, off:0};
     order.forEach(function(procId){
       var byStaff = (product.procs && product.procs[procId]) || {};
       var t = staffId ? byStaff[staffId] : null;
       var setup = t ? (Number(t.setup) || 0) : 0;
       var per = t ? (Number(t.per) || 0) : 0;
-      totalSetup += setup; totalPer += per;
-      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per});
+      var minutes = setup + per * mult;
+      var role = procRoleOf(procId);
+      sum[role] += minutes;
+      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role});
     });
     var laborRate = state.settings.laborRate || 0;
-    var totalMinutes = totalSetup + totalPer * (yieldCount || 0);
-    var totalCost = totalMinutes * laborRate;
-    return {rows:rows, totalSetup:totalSetup, totalPer:totalPer, totalMinutes:totalMinutes, totalCost:totalCost};
+    var overheadRate = state.settings.overheadRate || 0;
+    return {
+      rows: rows,
+      batchMinutes: sum.batch,
+      finishMinutes: sum.finish,
+      batchLaborCost: sum.batch * laborRate,
+      finishLaborCost: sum.finish * laborRate,
+      finishOverheadCost: sum.finish * overheadRate,
+      multiplier: mult
+    };
   }
   // ①仕込み全体カードの「工程」欄を、ブロックワークの登録内容で表示する（編集不可）
   var procViewKey = null;   // 直前に描画した内容のキー（同じなら描き直さない）
-  function renderProcessReadonly(name, yieldCount){
+  function renderProcessSection(name, multiplier){
     var wrap = document.getElementById('proc-readonly-wrap');
-    var toggleWrap = document.getElementById('proc-cost-toggle-wrap');
-    if(!wrap) return {totalCost:0};
-    var info = getProcessCosting(name, yieldCount);
-    var key = name + '|' + yieldCount + '|' + (info ? info.totalCost : '-') + '|' + (info ? info.rows.length : 0) + '|' + state.settings.laborRate;
-    if(key === procViewKey) return info || {totalCost:0};
+    if(!wrap) return null;
+    var info = getProcessCosting(name, multiplier);
+    var key = name + '|' + multiplier + '|' + state.settings.laborRate + '|' + state.settings.overheadRate + '|' +
+      (info ? info.rows.map(function(r){ return r.id+':'+r.role+':'+r.minutes; }).join(',') : '-');
+    if(key === procViewKey) return info;
     procViewKey = key;
     if(!info || !info.rows.length){
       wrap.innerHTML = '<p class="hint">この商品名でブロックワークに登録された工程がまだありません。ブロックワークの「商品」で工程を設定すると、ここに自動で表示されます。</p>';
-      if(toggleWrap) toggleWrap.style.display = 'none';
-      return {totalCost:0};
+      return info;
     }
-    var rowsHtml = info.rows.map(function(r){
-      return '<tr><td>'+escapeHtml(r.label)+'</td><td style="text-align:right;">'+fmtNum(r.setup,0)+'分</td><td style="text-align:right;">'+fmtNum(r.per,2)+'分</td></tr>';
+    var chips = info.rows.map(function(r){
+      var cls = r.role === 'finish' ? 'proc-chip finish' : (r.role === 'off' ? 'proc-chip off' : 'proc-chip batch');
+      return '<button type="button" class="'+cls+'" data-proc="'+escapeHtml(r.id)+'">' +
+        '<b>'+escapeHtml(r.label)+'</b>' +
+        '<span class="proc-chip-role">'+PROC_ROLE_LABEL[r.role]+'</span>' +
+        '<span class="proc-chip-min">段取り'+fmtNum(r.setup,0)+'分＋'+fmtNum(r.per,0)+'分/倍</span>' +
+        '</button>';
     }).join('');
     wrap.innerHTML =
-      '<p class="hint">ブロックワークに登録されたトモヒロさんの工程時間です（表示のみ・編集はブロックワーク側で）。</p>' +
-      '<div class="table-scroll"><table class="ing-table"><thead><tr><th>工程名</th><th style="text-align:right;">段取り</th><th style="text-align:right;">1個あたり</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>' +
-      '<div class="yield-line"><span class="eq">工程にかかる時間からの製造費（参考） <b class="amt">'+fmtYen(info.totalCost)+'</b></span></div>';
-    if(toggleWrap) toggleWrap.style.display = 'flex';
+      '<p class="hint">ブロックワークに登録されたトモヒロさんの工程時間です。時間の編集はブロックワーク側で。チップをタップすると 製造 → 仕上げ → 使わない と切り替わります。</p>' +
+      '<div class="proc-chips">'+chips+'</div>' +
+      '<div class="yield-line"><span class="eq">製造 '+fmtNum(info.batchMinutes,0)+'分 → 工賃 <b class="amt">'+fmtYen(info.batchLaborCost)+'</b></span>' +
+      '<span class="eq">仕上げ '+fmtNum(info.finishMinutes,0)+'分 → 工賃 <b class="amt">'+fmtYen(info.finishLaborCost)+'</b> ＋ 間接費 <b class="amt">'+fmtYen(info.finishOverheadCost)+'</b></span></div>';
+    wrap.querySelectorAll('.proc-chip').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.dataset.proc;
+        procRoles[id] = PROC_ROLE_NEXT[procRoleOf(id)];
+        procViewKey = null;     // 役割が変わったので描き直す
+        recalc();
+      });
+    });
     return info;
   }
   // ブロックワークの生産計画（1回の仕込み上限・安全在庫・曜日ごとの見込み）を表示のみで反映する
@@ -2167,7 +2211,7 @@
     document.getElementById('f-product-code').value = '';
     document.getElementById('f-count-unit').value = '個';
     renderPlanningReadonly(null);
-    renderProcessReadonly('', 0);
+    renderProcessSection('', 1);
   }
   function loadPlanningFields(planning){
     planning = planning || {};
@@ -2199,27 +2243,26 @@
     var mult = parseFloat(document.getElementById('f-batch-multiplier').value) || 1;
     if(mult <= 0) mult = 1;
 
-    var batchLaborMin1 = parseFloat(document.getElementById('f-batch-labor-min').value) || 0;
-    var setupMin = parseFloat(document.getElementById('f-batch-setup-min').value) || 0;
-    if(setupMin > batchLaborMin1) setupMin = batchLaborMin1;
     var batchOverheadMin1 = parseFloat(document.getElementById('f-batch-overhead-min').value) || 0;
 
-    // materials and yield scale with the multiplier; setup time is paid once however big the batch
+    // 材料と焼き上がり数は仕込み倍数で増える
     var ingTotal = ingTotal1 * mult;
     var yieldCount = yieldCount1 * mult;
-    var batchLaborMin = setupMin + (batchLaborMin1 - setupMin) * mult;
     var batchOverheadMin = batchOverheadMin1 * mult;
-    var batchLaborCost = batchLaborMin * state.settings.laborRate;
     var batchOverheadCost = batchOverheadMin * state.settings.overheadRate;
-    var procInfo = renderProcessReadonly(document.getElementById('f-name').value.trim(), yieldCount);
-    var includeProcToggle = document.getElementById('f-include-proc-cost');
-    var includeProcCost = includeProcToggle ? includeProcToggle.checked : false;
-    var procCost = (includeProcCost && procInfo) ? (procInfo.totalCost || 0) : 0;
-    var batchTotal = ingTotal + batchLaborCost + batchOverheadCost + procCost;
+
+    // 工程（ブロックワークの時間）→ 製造ぶんは仕込み全体、仕上げぶんは1包装に按分
+    var procInfo = renderProcessSection(document.getElementById('f-name').value.trim(), mult);
+    var batchLaborMin = procInfo ? procInfo.batchMinutes : 0;
+    var batchLaborCost = procInfo ? procInfo.batchLaborCost : 0;
+    var finishMin = procInfo ? procInfo.finishMinutes : 0;
+
+    var batchTotal = ingTotal + batchLaborCost + batchOverheadCost;
     var costPerYield = yieldCount > 0 ? batchTotal / yieldCount : 0;
 
-    // what one unit would cost at x1, for comparison
-    var base1 = ingTotal1 + batchLaborMin1 * state.settings.laborRate + batchOverheadMin1 * state.settings.overheadRate;
+    // 1倍のときの1単位あたり原価（比較用）
+    var proc1 = getProcessCosting(document.getElementById('f-name').value.trim(), 1);
+    var base1 = ingTotal1 + (proc1 ? proc1.batchLaborCost : 0) + batchOverheadMin1 * state.settings.overheadRate;
     var costPerYield1 = yieldCount1 > 0 ? base1 / yieldCount1 : 0;
     var note = document.getElementById('disp-scale-note');
     if(mult !== 1 && costPerYield1 > 0){
@@ -2227,8 +2270,6 @@
       note.textContent = '1' + (document.getElementById('f-yield-unit').value || '個') + 'あたり ' +
         fmtYen(costPerYield1) + ' → ' + fmtYen(costPerYield) +
         (diff > 0.005 ? '（' + fmtYen(diff) + '安く）' : '');
-    } else if(setupMin > 0 && mult === 1){
-      note.textContent = '段取り ' + fmtNum(setupMin,0) + '分は倍にしても増えません';
     } else {
       note.textContent = '';
     }
@@ -2248,8 +2289,10 @@
     var contentsTotal = contents.reduce(function(s,r){ return s + r.amount; }, 0);
     document.getElementById('disp-cont-total').textContent = fmtYen(contentsTotal);
 
-    var laborMin = parseFloat(document.getElementById('f-labor-min').value) || 0;
-    var overheadMin = parseFloat(document.getElementById('f-overhead-min').value) || 0;
+    // 仕上げ工程は仕込み全体ぶんの時間なので、1包装が使う個数の比で割り当てる
+    var finishShare = yieldCount > 0 ? (packCount / yieldCount) : 0;
+    var laborMin = finishMin * finishShare;
+    var overheadMin = finishMin * finishShare;
     var laborCost = laborMin * state.settings.laborRate;
     var overheadCost = overheadMin * state.settings.overheadRate;
     var sgaCost = state.settings.sga;
@@ -2283,7 +2326,8 @@
     return {ing:ing, ingTotal:ingTotal, yieldCount:yieldCount,
       batchLaborMin:batchLaborMin, batchLaborCost:batchLaborCost, batchOverheadMin:batchOverheadMin, batchOverheadCost:batchOverheadCost,
       batchTotal:batchTotal, costPerYield:costPerYield,
-      multiplier:mult, setupMin:setupMin, ingTotal1:ingTotal1, yieldCount1:yieldCount1, batchLaborMin1:batchLaborMin1, batchOverheadMin1:batchOverheadMin1,
+      multiplier:mult, setupMin:0, ingTotal1:ingTotal1, yieldCount1:yieldCount1, batchLaborMin1:batchLaborMin, batchOverheadMin1:batchOverheadMin1,
+      procRoles:Object.assign({}, procRoles), finishMinutes:finishMin,
       packCount:packCount, packMaterialCost:packMaterialCost, pkg:pkg, pkgTotal:pkgTotal,
       contents:contents, contentsTotal:contentsTotal,
       laborMin:laborMin, laborCost:laborCost, overheadMin:overheadMin, overheadCost:overheadCost,
@@ -2295,9 +2339,7 @@
     card.style.display = (document.getElementById('f-category').value.trim() === 'ギフト') ? '' : 'none';
   }
   document.getElementById('f-category').addEventListener('change', updateContentCardVisibility);
-  var includeProcCostEl = document.getElementById('f-include-proc-cost');
-  if(includeProcCostEl) includeProcCostEl.addEventListener('change', recalc);
-  ['f-name','f-yield-count','f-yield-unit','f-batch-labor-min','f-batch-setup-min','f-batch-multiplier','f-batch-overhead-min','f-pack-count','f-labor-min','f-overhead-min','f-margin','f-count-unit'].forEach(function(id){
+  ['f-name','f-yield-count','f-yield-unit','f-batch-multiplier','f-batch-overhead-min','f-pack-count','f-margin','f-count-unit'].forEach(function(id){
     document.getElementById(id).addEventListener('input', recalc);
   });
 
@@ -2313,18 +2355,15 @@
     updateContentCardVisibility();
     document.getElementById('f-yield-count').value = 1;
     document.getElementById('f-yield-unit').value = '個';
-    document.getElementById('f-batch-labor-min').value = 0;
-    document.getElementById('f-batch-setup-min').value = 0;
     document.getElementById('f-batch-multiplier').value = 1;
     document.getElementById('f-batch-overhead-min').value = 0;
     document.getElementById('f-pack-count').value = 1;
-    document.getElementById('f-labor-min').value = 0;
-    document.getElementById('f-overhead-min').value = 0;
     document.getElementById('f-margin').value = state.settings.margin;
     document.getElementById('ing-body').innerHTML = '';
     document.getElementById('pkg-body').innerHTML = '';
     document.getElementById('cont-body').innerHTML = '';
-    if(document.getElementById('f-include-proc-cost')) document.getElementById('f-include-proc-cost').checked = false;
+    procRoles = {};
+    procViewKey = null;
     renderIngRow(); renderPkgRow();
     clearPlanningFields();
     recalc();
@@ -2338,6 +2377,11 @@
       var tr = makeRow();
       body.appendChild(tr);
       if(r.name){
+        // 名前が入っている行はキーボード入力モードで開く（名前がそのまま見えるように）
+        var mw = tr.querySelector('.ing-manual'), pw = tr.querySelector('.ing-pick'),
+            tb = tr.querySelector('.row-manual-toggle');
+        if(mw && pw){ mw.hidden = false; pw.hidden = true; }
+        if(tb){ tb.textContent = '📂'; tb.title = 'カテゴリから選んで入力する'; }
         tr.querySelector('.row-qty').value = r.qty;
         var m = state.materialsByName[r.name];
         if(m){
@@ -2368,15 +2412,12 @@
     updateContentCardVisibility();
     document.getElementById('f-yield-count').value = (p.batch && (p.batch.baseYieldCount != null ? p.batch.baseYieldCount : p.batch.yieldCount)) || 1;
     document.getElementById('f-yield-unit').value = (p.batch && p.batch.yieldUnit) || '個';
-    document.getElementById('f-batch-labor-min').value = (p.batch && p.batch.baseLaborMinutes != null ? p.batch.baseLaborMinutes : (p.batch && p.batch.laborMinutes) || 0);
-    document.getElementById('f-batch-setup-min').value = (p.batch && p.batch.setupMinutes) || 0;
     document.getElementById('f-batch-multiplier').value = (p.batch && p.batch.multiplier) || 1;
     document.getElementById('f-batch-overhead-min').value = (p.batch && p.batch.overheadMinutes) || 0;
     document.getElementById('f-pack-count').value = (p.pack && p.pack.piecesPerPackage) || 1;
-    document.getElementById('f-labor-min').value = (p.pack && p.pack.laborMinutes) || 0;
-    document.getElementById('f-overhead-min').value = (p.pack && p.pack.overheadMinutes) || 0;
     document.getElementById('f-margin').value = (p.marginRate!=null ? p.marginRate*100 : state.settings.margin);
-    if(document.getElementById('f-include-proc-cost')) document.getElementById('f-include-proc-cost').checked = !!p.includeProcessCost;
+    procRoles = (p.procRoles && typeof p.procRoles === 'object') ? Object.assign({}, p.procRoles) : {};
+    procViewKey = null;
     fillRows('ing-body', p.batch && p.batch.ingredients);
     fillRows('pkg-body', p.pack && p.pack.items);
     fillContentRows(p.pack && p.pack.contents);
@@ -2390,6 +2431,15 @@
     var name = document.getElementById('f-name').value.trim();
     if(!name){ showToast('商品名を入力してください'); document.getElementById('f-name').focus(); return; }
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var dup = state.products.find(function(p){ return p.name === name && p.id !== state.editingProductId; });
+    if(dup && !window.__dupConfirmed){
+      openConfirmModal('「'+name+'」は登録済み商品にすでにあります。別の商品として登録しますか？', function(){
+        window.__dupConfirmed = true;
+        document.getElementById('btn-save').click();
+        window.__dupConfirmed = false;
+      });
+      return;
+    }
     var c = recalc();
     var doc = {
       name: name,
@@ -2426,7 +2476,7 @@
         sgaCost: c.sgaCost
       },
       totalCost: c.totalCost,
-      includeProcessCost: !!(document.getElementById('f-include-proc-cost') && document.getElementById('f-include-proc-cost').checked),
+      procRoles: Object.assign({}, procRoles),
       marginRate: c.marginRate,
       priceExTax: c.priceEx,
       priceInTax: c.priceIn,
@@ -2556,6 +2606,49 @@
     clearTimeout(productSearchTimer);
     productSearchTimer = setTimeout(renderProductList, 150);
   }
+  // ブロックワーク側にしかない商品を、登録済み商品の「枠」として作る（原価は後から入力）
+  document.getElementById('btn-import-bw-products').addEventListener('click', function(){
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var bw = getBlockworkData();
+    if(!bw || !Array.isArray(bw.products) || !bw.products.length){ showToast('ブロックワークの商品が読み込めませんでした'); return; }
+    var known = {};
+    state.products.forEach(function(p){ known[p.name] = true; });
+    var missing = bw.products.filter(function(bp){ return bp && bp.name && !known[bp.name]; });
+    if(!missing.length){ showToast('取り込む商品はありませんでした（すべて登録済みです）'); return; }
+    openConfirmModal('ブロックワークにあって登録済み商品にない商品が ' + missing.length + ' 件あります。原価は未入力の状態で登録しますか？', function(){
+      var now = new Date().toISOString();
+      missing.forEach(function(bp, i){
+        var dow = bp.dow || {};
+        state.products.push({
+          id: 'p_' + Date.now().toString(36) + '_' + i + Math.random().toString(36).slice(2,6),
+          name: bp.name,
+          category: bp.category || '',
+          notes: '',
+          batch: { yieldCount: Number(bp.yieldBase)||1, baseYieldCount: Number(bp.yieldBase)||1, multiplier: 1,
+                   setupMinutes: 0, baseLaborMinutes: 0, baseOverheadMinutes: 0, yieldUnit: bp.unit || '個',
+                   ingredients: [], materialCostTotal: 0, laborMinutes: 0, laborCost: 0,
+                   overheadMinutes: 0, overheadCost: 0, batchTotalCost: 0, costPerYieldUnit: 0 },
+          pack: { piecesPerPackage: 1, materialCostForPackage: 0, items: [], itemsCost: 0, contents: [], contentsCost: 0,
+                  laborMinutes: 0, laborCost: 0, overheadMinutes: 0, overheadCost: 0, sgaCost: state.settings.sga },
+          totalCost: 0, procRoles: {}, marginRate: (state.settings.margin||35)/100,
+          priceExTax: 0, priceInTax: 0, profitRate: 0,
+          planning: {
+            productCode: bp.code || '',
+            countUnit: bp.unit || '個',
+            maxBatchMultiplier: (bp.maxMulti === undefined || bp.maxMulti === null) ? null : bp.maxMulti,
+            safetyStock: Number(bp.safety) || 0,
+            safetyStockBusy: (bp.safetyAlt && Array.isArray(bp.safetyAlt.months) && bp.safetyAlt.months.length) ? (Number(bp.safetyAlt.value) || 0) : null,
+            weeklySales: [0,1,2,3,4,5,6].map(function(k){ return Number(dow[k]) || 0; })
+          },
+          createdAt: now, updatedAt: now
+        });
+      });
+      scheduleSave();
+      rebuildCategoryList();
+      renderProductList();
+      showToast(missing.length + ' 件を登録済み商品に取り込みました（原価は未入力です）');
+    });
+  });
   document.getElementById('btn-toggle-reorder').addEventListener('click', function(){
     productReorderMode = !productReorderMode;
     this.textContent = productReorderMode ? '並び替え終了' : '並び替え';
@@ -2567,15 +2660,50 @@
     var p = state.products.find(function(x){ return x.id===id; });
     if(!p) return;
     state.currentDetailId = id;
-    document.getElementById('pd-name').textContent = p.name;
-    document.getElementById('pd-meta').textContent = (p.category||'カテゴリ未設定') + ' ・ 更新日 ' + (p.updatedAt ? p.updatedAt.slice(0,10) : '—');
+    var planning = p.planning || {};
+    var code = planning.productCode || '';
+    if(!code){ var bwm = findBlockworkProduct(p.name); if(bwm && bwm.product) code = bwm.product.code || ''; }
+    var unitLabel = planning.countUnit || '個';
+    var mult = (p.batch && Number(p.batch.multiplier)) || 1;
+    if(mult <= 0) mult = 1;
 
+    document.getElementById('pd-name').innerHTML =
+      escapeHtml(p.name) + (code ? ' <span class="pd-code">'+escapeHtml(code)+'</span>' : '');
+    document.getElementById('pd-meta').textContent =
+      (p.category||'カテゴリ未設定') + ' ・ 更新日 ' + (p.updatedAt ? p.updatedAt.slice(0,10) : '—');
+
+    // ---- ① 仕込み全体（1倍の配合と、仕込み倍数をかけた数量を並べて出す） ----
     var ingRows = (p.batch && p.batch.ingredients || []).map(function(r){
-      return '<tr><td>'+escapeHtml(r.name)+'</td><td style="text-align:right;">'+fmtNum(r.qty)+' '+escapeHtml(r.unit||'')+'</td><td style="text-align:right;">'+fmtYen(r.amount)+'</td></tr>';
+      var q1 = Number(r.qty) || 0;
+      return '<tr><td>'+escapeHtml(r.name)+'</td>' +
+        '<td style="text-align:right;">'+fmtNum(q1)+' '+escapeHtml(r.unit||'')+'</td>' +
+        '<td style="text-align:right;'+(mult !== 1 ? 'font-weight:600;' : 'color:var(--ink-faint);')+'">'+fmtNum(q1*mult)+' '+escapeHtml(r.unit||'')+'</td>' +
+        '<td style="text-align:right;">'+fmtYen((Number(r.amount)||0)*mult)+'</td></tr>';
     }).join('');
+    var batchLabor = (p.batch && p.batch.laborCost) || 0;
+    var batchOverhead = (p.batch && p.batch.overheadCost) || 0;
+    var batchMaterial = (p.batch && p.batch.materialCostTotal) || 0;
+    var batchTotal = batchMaterial + batchLabor + batchOverhead;
+    var batchSection =
+      '<h3 style="margin-top:0;">① 仕込み全体（×'+fmtNum(mult)+'倍）</h3>' +
+      '<p class="hint">焼き上がり '+fmtNum((p.batch && p.batch.yieldCount)||0)+' '+escapeHtml((p.batch && p.batch.yieldUnit)||'個')+'（1倍あたり '+fmtNum((p.batch && p.batch.baseYieldCount != null ? p.batch.baseYieldCount : ((p.batch&&p.batch.yieldCount)||0)/mult))+' '+escapeHtml((p.batch && p.batch.yieldUnit)||'個')+'）</p>' +
+      '<div class="table-scroll"><table class="ing-table"><thead><tr><th>材料名</th>' +
+      '<th style="text-align:right;">1倍</th><th style="text-align:right;">×'+fmtNum(mult)+'倍</th><th style="text-align:right;">金額</th>' +
+      '</tr></thead><tbody>'+(ingRows||'<tr><td colspan="4" style="color:var(--ink-faint);">なし</td></tr>')+'</tbody></table></div>' +
+      '<div class="yield-line"><span>材料費 <b class="amt">'+fmtYen(batchMaterial)+'</b> ＋ 工程の工賃 <b class="amt">'+fmtYen(batchLabor)+'</b> ＋ 製造間接費 <b class="amt">'+fmtYen(batchOverhead)+'</b> ＝ 仕込み原価合計 <b class="amt">'+fmtYen(batchTotal)+'</b></span></div>' +
+      (p.notes ? '<p class="hint" style="margin-top:14px;">メモ：'+escapeHtml(p.notes)+'</p>' : '');
+
+    // ---- ② 1包装あたりの資材 ----
     var pkgRows = (p.pack && p.pack.items || []).map(function(r){
       return '<tr><td>'+escapeHtml(r.name)+'</td><td style="text-align:right;">'+fmtNum(r.qty)+' '+escapeHtml(r.unit||'')+'</td><td style="text-align:right;">'+fmtYen(r.amount)+'</td></tr>';
     }).join('');
+    var pkgSection =
+      '<h3 style="margin-top:0;">② 1包装（'+fmtNum((p.pack && p.pack.piecesPerPackage)||0)+' '+escapeHtml((p.batch && p.batch.yieldUnit)||'個')+'入り）の資材・仕上げ</h3>' +
+      '<div class="table-scroll"><table class="ing-table"><thead><tr><th>資材名</th><th style="text-align:right;">数量</th><th style="text-align:right;">金額</th></tr></thead><tbody>' +
+      (pkgRows||'<tr><td colspan="3" style="color:var(--ink-faint);">なし</td></tr>')+'</tbody></table></div>' +
+      '<div class="yield-line"><span>資材費 <b class="amt">'+fmtYen((p.pack && p.pack.itemsCost)||0)+'</b> ＋ 仕上げ工賃 <b class="amt">'+fmtYen((p.pack && p.pack.laborCost)||0)+'</b> ＋ 仕上げ間接費 <b class="amt">'+fmtYen((p.pack && p.pack.overheadCost)||0)+'</b></span></div>';
+
+    // ---- 詰め合わせの中身 ----
     var contentList = (p.pack && p.pack.contents) || [];
     var contentRows = contentList.map(function(r){
       var cur = state.products.find(function(x){ return x.id === r.productId; });
@@ -2584,67 +2712,67 @@
       var modeLabel = (r.mode === 'bulk') ? 'バラ' : '個包装';
       return '<tr><td>'+escapeHtml(r.name)+' <span style="color:var(--ink-faint); font-size:12px;">（'+modeLabel+'）</span>'+(drift?' <span class="unmatched-msg">⚠ 原価が変わっています（現在 ¥'+fmtNum(nowCost,2)+'）</span>':'')+'</td><td style="text-align:right;">'+fmtNum(r.qty)+' '+escapeHtml(r.unit||'')+'</td><td style="text-align:right;">'+fmtYen(r.amount)+'</td></tr>';
     }).join('');
-    var contentBlock = contentList.length
-      ? '<h3 style="margin-top:22px;">詰め合わせの中身</h3>' +
-        '<table class="ing-table"><thead><tr><th>商品名</th><th style="text-align:right;">個数</th><th style="text-align:right;">金額</th></tr></thead><tbody>'+contentRows+'</tbody></table>'
+    var contentSection = contentList.length
+      ? '<h3 style="margin-top:0;">詰め合わせの中身</h3>' +
+        '<div class="table-scroll"><table class="ing-table"><thead><tr><th>商品名</th><th style="text-align:right;">個数</th><th style="text-align:right;">金額</th></tr></thead><tbody>'+contentRows+'</tbody></table></div>'
       : '';
 
-    var planning = p.planning || {};
-    var procList = planning.processSteps || [];
+    // ---- 生産計画（ブロックワーク側の数字） ----
     var weekly = planning.weeklySales || [];
-    var hasPlanning = planning.productCode || planning.processSteps && planning.processSteps.length ||
-      (weekly.some(function(n){ return n > 0; })) || planning.safetyStock;
-    var procRows2 = procList.map(function(s){
-      return '<tr><td>'+escapeHtml(s.name)+(s.affectsInventory===false?' <span style="color:var(--ink-faint); font-size:11px;">（在庫に影響しない）</span>':'')+'</td>' +
-        '<td style="text-align:right;">'+fmtNum(s.setupMin,0)+'分</td><td style="text-align:right;">'+fmtNum(s.perUnitMin,0)+'分</td></tr>';
-    }).join('');
+    var hasPlanning = code || (weekly.length && weekly.some(function(n){ return n > 0; })) || planning.safetyStock || planning.maxBatchMultiplier;
     var weeklyRow = WEEKDAY_LABELS.map(function(d,i){ return d+' '+fmtNum(weekly[i]||0,1); }).join(' ／ ');
     var planningBlock = hasPlanning
-      ? '<div class="card section-card">' +
-          '<h3>商品コード・生産計画 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワーク連携）</span></h3>' +
+      ? '<div class="card section-card" style="margin-top:16px;">' +
+          '<h3 style="margin-top:0;">生産計画 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワーク）</span></h3>' +
           '<div class="row-inline" style="margin-bottom:10px;">' +
-            (planning.productCode ? '<span class="mat-cat-tag">商品番号 '+escapeHtml(planning.productCode)+'</span>' : '') +
-            '<span class="mat-cat-tag">数の単位 '+escapeHtml(planning.countUnit||'個')+'</span>' +
+            (code ? '<span class="mat-cat-tag">商品番号 '+escapeHtml(code)+'</span>' : '') +
+            '<span class="mat-cat-tag">数の単位 '+escapeHtml(unitLabel)+'</span>' +
             (planning.maxBatchMultiplier ? '<span class="mat-cat-tag">1回の上限 '+fmtNum(planning.maxBatchMultiplier)+'倍</span>' : '') +
             '<span class="mat-cat-tag">安全在庫 '+fmtNum(planning.safetyStock||0)+'</span>' +
             (planning.safetyStockBusy != null ? '<span class="mat-cat-tag">忙しい月の安全在庫 '+fmtNum(planning.safetyStockBusy)+'</span>' : '') +
           '</div>' +
           (weekly.length ? '<p class="hint">曜日ごとに減る数：'+weeklyRow+'</p>' : '') +
-          (procRows2 ? '<table class="ing-table"><thead><tr><th>工程名</th><th style="text-align:right;">段取り</th><th style="text-align:right;">1倍あたり</th></tr></thead><tbody>'+procRows2+'</tbody></table>' : '') +
         '</div>'
       : '';
 
+    // ---- 原価計算書（まずこれだけ出し、行をタップすると内訳が開く） ----
     document.getElementById('pd-body').innerHTML =
-      '<div class="calc-grid">' +
-        '<div class="card section-card">' +
-          '<h3>① 仕込み全体（'+fmtNum(p.batch.yieldCount)+' '+escapeHtml(p.batch.yieldUnit)+'分）</h3>' +
-          '<table class="ing-table"><thead><tr><th>材料名</th><th style="text-align:right;">使用量</th><th style="text-align:right;">金額</th></tr></thead><tbody>'+ingRows+'</tbody></table>' +
-          '<div class="yield-line"><span>材料費 <b class="amt">'+fmtYen(p.batch.materialCostTotal)+'</b> ＋ 仕込み工賃・間接費 <b class="amt">'+fmtYen((p.batch.laborCost||0)+(p.batch.overheadCost||0))+'</b> ＝ 仕込み原価合計 <b class="amt">'+fmtYen(p.batch.batchTotalCost!=null?p.batch.batchTotalCost:p.batch.materialCostTotal)+'</b></span></div>' +
-          contentBlock +
-          '<h3 style="margin-top:22px;">② 1包装（'+fmtNum(p.pack.piecesPerPackage)+' '+escapeHtml(p.batch.yieldUnit)+'入り）の資材</h3>' +
-          '<table class="ing-table"><thead><tr><th>資材名</th><th style="text-align:right;">数量</th><th style="text-align:right;">金額</th></tr></thead><tbody>'+(pkgRows||'<tr><td colspan="3" style="color:var(--ink-faint);">なし</td></tr>')+'</tbody></table>' +
-          (p.notes ? '<p class="hint" style="margin-top:14px;">メモ：'+escapeHtml(p.notes)+'</p>' : '') +
-        '</div>' +
+      '<div class="pd-receipt-wrap">' +
         '<div class="card receipt" style="position:static;">' +
           '<div class="receipt-head">原価計算書</div>' +
           '<div class="receipt-body">' +
-            '<div class="rline"><span>仕込み原価</span><b class="amt">'+fmtYen(p.pack.materialCostForPackage)+'</b></div>' +
-            (contentList.length ? '<div class="rline"><span>中身（詰め合わせ）</span><b class="amt">'+fmtYen(p.pack.contentsCost||0)+'</b></div>' : '') +
-            '<div class="rline"><span>資材費</span><b class="amt">'+fmtYen(p.pack.itemsCost)+'</b></div>' +
-            '<div class="rline"><span>製造工賃</span><b class="amt">'+fmtYen(p.pack.laborCost)+'</b></div>' +
-            '<div class="rline"><span>製造間接費</span><b class="amt">'+fmtYen(p.pack.overheadCost)+'</b></div>' +
-            '<div class="rline"><span>販管費</span><b class="amt">'+fmtYen(p.pack.sgaCost)+'</b></div>' +
+            '<div class="rline tap" data-target="pd-sec-batch"><span>仕込み原価 <span class="tap-mark">▸ 内訳</span></span><b class="amt">'+fmtYen((p.pack && p.pack.materialCostForPackage)||0)+'</b></div>' +
+            (contentList.length ? '<div class="rline tap" data-target="pd-sec-cont"><span>中身（詰め合わせ） <span class="tap-mark">▸ 内訳</span></span><b class="amt">'+fmtYen((p.pack && p.pack.contentsCost)||0)+'</b></div>' : '') +
+            '<div class="rline tap" data-target="pd-sec-pkg"><span>資材費 <span class="tap-mark">▸ 内訳</span></span><b class="amt">'+fmtYen((p.pack && p.pack.itemsCost)||0)+'</b></div>' +
+            '<div class="rline"><span>製造工賃（仕上げ）</span><b class="amt">'+fmtYen((p.pack && p.pack.laborCost)||0)+'</b></div>' +
+            '<div class="rline"><span>製造間接費（仕上げ）</span><b class="amt">'+fmtYen((p.pack && p.pack.overheadCost)||0)+'</b></div>' +
+            '<div class="rline"><span>販管費</span><b class="amt">'+fmtYen((p.pack && p.pack.sgaCost)||0)+'</b></div>' +
             '<div class="rdiv"></div>' +
             '<div class="rtotal"><span class="lbl">原価合計</span><span class="val amt">'+fmtYen(p.totalCost)+'</span></div>' +
             '<div class="price-block">' +
-              '<div class="main-price amt">'+fmtYen(p.priceInTax)+'/'+escapeHtml((p.planning&&p.planning.countUnit)||'個')+'</div>' +
-              '<div class="sub-price">希望原価率 '+fmtNum(p.marginRate*100,1)+'%（税抜 <b class="amt">'+fmtYen(p.priceExTax)+'</b>）</div>' +
-              '<div class="margin-pill '+(p.profitRate>=0.25?'good':'warn')+'">利益率 '+fmtNum(p.profitRate*100,1)+'%</div>' +
+              '<div class="main-price amt">'+fmtYen(p.priceInTax)+'/'+escapeHtml(unitLabel)+'</div>' +
+              '<div class="sub-price">希望原価率 '+fmtNum((p.marginRate||0)*100,1)+'%（税抜 <b class="amt">'+fmtYen(p.priceExTax)+'</b>）</div>' +
+              '<div class="margin-pill '+(p.profitRate>=0.25?'good':'warn')+'">利益率 '+fmtNum((p.profitRate||0)*100,1)+'%</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
+      '<div class="card section-card pd-section" id="pd-sec-batch" style="display:none;">'+batchSection+'</div>' +
+      (contentList.length ? '<div class="card section-card pd-section" id="pd-sec-cont" style="display:none;">'+contentSection+'</div>' : '') +
+      '<div class="card section-card pd-section" id="pd-sec-pkg" style="display:none;">'+pkgSection+'</div>' +
       planningBlock;
+
+    document.getElementById('pd-body').querySelectorAll('.rline.tap').forEach(function(row){
+      row.addEventListener('click', function(){
+        var sec = document.getElementById(row.dataset.target);
+        if(!sec) return;
+        var opening = sec.style.display === 'none';
+        sec.style.display = opening ? '' : 'none';
+        var mark = row.querySelector('.tap-mark');
+        if(mark) mark.textContent = opening ? '▾ 内訳' : '▸ 内訳';
+        if(opening) sec.scrollIntoView({block:'nearest', behavior:'smooth'});
+      });
+    });
 
     showView('product-detail');
   }
