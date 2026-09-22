@@ -311,10 +311,51 @@
   .app.sidebar-collapsed .content{ max-width:none; }
 
   /* ---------- Read-only "blockwork-managed" displays ---------- */
+  /* 自動計算やブロックワークからの引用は、ふつうの文字として見せる（コピーもできる） */
   .ro-display{
-    border:1px solid var(--border); background:var(--surface-2); color:var(--ink-soft);
-    border-radius:6px; padding:8px 10px; font-size:13.5px; min-height:37px; display:flex; align-items:center;
+    border:none; background:none; color:var(--ink);
+    padding:6px 0 2px; font-size:14px; font-weight:600; min-height:24px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; user-select:text;
   }
+
+  /* ①の表：×1 と ×〇 の2段ヘッダー */
+  table.ing-table-multi .col-name{width:24%;}
+  table.ing-table-multi .col-qty{width:12%;}
+  table.ing-table-multi .col-unit{width:6%; white-space:nowrap;}
+  table.ing-table-multi .col-price{width:8%; text-align:left;}
+  table.ing-table-multi .col-amt{width:11%; text-align:left;}
+  table.ing-table-multi td input{padding:6px 4px; font-size:13px;}
+  table.ing-table-multi th.grp-head{
+    text-align:center; font-size:12px; color:var(--ink-faint); font-weight:700;
+    border-bottom:1px solid var(--border); padding-bottom:2px;
+  }
+  table.ing-table-multi th.grp-mult{padding-bottom:0;}
+  table.ing-table-multi .m-col{background:var(--surface-2);}
+  table.ing-table-multi.no-mult-col .m-col{display:none;}
+  .mult-col-btn{
+    border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-strong);
+    border-radius:7px; cursor:pointer; font-family:inherit; font-size:12.5px; font-weight:700;
+    padding:2px 10px; min-width:44px;
+  }
+  table.ing-table tfoot .ing-foot td{
+    border-top:2px solid var(--border); padding-top:8px; font-weight:700; color:var(--ink);
+  }
+  table.ing-table tfoot .ing-foot .col-name{color:var(--ink-soft); font-size:12.5px;}
+
+  /* 倍数ごとの焼き上がり */
+  .mult-yields{display:flex; flex-direction:column; gap:3px; padding:6px 0 2px;}
+  .mult-yield-line{font-size:13.5px; color:var(--ink);}
+  .mult-yield-line .mult-yield-per{color:var(--ink-soft); margin-left:10px;}
+  .mult-custom-input{
+    border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:7px; padding:3px 6px; font-size:12.5px; width:62px; font-family:inherit;
+  }
+  .mult-row-custom{align-items:center;}
+
+  /* 長押しでつかんだ行 */
+  tr.row-dragging{background:var(--accent-soft); box-shadow:0 2px 10px rgba(0,0,0,.18);}
+  tr.row-dragging td{border-color:var(--accent);}
+  body.dragging-row{user-select:none; -webkit-user-select:none;}
   .reorder-controls{display:flex; gap:4px; margin-bottom:8px;}
   .ing-pick{display:flex; gap:6px;}
   .ing-pick select{min-width:0; width:100%;}
@@ -479,14 +520,32 @@
         <div>
           <div class="card section-card">
             <h3>① 仕込み全体の原材料</h3>
-            <p class="hint">一度に仕込む分量をそのまま入力してください（例：クッキー生地1台分）。</p>
+            <p class="hint">一度に仕込む分量をそのまま入力してください。行を長押しすると、つかんで上下に動かせます。</p>
             <div class="table-scroll">
-            <table class="ing-table">
-              <thead><tr>
-                <th class="col-name">材料名</th><th class="col-qty">使用量</th><th class="col-unit">単位</th>
-                <th class="col-price">単価</th><th class="col-amt">金額</th><th class="col-del"></th>
-              </tr></thead>
+            <table class="ing-table ing-table-multi">
+              <thead>
+                <tr>
+                  <th class="col-name" rowspan="2">材料名</th>
+                  <th class="grp-head" colspan="4">×1</th>
+                  <th class="grp-head grp-mult m-col" colspan="4"><button type="button" class="mult-col-btn" id="ing-mult-col-btn" title="タップで倍数が切り替わります">×2</button></th>
+                  <th class="col-del" rowspan="2"></th>
+                </tr>
+                <tr>
+                  <th class="col-qty">使用量</th><th class="col-unit">単位</th>
+                  <th class="col-price">単価</th><th class="col-amt">金額</th>
+                  <th class="col-qty m-col">使用量</th><th class="col-unit m-col">単位</th>
+                  <th class="col-price m-col">単価</th><th class="col-amt m-col">金額</th>
+                </tr>
+              </thead>
               <tbody id="ing-body"></tbody>
+              <tfoot><tr class="ing-foot">
+                <td class="col-name">材料費合計</td>
+                <td class="col-qty"></td><td class="col-unit"></td><td class="col-price"></td>
+                <td class="col-amt amt" id="ing-total-base">¥0</td>
+                <td class="col-qty m-col"></td><td class="col-unit m-col"></td><td class="col-price m-col"></td>
+                <td class="col-amt amt m-col" id="ing-total-mult">¥0</td>
+                <td class="col-del"></td>
+              </tr></tfoot>
             </table>
             </div>
             <button class="btn btn-sm add-row-btn" data-add="ing">＋原材料</button>
@@ -497,14 +556,11 @@
                 <input id="f-yield-count" type="number" inputmode="decimal" min="0" step="any" value="1" style="max-width:80px;">
                 <input id="f-yield-unit" type="text" value="個" style="width:60px;">
                 <span>できる</span>
-                <span class="eq" id="disp-yield-total"></span>
-                <span class="eq">材料費合計 <b id="disp-ing-total" class="amt">¥0</b></span>
               </div>
+              <div class="mult-yields" id="disp-mult-yields"></div>
               <div class="yield-line">
                 <span>使用可能倍数</span>
                 <span class="mult-btns" id="f-multi-btns"></span>
-                <span class="eq" id="disp-scale-note"></span>
-                <span class="eq per-unit-cost">1<span id="disp-per-unit-label">個</span>あたりの原価 <b id="disp-cost-per-yield" class="amt">¥0</b></span>
               </div>
             </div>
           </div>
@@ -554,15 +610,11 @@
 
           <div class="card section-card">
             <h3>生産計画 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワークで編集）</span></h3>
-            <p class="hint">1回の仕込み上限・安全在庫・曜日ごとの見込みは、ブロックワーク側でだけ入力できます。ここでは確認のみできます。変更したいときは下のボタンでブロックワークへ移動してください。</p>
+            <p class="hint">安全在庫・曜日ごとの見込みは、ブロックワーク側でだけ入力できます。ここでは確認のみできます。変更したいときは下のボタンでブロックワークへ移動してください。</p>
             <div class="row-inline">
               <div class="field" style="max-width:120px;">
                 <label>数の単位</label>
                 <input id="f-count-unit" type="text" placeholder="個" value="個">
-              </div>
-              <div class="field" style="max-width:180px;">
-                <label>1回の仕込みの上限（倍）</label>
-                <div class="ro-display" id="ro-max-batch">—</div>
               </div>
               <div class="field" style="max-width:140px;">
                 <label>安全在庫</label>
@@ -576,7 +628,7 @@
 
             <div class="field" style="margin-top:12px;">
               <label>曜日ごとに減る数（販売の見込み）</label>
-              <div class="ro-display" id="ro-weekly-sales" style="min-height:37px; height:auto; flex-wrap:wrap; gap:10px 14px; padding:10px;">—</div>
+              <div class="ro-display" id="ro-weekly-sales" style="gap:10px 14px;">—</div>
             </div>
             <button type="button" class="btn btn-sm" id="btn-goto-blockwork" style="margin-top:12px;">ブロックワークで編集する →</button>
           </div>
@@ -1650,6 +1702,8 @@
 
   async function init(){
     buildMultiplierButtons();
+    var multColBtn = document.getElementById('ing-mult-col-btn');
+    if(multColBtn) multColBtn.addEventListener('click', cycleMultCol);
     showDraftBanner();
     renderIngRow('ing');
     renderPkgRow();
@@ -2066,13 +2120,82 @@
   document.getElementById('s-overhead-annual-amount').addEventListener('input', updateOverheadRateFromAnnual);
   document.getElementById('s-overhead-annual-hours').addEventListener('input', updateOverheadRateFromAnnual);
 
+  // ---------------- 行の長押し並べ替え ----------------
+  // 長押しで行をつかみ、そのまま上下に動かすと前後の行と入れ替わる
+  var dragRow = null, dragBody = null, dragTimer = null, dragStartY = 0;
+  function cancelLongPress(){ if(dragTimer){ clearTimeout(dragTimer); dragTimer = null; } }
+  function onDragTouchMove(e){
+    if(e.cancelable) e.preventDefault();
+    if(e.touches && e.touches[0]) dragMoveTo(e.touches[0].clientY);
+  }
+  function onDragPointerMove(e){ dragMoveTo(e.clientY); }
+  function dragMoveTo(y){
+    if(!dragRow || !dragBody) return;
+    var r = dragRow.getBoundingClientRect();
+    if(y < r.top){
+      var prev = dragRow.previousElementSibling;
+      if(prev){
+        var pr = prev.getBoundingClientRect();
+        if(y < pr.top + pr.height / 2) dragBody.insertBefore(dragRow, prev);
+      }
+    } else if(y > r.bottom){
+      var next = dragRow.nextElementSibling;
+      if(next){
+        var nr = next.getBoundingClientRect();
+        if(y > nr.top + nr.height / 2) dragBody.insertBefore(next, dragRow);
+      }
+    }
+  }
+  function beginRowDrag(tr){
+    dragRow = tr;
+    dragBody = tr.parentNode;
+    tr.classList.add('row-dragging');
+    document.body.classList.add('dragging-row');
+    document.addEventListener('touchmove', onDragTouchMove, {passive:false});
+    document.addEventListener('pointermove', onDragPointerMove);
+    document.addEventListener('pointerup', endRowDrag);
+    document.addEventListener('pointercancel', endRowDrag);
+    if(navigator.vibrate){ try{ navigator.vibrate(12); }catch(e){} }
+  }
+  function endRowDrag(){
+    cancelLongPress();
+    if(!dragRow) return;
+    dragRow.classList.remove('row-dragging');
+    dragRow = null; dragBody = null;
+    document.body.classList.remove('dragging-row');
+    document.removeEventListener('touchmove', onDragTouchMove, {passive:false});
+    document.removeEventListener('pointermove', onDragPointerMove);
+    document.removeEventListener('pointerup', endRowDrag);
+    document.removeEventListener('pointercancel', endRowDrag);
+    recalc();
+  }
+  function attachRowDrag(tr){
+    tr.addEventListener('pointerdown', function(e){
+      if(e.target.closest('input, select, button, textarea, a, .ac-item')) return;
+      cancelLongPress();
+      dragStartY = e.clientY;
+      dragTimer = setTimeout(function(){ dragTimer = null; beginRowDrag(tr); }, 350);
+    });
+    tr.addEventListener('pointermove', function(e){
+      if(dragTimer && Math.abs(e.clientY - dragStartY) > 10) cancelLongPress();
+    });
+    tr.addEventListener('pointerup', function(){ if(!dragRow) cancelLongPress(); });
+    tr.addEventListener('pointerleave', function(){ if(!dragRow) cancelLongPress(); });
+  }
+  window.__rowDrag = { begin: beginRowDrag, move: dragMoveTo, end: endRowDrag };
+
   // ---------------- ingredient rows ----------------
   function makeRow(kind){
     var tr = document.createElement('tr');
+    var multCells = (kind !== 'pkg') ?
+      ('<td class="col-qty m-col row-mqty"></td>' +
+       '<td class="col-unit m-col row-munit"></td>' +
+       '<td class="col-price m-col row-mprice"></td>' +
+       '<td class="col-amt m-col amt row-mamt"></td>') : '';
     tr.innerHTML =
       '<td class="col-name">' +
-        '<div class="ing-manual" style="position:relative;" hidden><input class="row-name" autocomplete="off" placeholder="材料名を入力…（候補から選べます）"></div>' +
-        '<div class="ing-pick">' +
+        '<div class="ing-manual" style="position:relative;"><input class="row-name" autocomplete="off" placeholder="材料名を入力／タップで一覧"></div>' +
+        '<div class="ing-pick" hidden>' +
           '<select class="row-mat-select"><option value="">材料を選ぶ…</option></select>' +
         '</div>' +
         '<div class="row-unmatched-notice" hidden>' +
@@ -2084,38 +2207,20 @@
       '<td class="col-unit row-unit">g</td>' +
       '<td class="col-price row-price">¥0</td>' +
       '<td class="col-amt row-amt amt">¥0</td>' +
+      multCells +
       '<td class="col-del" style="white-space:nowrap;">' +
-        '<button class="icon-btn row-up" title="上へ">↑</button>' +
-        '<button class="icon-btn row-down" title="下へ">↓</button>' +
         '<button class="icon-btn row-del" title="削除">✕</button>' +
-        '<button type="button" class="icon-btn row-manual-toggle" title="キーボードで名前を入力する">⌨️</button>' +
       '</td>';
     tr.dataset.kind = kind;
 
     var matSelect = tr.querySelector('.row-mat-select');
     var nameInput = tr.querySelector('.row-name');
     var qtyInput = tr.querySelector('.row-qty');
-    var manualToggleBtn = tr.querySelector('.row-manual-toggle');
     var manualWrap = tr.querySelector('.ing-manual');
     var pickWrap = tr.querySelector('.ing-pick');
 
-    populateRowMaterialSelect(matSelect, kind);
     matSelect.addEventListener('change', function(){ setRowMaterial(tr, matSelect.value); });
-    manualToggleBtn.addEventListener('click', function(){
-      var switchingToPick = pickWrap.hidden;
-      pickWrap.hidden = !switchingToPick;
-      manualWrap.hidden = switchingToPick;
-      manualToggleBtn.title = switchingToPick ? 'キーボードで名前を入力する' : 'カテゴリから選んで入力する';
-      manualToggleBtn.textContent = switchingToPick ? '⌨️' : '📂';
-      if(switchingToPick){
-        nameInput.value = '';
-        populateRowMaterialSelect(matSelect, kind);
-        matSelect.value = '';
-        setRowMaterial(tr, '');
-      } else {
-        nameInput.focus();
-      }
-    });
+    attachRowDrag(tr);
     nameInput.addEventListener('input', function(){
       setRowMaterial(tr, nameInput.value);
       showSuggestions(tr, kind);
@@ -2178,26 +2283,10 @@
       }
     });
     tr.querySelector('.row-del').addEventListener('click', function(){ tr.remove(); recalc(); });
-    tr.querySelector('.row-up').addEventListener('click', function(){
-      var prev = tr.previousElementSibling;
-      if(prev) tr.parentNode.insertBefore(tr, prev);
-      recalc();
-    });
-    tr.querySelector('.row-down').addEventListener('click', function(){
-      var next = tr.nextElementSibling;
-      if(next) tr.parentNode.insertBefore(next, tr);
-      recalc();
-    });
     tr.querySelector('.row-add-material-btn').addEventListener('click', function(){
       var typedName = (tr.dataset.materialName || nameInput.value || '').trim();
       openMaterialModal(null, typedName, function(newMat){
-        if(manualWrap.hidden){
-          // 選択モードのとき：作った材料をそのまま選んだ状態にする
-          populateRowMaterialSelect(matSelect, kind);
-          matSelect.value = newMat.name;
-        } else {
-          nameInput.value = newMat.name;
-        }
+        nameInput.value = newMat.name;
         setRowMaterial(tr, newMat.name);
       }, '');
     });
@@ -2236,11 +2325,10 @@
     var list = acOverlayEl();
     acOwnerRow = tr;
     var q = (input.value || '').trim().toLowerCase();
-    if(!q){ hideSuggestions(tr); return; }
     var want = (kind === 'pkg') ? 'supply' : 'food';
-    var matches = state.materials.filter(function(m){
+    var matches = q ? state.materials.filter(function(m){
       return (m.name||'').toLowerCase().indexOf(q) >= 0;   // 部分一致
-    });
+    }) : state.materials.slice();   // 何も打っていないときは登録ずみを上から出す
     var hits = matches.filter(function(m){ return kindOf(m) === want; });
     if(hits.length < 8){
       // 種別が合うものだけでは少ないときは、ほかの種別の候補も後ろに足す
@@ -2577,14 +2665,15 @@
     return allowedMultipliers.length ? Math.min.apply(null, allowedMultipliers) : 1;
   }
   function setAllowedMultipliers(list, skipRecalc){
-    var arr = (list || []).map(function(x){ return Math.max(1, Math.min(8, Math.round(Number(x) || 0))); })
+    var arr = (list || []).map(function(x){
+        var v = Number(x) || 0;
+        v = Math.round(v * 10) / 10;              // 任意の数もOK（小数第1位まで）
+        return Math.max(1, Math.min(99, v));
+      })
       .filter(function(x, i, a){ return x && a.indexOf(x) === i; })
       .sort(function(a,b){ return a - b; });
     allowedMultipliers = arr.length ? arr : [1];
-    var wrap = document.getElementById('f-multi-btns');
-    if(wrap) wrap.querySelectorAll('.mult-btn').forEach(function(b){
-      b.classList.toggle('on', allowedMultipliers.indexOf(Number(b.dataset.m)) >= 0);
-    });
+    buildMultiplierButtons();
     if(!skipRecalc) recalc();
   }
   function toggleMultiplier(m){
@@ -2599,15 +2688,101 @@
   }
   function buildMultiplierButtons(){
     var wrap = document.getElementById('f-multi-btns');
-    if(!wrap || wrap.dataset.built) return;
-    wrap.dataset.built = '1';
+    if(!wrap) return;
+    function btn(m, on){
+      return '<button type="button" class="mult-btn'+(on?' on':'')+'" data-m="'+m+'">×'+fmtNum(m)+'</button>';
+    }
+    var html = '', i;
     var row1 = '', row2 = '';
-    for(var i=1;i<=4;i++) row1 += '<button type="button" class="mult-btn'+(i===1?' on':'')+'" data-m="'+i+'">×'+i+'</button>';
-    for(var j=5;j<=8;j++) row2 += '<button type="button" class="mult-btn" data-m="'+j+'">×'+j+'</button>';
-    wrap.innerHTML = '<span class="mult-row">'+row1+'</span><span class="mult-row">'+row2+'</span>';
+    for(i=1;i<=4;i++) row1 += btn(i, allowedMultipliers.indexOf(i) >= 0);
+    for(i=5;i<=8;i++) row2 += btn(i, allowedMultipliers.indexOf(i) >= 0);
+    html += '<span class="mult-row">'+row1+'</span><span class="mult-row">'+row2+'</span>';
+    // ×1〜×8 以外に選ばれている倍数（任意の数）
+    var extra = allowedMultipliers.filter(function(m){ return !(m >= 1 && m <= 8 && m === Math.round(m)); });
+    html += '<span class="mult-row mult-row-custom">' +
+      extra.map(function(m){ return btn(m, true); }).join('') +
+      '<input type="number" class="mult-custom-input" id="f-multi-custom" min="1" max="99" step="any" placeholder="任意">' +
+      '<button type="button" class="btn btn-sm" id="f-multi-add">追加</button>' +
+      '</span>';
+    wrap.innerHTML = html;
     wrap.querySelectorAll('.mult-btn').forEach(function(b){
       b.addEventListener('click', function(){ toggleMultiplier(b.dataset.m); });
     });
+    var addBtn = document.getElementById('f-multi-add');
+    if(addBtn) addBtn.addEventListener('click', function(){
+      var inp = document.getElementById('f-multi-custom');
+      var v = Number(inp && inp.value);
+      if(!(v > 0)){ if(inp) inp.focus(); return; }
+      var next = allowedMultipliers.slice();
+      next.push(v);
+      setAllowedMultipliers(next);
+    });
+  }
+
+  // 「×〇」の列：タップするたびに、選んだ倍数を順ぐりに切り替える
+  var multColValue = null;
+  function multColCandidates(){
+    return allowedMultipliers.filter(function(m){ return m !== 1; });
+  }
+  function currentMultCol(){
+    var cand = multColCandidates();
+    if(!cand.length) return null;
+    if(multColValue == null || cand.indexOf(multColValue) < 0) multColValue = cand[0];
+    return multColValue;
+  }
+  function cycleMultCol(){
+    var cand = multColCandidates();
+    if(!cand.length) return;
+    var i = cand.indexOf(currentMultCol());
+    multColValue = cand[(i + 1) % cand.length];
+    recalc();
+  }
+  // ①の表の「×〇」列を書き込む（戻り値はその倍数での材料費合計）
+  function renderIngMultColumn(){
+    var m = currentMultCol();
+    var table = document.querySelector('.ing-table-multi');
+    if(table) table.classList.toggle('no-mult-col', !m);
+    var btn = document.getElementById('ing-mult-col-btn');
+    if(btn) btn.textContent = '×' + fmtNum(m || 1);
+    var body = document.getElementById('ing-body');
+    if(!body) return 0;
+    var use = m || 1, total = 0;
+    body.querySelectorAll('tr').forEach(function(tr){
+      var cq = tr.querySelector('.row-mqty');
+      if(!cq) return;
+      var name = (tr.dataset.materialName || '').trim();
+      var qty = parseFloat(tr.querySelector('.row-qty').value) || 0;
+      var up = parseFloat(tr.dataset.unitPrice) || 0;
+      if(!name){
+        cq.textContent = ''; tr.querySelector('.row-munit').textContent = '';
+        tr.querySelector('.row-mprice').textContent = ''; tr.querySelector('.row-mamt').textContent = '';
+        return;
+      }
+      cq.textContent = fmtNum(qty * use);
+      tr.querySelector('.row-munit').textContent = tr.querySelector('.row-unit').textContent.trim();
+      tr.querySelector('.row-mprice').textContent = '¥' + fmtNum(up, 1);
+      tr.querySelector('.row-mamt').textContent = fmtYen(qty * up * use);
+      total += qty * up * use;
+    });
+    return total;
+  }
+  // 倍数ごとの「焼き上がり」と「1単位あたりの原価」
+  function renderMultYields(ingTotal1, yieldCount1){
+    var box = document.getElementById('disp-mult-yields');
+    if(!box) return;
+    var unitLabel = document.getElementById('f-yield-unit').value || '個';
+    var name = document.getElementById('f-name').value.trim();
+    var code = currentFormCode();
+    box.innerHTML = allowedMultipliers.map(function(m){
+      var pc = getProcessCosting(name, m, code);
+      var total = ingTotal1 * m + (pc ? pc.batchLaborCost : 0) +
+                  (pc ? pc.batchMinutes * (state.settings.overheadRate || 0) : 0);
+      var y = yieldCount1 * m;
+      var per = y > 0 ? total / y : 0;
+      return '<div class="mult-yield-line">×' + fmtNum(m) + '倍の仕込みでの焼き上がりは <b>' + fmtNum(y) + '</b>' +
+        escapeHtml(unitLabel) +
+        '<span class="mult-yield-per">1' + escapeHtml(unitLabel) + 'あたり <b class="amt">' + fmtYen(per) + '</b></span></div>';
+    }).join('');
   }
 
   var procViewKey = null;   // 直前に描画した内容のキー（同じなら描き直さない）
@@ -2664,12 +2839,10 @@
   // ブロックワークの生産計画（1回の仕込み上限・安全在庫・曜日ごとの見込み）を表示のみで反映する
   function renderPlanningReadonly(planning){
     planning = planning || {};
-    var elMax = document.getElementById('ro-max-batch');
     var elSafety = document.getElementById('ro-safety-stock');
     var elSafetyBusy = document.getElementById('ro-safety-stock-busy');
     var elWeekly = document.getElementById('ro-weekly-sales');
-    if(!elMax) return;
-    elMax.textContent = planning.maxBatchMultiplier ? (fmtNum(planning.maxBatchMultiplier) + '倍') : '上限なし';
+    if(!elSafety) return;
     elSafety.textContent = fmtNum(planning.safetyStock || 0);
     elSafetyBusy.textContent = planning.safetyStockBusy != null ? fmtNum(planning.safetyStockBusy) : '通常と同じ';
     var weekly = planning.weeklySales || [];
@@ -2752,29 +2925,16 @@
     var costPerYield = yieldCount > 0 ? batchTotal / yieldCount : 0;
 
     document.getElementById('disp-batch-overhead').textContent = fmtYen(batchOverheadCost);
-    document.getElementById('disp-yield-total').textContent =
-      mult !== 1 ? ('×'+fmtNum(mult)+'倍 → '+fmtNum(yieldCount)+(document.getElementById('f-yield-unit').value||'個')) : '';
     document.getElementById('cost-per-yield-note').textContent =
       '（材料費' + fmtYen(ingTotal) + ' ＋ 工程の工賃' + fmtYen(batchLaborCost) + ' ＋ 製造間接費' + fmtYen(batchOverheadCost) +
       '）÷ 焼き上がり' + fmtNum(yieldCount) + (document.getElementById('f-yield-unit').value||'個') + ' ＝ ' + fmtYen(costPerYield);
 
-    // 1倍のときの1単位あたり原価（比較用）
-    var proc1 = getProcessCosting(document.getElementById('f-name').value.trim(), 1, currentFormCode());
-    var base1 = ingTotal1 + (proc1 ? proc1.batchLaborCost : 0) + (proc1 ? proc1.batchMinutes * state.settings.overheadRate : 0);
-    var costPerYield1 = yieldCount1 > 0 ? base1 / yieldCount1 : 0;
-    var note = document.getElementById('disp-scale-note');
-    if(mult !== 1 && costPerYield1 > 0){
-      var diff = costPerYield1 - costPerYield;
-      note.textContent = '1' + (document.getElementById('f-yield-unit').value || '個') + 'あたり ' +
-        fmtYen(costPerYield1) + ' → ' + fmtYen(costPerYield) +
-        (diff > 0.005 ? '（' + fmtYen(diff) + '安く）' : '');
-    } else {
-      note.textContent = '';
-    }
-
-    document.getElementById('disp-ing-total').textContent = fmtYen(ingTotal);
-    document.getElementById('disp-cost-per-yield').textContent = fmtYen(costPerYield);
-    document.getElementById('disp-per-unit-label').textContent = document.getElementById('f-yield-unit').value || '個';
+    // ①の表：×1 の合計と、「×〇」列の合計
+    var multColTotal = renderIngMultColumn();
+    document.getElementById('ing-total-base').textContent = fmtYen(ingTotal1);
+    document.getElementById('ing-total-mult').textContent = fmtYen(multColTotal);
+    // 選んだ倍数ごとの焼き上がりと1単位あたりの原価
+    renderMultYields(ingTotal1, yieldCount1);
 
     var packCount = parseFloat(document.getElementById('f-pack-count').value) || 0;
     var packMaterialCost = costPerYield * packCount;
@@ -2962,14 +3122,9 @@
     var body = document.getElementById(bodyId);
     body.innerHTML = '';
     (rows && rows.length ? rows : [{}]).forEach(function(r){
-      var tr = makeRow();
+      var tr = makeRow(bodyId === 'pkg-body' ? 'pkg' : 'ing');
       body.appendChild(tr);
       if(r.name){
-        // 名前が入っている行はキーボード入力モードで開く（名前がそのまま見えるように）
-        var mw = tr.querySelector('.ing-manual'), pw = tr.querySelector('.ing-pick'),
-            tb = tr.querySelector('.row-manual-toggle');
-        if(mw && pw){ mw.hidden = false; pw.hidden = true; }
-        if(tb){ tb.textContent = '📂'; tb.title = 'カテゴリから選んで入力する'; }
         tr.querySelector('.row-qty').value = r.qty;
         var m = state.materialsByName[r.name];
         if(m){
