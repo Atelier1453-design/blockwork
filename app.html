@@ -129,7 +129,7 @@
 
   .section-card{padding:20px 22px; margin-bottom:18px;}
   .section-card h3{font-size:15.5px; margin-bottom:2px;}
-  .section-card .hint{font-size:12px; color:var(--ink-faint); margin:2px 0 14px;}
+  .section-card .hint{font-size:13px; color:var(--ink-soft); margin:2px 0 14px; line-height:1.55;}
 
   table.ing-table{width:100%; border-collapse:collapse; font-size:13.5px;}
   table.ing-table th{
@@ -189,9 +189,10 @@
   }
   .receipt-head span{font-family:"Zen Kaku Gothic New",sans-serif; font-size:11px; font-weight:500; color:var(--ink-soft);}
   .receipt-body{padding:18px 22px;}
-  .rline{display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:5px 0; color:var(--ink-soft);}
+  .rline{display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:5px 0; color:var(--ink);}
+  .rline small{font-weight:400; font-size:11.5px; color:var(--ink-faint); margin-left:5px;}
   .rline b{color:var(--ink); font-weight:600;}
-  .rline.sub{padding-left:10px; font-size:12px; color:var(--ink-faint);}
+  .rline.sub{padding-left:10px; font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
   .rdiv{border-top:1px dashed var(--border); margin:10px 0;}
   .rtotal{display:flex; justify-content:space-between; align-items:baseline; padding:6px 0;}
   .rtotal .lbl{font-size:13.5px; font-weight:700;}
@@ -351,6 +352,8 @@
     border-radius:7px; padding:3px 6px; font-size:12.5px; width:62px; font-family:inherit;
   }
   .mult-row-custom{align-items:center;}
+  .costbase-btns{display:inline-flex; gap:4px; flex-wrap:wrap;}
+  .costbase-note{color:var(--ink-soft); font-size:12.5px;}
 
   /* 長押しでつかんだ行 */
   tr.row-dragging{background:var(--accent-soft); box-shadow:0 2px 10px rgba(0,0,0,.18);}
@@ -372,14 +375,26 @@
   #disp-scale-note{color:var(--ink-soft);}
   #disp-yield-total{color:var(--ink-soft);}
   .proc-chip-min{color:var(--ink-soft) !important;}
-  .proc-group-head span.proc-total{margin-left:auto; text-align:right; color:var(--ink-soft);}
+  .proc-group-head span.proc-total{margin-left:auto; text-align:right; color:var(--ink); font-size:12.5px;}
+  .proc-group-empty{font-size:13px;}
+
+  /* 計算式のブロック（どの数字が、どこから来ているか） */
+  .formula-box{border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-top:14px; background:var(--surface-2);}
+  .formula-title{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:6px;}
+  .formula-table{width:100%; border-collapse:collapse; font-size:14px; color:var(--ink);}
+  .formula-table td{padding:3px 0; vertical-align:baseline;}
+  .formula-table .fl{white-space:nowrap;}
+  .formula-table .fv{text-align:right; font-weight:700; white-space:nowrap; padding-left:12px; font-variant-numeric:tabular-nums;}
+  .formula-table .fs{padding-left:14px; font-size:12.5px; color:var(--ink-soft); width:99%; line-height:1.5;}
+  .formula-table tr.sum td{border-top:1px solid var(--border); font-weight:700;}
+  .calc-sub{font-size:12.5px; color:var(--ink-soft); margin-top:3px; display:block; line-height:1.5;}
   .proc-groups{display:flex; flex-direction:column; gap:10px; margin:8px 0 4px;}
   .proc-group{border:1px solid var(--border); border-radius:10px; padding:8px 10px 10px;}
   .proc-group.batch{border-color:var(--accent);}
   .proc-group.finish{border-color:var(--good);}
   .proc-group.off{opacity:.75;}
-  .proc-group-head{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:baseline;}
-  .proc-group-head span{font-weight:400; font-size:11.5px; color:var(--ink-faint);}
+  .proc-group-head{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:baseline;}
+  .proc-group-head span{font-weight:400; font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
   .proc-group-empty{font-size:12px; color:var(--ink-faint);}
   .bw-hide-btn{margin-top:8px; font-size:11px; padding:3px 8px;}
   .bw-hide-btn.on{background:var(--warn-soft); border-color:var(--warn); color:var(--warn);}
@@ -405,7 +420,7 @@
     font-family:inherit; font-size:12px; color:var(--ink); text-align:left; min-width:104px;}
   .proc-chip b{font-size:13px;}
   .proc-chip-role{font-size:11px; font-weight:600;}
-  .proc-chip-min{font-size:10.5px; color:var(--ink-faint);}
+  .proc-chip-min{font-size:12px; color:var(--ink-soft);}
   .proc-chip.batch{border-color:var(--accent); background:var(--accent-soft);}
   .proc-chip.batch .proc-chip-role{color:var(--accent-strong);}
   .proc-chip.finish{border-color:var(--good); background:var(--good-soft);}
@@ -562,6 +577,11 @@
                 <span>使用可能倍数</span>
                 <span class="mult-btns" id="f-multi-btns"></span>
               </div>
+              <div class="yield-line">
+                <span>原価の基準にする倍数</span>
+                <span class="costbase-btns" id="f-costbase-btns"></span>
+                <span class="eq costbase-note" id="f-costbase-note"></span>
+              </div>
             </div>
           </div>
           <div class="card section-card">
@@ -575,9 +595,10 @@
                   <span style="color:var(--ink-faint); font-size:13px;" id="f-pack-unit-echo">個</span>
                 </div>
               </div>
-              <div class="field" style="max-width:170px;">
-                <label>仕込み原価<span style="color:var(--ink-faint);">（自動）</span></label>
+              <div class="field" style="max-width:340px;">
+                <label>仕込み原価<span style="color:var(--ink-faint);">（自動）③の1個あたり×入れる数</span></label>
                 <div class="ro-display" id="disp-pack-material-cost" style="max-width:150px;">¥0</div>
+                <span class="calc-sub" id="disp-pack-material-note">—</span>
               </div>
             </div>
 
@@ -597,15 +618,20 @@
 
           <div class="card section-card">
             <h3>③ 製造に関わる費用</h3>
-            <p class="hint">工程の時間はブロックワークの数字です。チップをタップすると 製造 → 仕上げ → 使わない と切り替わります。</p>
             <div id="proc-readonly-wrap"></div>
-            <div class="row-inline" style="margin-top:14px;">
-              <div class="field" style="max-width:220px;">
-                <label>仕込みの製造間接費<span style="color:var(--ink-faint);">（自動）設定の単価×製造時間</span></label>
-                <div class="ro-display" id="disp-batch-overhead" style="max-width:150px;">¥0</div>
-              </div>
+
+            <div class="formula-box">
+              <div class="formula-title" id="fx-title">この仕込み1回ぶんの費用</div>
+              <table class="formula-table">
+                <tr><td class="fl">材料費</td><td class="fv amt" id="fx-ing">¥0</td><td class="fs" id="fx-ing-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造工賃</td><td class="fv amt" id="fx-labor">¥0</td><td class="fs" id="fx-labor-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造間接費</td><td class="fv amt" id="fx-overhead">¥0</td><td class="fs" id="fx-overhead-src">—</td></tr>
+                <tr class="sum"><td class="fl">＝ 仕込み合計</td><td class="fv amt" id="fx-batch-total">¥0</td><td class="fs"></td></tr>
+                <tr><td class="fl">÷ 焼き上がり</td><td class="fv" id="fx-yield">—</td><td class="fs" id="fx-yield-src">—</td></tr>
+                <tr class="sum"><td class="fl" id="fx-per-label">＝ 1個あたりの仕込み原価</td><td class="fv amt" id="fx-per-unit">¥0</td><td class="fs"></td></tr>
+              </table>
             </div>
-            <p class="hint" id="cost-per-yield-note" style="margin-top:6px;"></p>
+            <p class="hint" style="margin:8px 0 0;">「仕上げ」に切り替えた工程の工賃・間接費は、ここではなく ② の1包装ぶんに割り当てて、原価計算書の「仕上げの工賃」「仕上げの製造間接費」に出ます。</p>
           </div>
 
           <div class="card section-card">
@@ -660,13 +686,16 @@
         <div class="card receipt">
           <div class="receipt-head">原価計算書<span id="receipt-date"></span></div>
           <div class="receipt-body">
-            <div class="rline"><span>仕込み原価（① より）</span><b class="amt" id="r-ing">¥0</b></div>
+            <div class="rline"><span>仕込み原価<small>① の材料 ＋ ③ の製造工程</small></span><b class="amt" id="r-ing">¥0</b></div>
             <div class="rline sub"><span id="r-ing-detail">—</span></div>
-            <div class="rline" id="r-cont-line" style="display:none;"><span>中身（詰め合わせ）</span><b class="amt" id="r-cont">¥0</b></div>
-            <div class="rline"><span>資材費</span><b class="amt" id="r-pkg">¥0</b></div>
-            <div class="rline"><span>製造工賃</span><b class="amt" id="r-labor">¥0</b></div>
-            <div class="rline"><span>製造間接費</span><b class="amt" id="r-overhead">¥0</b></div>
-            <div class="rline"><span>販管費</span><b class="amt" id="r-sga">¥0</b></div>
+            <div class="rline" id="r-cont-line" style="display:none;"><span>中身（詰め合わせ）<small>詰め合わせの中身 より</small></span><b class="amt" id="r-cont">¥0</b></div>
+            <div class="rline"><span>資材費<small>② の資材 より</small></span><b class="amt" id="r-pkg">¥0</b></div>
+            <div class="rline sub"><span id="r-pkg-detail">—</span></div>
+            <div class="rline"><span>仕上げの工賃<small>③ の「仕上げ」工程 より</small></span><b class="amt" id="r-labor">¥0</b></div>
+            <div class="rline sub"><span id="r-labor-detail">—</span></div>
+            <div class="rline"><span>仕上げの製造間接費<small>③ の「仕上げ」工程 より</small></span><b class="amt" id="r-overhead">¥0</b></div>
+            <div class="rline sub"><span id="r-overhead-detail">—</span></div>
+            <div class="rline"><span>販管費<small>設定 より（1個あたり）</small></span><b class="amt" id="r-sga">¥0</b></div>
             <div class="rdiv"></div>
             <div class="rtotal"><span class="lbl">原価合計</span><span class="val amt" id="r-total">¥0</span></div>
 
@@ -844,11 +873,17 @@
           <div class="field">
             <label>（参考）昨年の年間間接費（円）</label>
             <input id="s-overhead-annual-amount" type="number" step="any" placeholder="例：480000">
+            <span class="hint" style="margin-top:2px;">家賃・水道光熱費・減価償却など、商品ごとに分けられない費用の1年ぶん。</span>
           </div>
           <div class="field">
-            <label>（参考）年間営業時間</label>
+            <label>（参考）昨年の年間の人件費合計（円）</label>
+            <input id="s-labor-annual-amount" type="number" step="any" placeholder="例：2400000">
+            <span class="hint" style="margin-top:2px;">自分の労務費＋従業員さん＋パートさんの1年ぶん。これと下の延べ製造時間から、上の工賃単価が自動計算されます。</span>
+          </div>
+          <div class="field">
+            <label>（参考）年間の延べ製造時間（時間）</label>
             <input id="s-overhead-annual-hours" type="number" step="any" placeholder="例：2400">
-            <span class="hint" style="margin-top:2px;">年間間接費と年間営業時間を入力すると、左の間接費単価が自動計算されます（円÷分）。</span>
+            <span class="hint" style="margin-top:2px;">お店の全員が、商品づくりに使った時間を1年ぶん足した数字です（接客・レジ・掃除・事務は除く）。ふたりで同時に作った1時間は2時間として数えます。<br>この延べ時間で年間の費用を割るので、全商品に配ったぶんの合計が、実際の1年ぶんの金額とそろいます。</span>
           </div>
           <div class="field">
             <label>倍数を増やしたときの時間の伸び<span style="font-weight:400; color:var(--ink-faint);">0＝増えない／0.3＝2倍で1.3倍／1＝倍数どおり</span></label>
@@ -869,7 +904,7 @@
           </div>
         </div>
         <button class="btn btn-primary" id="btn-save-settings" style="margin-top:18px;">設定を保存</button>
-        <p class="hint" style="margin-top:10px;">工賃単価は「時給 ÷ 60分」、間接費単価は「年間の水道光熱費等 ÷ 年間営業時間」を目安に設定します。販管費は「年間の販管費 ÷ 年間販売点数」です。数値はすべて小数点第2位までの表示です。</p>
+        <p class="hint" style="margin-top:10px;">工賃単価も間接費単価も、分母は「年間の延べ製造時間」でそろえます。工賃単価は「年間の人件費合計 ÷ 延べ製造時間 ÷ 60分」（自分ひとりぶんで出したいときは「時給 ÷ 60分」）、間接費単価は「年間の水道光熱費など ÷ 延べ製造時間 ÷ 60分」。販管費は「年間の販管費 ÷ 年間販売点数」です。どちらも分母をそろえてあるので、全商品に配ったぶんの合計が1年ぶんの金額とだいたい一致します。数値はすべて小数点第2位までの表示です。</p>
       </div>
 
       <div class="card section-card" style="margin-top:16px;">
@@ -1037,7 +1072,7 @@
     costLabels: null,
     groupOrder: null,      // 中カテゴリの並び順
     catOrder: null,        // 小カテゴリの並び順（中カテゴリごと）
-    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, multiTimeFactor: 0.3 },
+    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, laborAnnualAmount: null, multiTimeFactor: 0.3 },
     editingProductId: null,
     currentDetailId: null,
   };
@@ -1702,6 +1737,7 @@
 
   async function init(){
     buildMultiplierButtons();
+    buildCostBaseButtons();
     var multColBtn = document.getElementById('ing-mult-col-btn');
     if(multColBtn) multColBtn.addEventListener('click', cycleMultCol);
     showDraftBanner();
@@ -2063,6 +2099,7 @@
     document.getElementById('s-overhead-rate').value = round2(state.settings.overheadRate);
     document.getElementById('s-overhead-annual-amount').value = state.settings.overheadAnnualAmount != null ? state.settings.overheadAnnualAmount : '';
     document.getElementById('s-overhead-annual-hours').value = state.settings.overheadAnnualHours != null ? state.settings.overheadAnnualHours : '';
+    document.getElementById('s-labor-annual-amount').value = state.settings.laborAnnualAmount != null ? state.settings.laborAnnualAmount : '';
     document.getElementById('s-multi-time').value = state.settings.multiTimeFactor != null ? state.settings.multiTimeFactor : 0.3;
     updateMultiTimeHint();
     document.getElementById('s-sga').value = round2(state.settings.sga);
@@ -2077,12 +2114,27 @@
   // ---------------- labor rate <-> hourly wage sync ----------------
   function updateLaborHourlyHint(){
     var perMin = parseFloat(document.getElementById('s-labor-rate').value) || 0;
-    document.getElementById('labor-rate-hourly-hint').textContent = perMin ? ('時給換算：¥' + fmtNum(perMin*60, 0) + ' / 時') : '';
+    var amtL = parseFloat((document.getElementById('s-labor-annual-amount')||{}).value) || 0;
+    var hrsL = parseFloat((document.getElementById('s-overhead-annual-hours')||{}).value) || 0;
+    document.getElementById('labor-rate-hourly-hint').textContent = perMin
+      ? ('時給換算：¥' + fmtNum(perMin*60, 0) + ' / 時' +
+         (amtL > 0 && hrsL > 0 ? '（年間人件費 ¥' + fmtNum(amtL,0) + ' ÷ 延べ製造時間 ' + fmtNum(hrsL,0) + '時間 ÷ 60分）' : ''))
+      : '';
   }
   function updateLaborHourlyFromRate(){
     // rate field changed directly (or initial load): refresh the hourly field + hint from it
     var perMin = parseFloat(document.getElementById('s-labor-rate').value) || 0;
     document.getElementById('s-labor-rate-hourly').value = perMin ? (Math.round(perMin*60*100)/100) : '';
+    updateLaborHourlyHint();
+  }
+  function updateLaborRateFromAnnual(){
+    // 年間の人件費合計 ÷ 年間の延べ製造時間 ÷ 60分 ＝ 工賃単価（円／分）
+    var amt = parseFloat(document.getElementById('s-labor-annual-amount').value) || 0;
+    var hrs = parseFloat(document.getElementById('s-overhead-annual-hours').value) || 0;
+    if(amt > 0 && hrs > 0){
+      document.getElementById('s-labor-rate').value = Math.round((amt/(hrs*60))*10000)/10000;
+      updateLaborHourlyFromRate();
+    }
     updateLaborHourlyHint();
   }
   function updateLaborRateFromHourly(){
@@ -2099,7 +2151,7 @@
     var amt = parseFloat(document.getElementById('s-overhead-annual-amount').value) || 0;
     var hrs = parseFloat(document.getElementById('s-overhead-annual-hours').value) || 0;
     document.getElementById('overhead-rate-annual-hint').textContent = (amt > 0 && hrs > 0)
-      ? ('年間 ¥' + fmtNum(amt,0) + ' ÷ ' + fmtNum(hrs,0) + '時間 ÷ 60分 で自動計算')
+      ? ('年間間接費 ¥' + fmtNum(amt,0) + ' ÷ 延べ製造時間 ' + fmtNum(hrs,0) + '時間 ÷ 60分 で自動計算')
       : '';
   }
   function updateOverheadRateFromAnnual(){
@@ -2118,7 +2170,11 @@
   }
   document.getElementById('s-multi-time').addEventListener('input', updateMultiTimeHint);
   document.getElementById('s-overhead-annual-amount').addEventListener('input', updateOverheadRateFromAnnual);
-  document.getElementById('s-overhead-annual-hours').addEventListener('input', updateOverheadRateFromAnnual);
+  document.getElementById('s-overhead-annual-hours').addEventListener('input', function(){
+    updateOverheadRateFromAnnual();
+    updateLaborRateFromAnnual();
+  });
+  document.getElementById('s-labor-annual-amount').addEventListener('input', updateLaborRateFromAnnual);
 
   // ---------------- 行の長押し並べ替え ----------------
   // 長押しで行をつかみ、そのまま上下に動かすと前後の行と入れ替わる
@@ -2604,6 +2660,11 @@
     var s = bw.staff.find(function(x){ return x && x.name === 'トモヒロ'; });
     return s ? s.id : null;
   }
+  function staffName(bw, id){
+    if(!bw || !Array.isArray(bw.staff)) return '';
+    var s = bw.staff.find(function(x){ return x && x.id === id; });
+    return s ? (s.name || '') : '';
+  }
   function procLabel(bw, procId){
     if(!bw || !Array.isArray(bw.procs)) return procId;
     var p = bw.procs.find(function(x){ return x && x.id === procId; });
@@ -2633,6 +2694,18 @@
     order.forEach(function(procId){
       var byStaff = (product.procs && product.procs[procId]) || {};
       var t = staffId ? byStaff[staffId] : null;
+      var who = '';
+      if(!t || (!(Number(t.setup)||0) && !(Number(t.per)||0))){
+        // トモヒロさんの時間が入っていない工程は、登録のある人の時間を借りる（0分で消えないように）
+        var otherId = Object.keys(byStaff).find(function(k){
+          var v = byStaff[k];
+          return v && ((Number(v.setup)||0) || (Number(v.per)||0));
+        });
+        if(otherId){
+          t = byStaff[otherId];
+          who = staffName(bw, otherId);
+        }
+      }
       var setup = t ? (Number(t.setup) || 0) : 0;
       var per = t ? (Number(t.per) || 0) : 0;
       // 倍数を増やしても時間はそのまま比例では増えない（設定の伸び率で調整する）
@@ -2642,7 +2715,7 @@
       var minutes = setup + per * timeMult;
       var role = procRoleOf(procId);
       sum[role] += minutes;
-      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role});
+      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role, who:who});
     });
     var laborRate = state.settings.laborRate || 0;
     var overheadRate = state.settings.overheadRate || 0;
@@ -2660,9 +2733,31 @@
   // ---------------- 仕込み倍数（×1〜×8） ----------------
   // 使用可能倍数：仕込める倍数を複数えらぶ（ブロックワークが、この中から適した倍数を選ぶ）
   var allowedMultipliers = [1];
+  var costMultiplier = null;      // 原価の基準にする倍数（null＝いちばん小さい倍数）
   function batchMultiplierValue(){
-    // 原価は、いちばん小さい倍数（ふだんの最小ロット）で出す
+    if(costMultiplier != null && allowedMultipliers.indexOf(costMultiplier) >= 0) return costMultiplier;
+    // えらばれていなければ、いちばん小さい倍数（ふだんの最小ロット）で出す
     return allowedMultipliers.length ? Math.min.apply(null, allowedMultipliers) : 1;
+  }
+  function setCostMultiplier(m, skipRecalc){
+    var v = Number(m);
+    costMultiplier = (v > 0 && allowedMultipliers.indexOf(v) >= 0) ? v : null;
+    buildCostBaseButtons();
+    if(!skipRecalc) recalc();
+  }
+  function buildCostBaseButtons(){
+    var wrap = document.getElementById('f-costbase-btns');
+    if(!wrap) return;
+    var cur = batchMultiplierValue();
+    wrap.innerHTML = allowedMultipliers.map(function(m){
+      return '<button type="button" class="mult-btn costbase-btn' + (m === cur ? ' on' : '') + '" data-cb="' + m + '">×' + fmtNum(m) + '</button>';
+    }).join('');
+    wrap.querySelectorAll('.costbase-btn').forEach(function(b){
+      b.addEventListener('click', function(){ setCostMultiplier(b.dataset.cb); });
+    });
+    var note = document.getElementById('f-costbase-note');
+    if(note) note.textContent = '原価計算書は ×' + fmtNum(cur) + '倍 で仕込んだときの原価です' +
+      (costMultiplier == null ? '（いちばん小さい倍数）' : '');
   }
   function setAllowedMultipliers(list, skipRecalc){
     var arr = (list || []).map(function(x){
@@ -2673,7 +2768,9 @@
       .filter(function(x, i, a){ return x && a.indexOf(x) === i; })
       .sort(function(a,b){ return a - b; });
     allowedMultipliers = arr.length ? arr : [1];
+    if(costMultiplier != null && allowedMultipliers.indexOf(costMultiplier) < 0) costMultiplier = null;
     buildMultiplierButtons();
+    buildCostBaseButtons();
     if(!skipRecalc) recalc();
   }
   function toggleMultiplier(m){
@@ -2791,8 +2888,13 @@
     if(!wrap) return null;
     var code = currentFormCode();
     var info = getProcessCosting(name, multiplier, code);
+    // 仕上げは「1包装ぶん」に割り当てて表示するので、包装の数も描き直しの条件に入れる
+    var fYield = (parseFloat(document.getElementById('f-yield-count').value) || 1) * (Number(multiplier) || 1);
+    var fPack = parseFloat(document.getElementById('f-pack-count').value) || 0;
+    var fUnits = (fPack > 0 && fYield > 0) ? (fYield / fPack) : 0;
     var key = name + '|' + code + '|' + multiplier + '|' + state.settings.laborRate + '|' + state.settings.overheadRate + '|' +
-      (info ? info.rows.map(function(r){ return r.id+':'+r.role+':'+r.minutes; }).join(',') : '-');
+      fYield + '|' + fPack + '|' +
+      (info ? info.rows.map(function(r){ return r.id+':'+r.role+':'+r.minutes+':'+r.who; }).join(',') : '-');
     if(key === procViewKey) return info;
     procViewKey = key;
     if(!info || !info.rows.length){
@@ -2802,7 +2904,8 @@
     function chipHtml(r){
       return '<button type="button" class="proc-chip '+r.role+'" data-proc="'+escapeHtml(r.id)+'">' +
         '<b>'+escapeHtml(r.label)+'</b>' +
-        '<span class="proc-chip-min">段取り'+fmtNum(r.setup,0)+'分＋'+fmtNum(r.per,0)+'分/倍</span>' +
+        '<span class="proc-chip-min">段取り'+fmtNum(r.setup,0)+'分＋'+fmtNum(r.per,0)+'分/倍' +
+          (r.who ? '<br>（'+escapeHtml(r.who)+'さんの時間）' : '') + '</span>' +
         '</button>';
     }
     function groupHtml(role, title, note){
@@ -2821,9 +2924,12 @@
           '間接費 '+fmtNum(info.batchMinutes,0)+'分×¥'+fmtNum(state.settings.overheadRate||0,1)+' ＝ '+fmtYen(info.batchMinutes * (state.settings.overheadRate||0))+'<br>' +
           '<b>合計 '+fmtYen(info.batchLaborCost + info.batchMinutes * (state.settings.overheadRate||0))+'</b>') +
         groupHtml('finish', '仕上げ',
-          '合計 '+fmtNum(info.finishMinutes,0)+'分（1包装ぶんに按分）<br>' +
-          '工賃 '+fmtYen(info.finishLaborCost)+' ＋ 間接費 '+fmtYen(info.finishOverheadCost)+'<br>' +
-          '<b>合計 '+fmtYen(info.finishLaborCost + info.finishOverheadCost)+'</b>') +
+          '仕込み全体で 合計 '+fmtNum(info.finishMinutes,0)+'分<br>' +
+          (fUnits > 0
+            ? ('1包装ぶん '+fmtNum(info.finishMinutes,0)+'分 ÷ '+fmtNum(fUnits,0)+'包装 ＝ '+fmtNum(info.finishMinutes/fUnits,2)+'分<br>' +
+               '工賃 '+fmtYen(info.finishMinutes/fUnits*(state.settings.laborRate||0))+' ＋ 間接費 '+fmtYen(info.finishMinutes/fUnits*(state.settings.overheadRate||0))+'<br>' +
+               '<b>1包装あたり 合計 '+fmtYen(info.finishMinutes/fUnits*((state.settings.laborRate||0)+(state.settings.overheadRate||0)))+'</b>')
+            : '②の「1商品に入れる数」を入れると、1包装ぶんの金額が出ます')) +
         groupHtml('off', '使わない', '原価に入れない工程') +
       '</div>';
     wrap.querySelectorAll('.proc-chip').forEach(function(btn){
@@ -2899,6 +3005,7 @@
   }
 
   // ---------------- calculation ----------------
+  function setTxt(id, text){ var el = document.getElementById(id); if(el) el.textContent = text; }
   function recalc(){
     var ing = readRows('ing-body');
     var ingTotal1 = ing.reduce(function(s,r){ return s + r.amount; }, 0);
@@ -2924,10 +3031,22 @@
     var batchTotal = ingTotal + batchLaborCost + batchOverheadCost;
     var costPerYield = yieldCount > 0 ? batchTotal / yieldCount : 0;
 
-    document.getElementById('disp-batch-overhead').textContent = fmtYen(batchOverheadCost);
-    document.getElementById('cost-per-yield-note').textContent =
-      '（材料費' + fmtYen(ingTotal) + ' ＋ 工程の工賃' + fmtYen(batchLaborCost) + ' ＋ 製造間接費' + fmtYen(batchOverheadCost) +
-      '）÷ 焼き上がり' + fmtNum(yieldCount) + (document.getElementById('f-yield-unit').value||'個') + ' ＝ ' + fmtYen(costPerYield);
+    // ③の「この仕込み1回ぶんの費用」：どの数字がどこから来たかを添えて出す
+    var yUnit = document.getElementById('f-yield-unit').value || '個';
+    var laborRate = state.settings.laborRate || 0;
+    var ovhRate = state.settings.overheadRate || 0;
+    setTxt('fx-title', 'この仕込み（×' + fmtNum(mult) + '倍）1回ぶんの費用');
+    setTxt('fx-ing', fmtYen(ingTotal));
+    setTxt('fx-ing-src', mult === 1 ? '① の「×1」の材料費合計' : ('① の「×' + fmtNum(mult) + '」の材料費合計（×1の ' + fmtYen(ingTotal1) + ' × ' + fmtNum(mult) + '）'));
+    setTxt('fx-labor', fmtYen(batchLaborCost));
+    setTxt('fx-labor-src', '「製造」の工程 ' + fmtNum(batchLaborMin, 0) + '分 × 工賃単価 ¥' + fmtNum(laborRate, 1) + '/分（工程の時間はブロックワーク、単価は設定）');
+    setTxt('fx-overhead', fmtYen(batchOverheadCost));
+    setTxt('fx-overhead-src', '同じ ' + fmtNum(batchOverheadMin, 0) + '分 × 製造間接費単価 ¥' + fmtNum(ovhRate, 2) + '/分（家賃・水道光熱費など、時間で割りふる費用）');
+    setTxt('fx-batch-total', fmtYen(batchTotal));
+    setTxt('fx-yield', fmtNum(yieldCount) + yUnit);
+    setTxt('fx-yield-src', '① の1倍の焼き上がり ' + fmtNum(yieldCount1) + yUnit + ' × ' + fmtNum(mult) + '倍');
+    setTxt('fx-per-label', '＝ 1' + yUnit + 'あたりの仕込み原価');
+    setTxt('fx-per-unit', fmtYen(costPerYield));
 
     // ①の表：×1 の合計と、「×〇」列の合計
     var multColTotal = renderIngMultColumn();
@@ -2939,6 +3058,7 @@
     var packCount = parseFloat(document.getElementById('f-pack-count').value) || 0;
     var packMaterialCost = costPerYield * packCount;
     document.getElementById('disp-pack-material-cost').textContent = fmtYen(packMaterialCost);
+    setTxt('disp-pack-material-note', '1' + yUnit + 'あたりの仕込み原価 ' + fmtYen(costPerYield) + ' × この商品に入れる ' + fmtNum(packCount) + yUnit);
     document.getElementById('f-pack-unit-echo').textContent = document.getElementById('f-yield-unit').value || '個';
 
     var pkg = readRows('pkg-body');
@@ -2965,8 +3085,18 @@
     var profitRate = priceEx > 0 ? (priceEx - totalCost) / priceEx : 0;
 
     document.getElementById('r-ing').textContent = fmtYen(packMaterialCost);
-    document.getElementById('r-ing-detail').textContent =
-      yieldCount + document.getElementById('f-yield-unit').value + '分の仕込み（材料' + fmtYen(ingTotal) + ' + 仕込み工賃・間接費' + fmtYen(batchLaborCost+batchOverheadCost) + '）から ' + packCount + document.getElementById('f-yield-unit').value + ' を使用';
+    var packUnits = packCount > 0 && yieldCount > 0 ? (yieldCount / packCount) : 0;
+    setTxt('r-ing-detail',
+      '×' + fmtNum(mult) + '倍の仕込み ' + fmtYen(batchTotal) + '（材料 ' + fmtYen(ingTotal) +
+      ' ＋ 製造工賃 ' + fmtYen(batchLaborCost) + ' ＋ 製造間接費 ' + fmtYen(batchOverheadCost) + '）' +
+      ' ÷ 焼き上がり ' + fmtNum(yieldCount) + yUnit + ' × この商品に入れる ' + fmtNum(packCount) + yUnit);
+    setTxt('r-pkg-detail', pkg.length ? ('② の資材 ' + pkg.length + '点の合計') : '② に資材の入力がありません');
+    setTxt('r-labor-detail', finishMin > 0
+      ? ('「仕上げ」の工程 ' + fmtNum(finishMin, 0) + '分 ÷ ' + fmtNum(packUnits, 0) + '包装ぶん ＝ ' + fmtNum(laborMin, 2) + '分 × ¥' + fmtNum(laborRate, 1) + '/分')
+      : '③ で「仕上げ」にした工程がありません');
+    setTxt('r-overhead-detail', finishMin > 0
+      ? ('同じ ' + fmtNum(overheadMin, 2) + '分 × ¥' + fmtNum(ovhRate, 2) + '/分')
+      : '—');
     document.getElementById('r-cont').textContent = fmtYen(contentsTotal);
     document.getElementById('r-cont-line').style.display = contents.length ? '' : 'none';
     document.getElementById('r-pkg').textContent = fmtYen(pkgTotal);
@@ -3015,6 +3145,7 @@
     document.getElementById('f-yield-count').value = 1;
     document.getElementById('f-yield-unit').value = '個';
     setAllowedMultipliers([1], true);
+    setCostMultiplier(null, true);
     document.getElementById('f-pack-count').value = 1;
     document.getElementById('f-margin').value = state.settings.margin;
     document.getElementById('ing-body').innerHTML = '';
@@ -3041,6 +3172,7 @@
       yieldCount: document.getElementById('f-yield-count').value,
       yieldUnit: document.getElementById('f-yield-unit').value,
       multipliers: allowedMultipliers.slice(),
+      costMultiplier: costMultiplier,
       packCount: document.getElementById('f-pack-count').value,
       countUnit: document.getElementById('f-count-unit').value,
       margin: document.getElementById('f-margin').value,
@@ -3080,6 +3212,7 @@
     procRoles = (d.procRoles && typeof d.procRoles === 'object') ? Object.assign({}, d.procRoles) : {};
     procViewKey = null;
     setAllowedMultipliers(d.multipliers || [d.multiplier || 1], true);
+    setCostMultiplier(d.costMultiplier, true);
     fillRows('ing-body', d.ing);
     fillRows('pkg-body', d.pkg);
     fillContentRows(d.contents);
@@ -3157,6 +3290,7 @@
     document.getElementById('f-yield-count').value = (p.batch && (p.batch.baseYieldCount != null ? p.batch.baseYieldCount : p.batch.yieldCount)) || 1;
     document.getElementById('f-yield-unit').value = (p.batch && p.batch.yieldUnit) || '個';
     setAllowedMultipliers((p.batch && p.batch.allowedMultipliers) || [(p.batch && p.batch.multiplier) || 1], true);
+    setCostMultiplier(p.batch && p.batch.costMultiplier, true);
     document.getElementById('f-pack-count').value = (p.pack && p.pack.piecesPerPackage) || 1;
     document.getElementById('f-margin').value = (p.marginRate!=null ? p.marginRate*100 : state.settings.margin);
     procRoles = (p.procRoles && typeof p.procRoles === 'object') ? Object.assign({}, p.procRoles) : {};
@@ -3193,6 +3327,7 @@
         baseYieldCount: c.yieldCount1,
         multiplier: c.multiplier,
         allowedMultipliers: allowedMultipliers.slice(),
+        costMultiplier: costMultiplier,
         setupMinutes: c.setupMin,
         baseLaborMinutes: c.batchLaborMin1,
         baseOverheadMinutes: c.batchOverheadMin1,
@@ -4333,6 +4468,7 @@
       overheadRate: round2(parseFloat(document.getElementById('s-overhead-rate').value)||0),
       overheadAnnualAmount: document.getElementById('s-overhead-annual-amount').value === '' ? null : (parseFloat(document.getElementById('s-overhead-annual-amount').value)||0),
       overheadAnnualHours: document.getElementById('s-overhead-annual-hours').value === '' ? null : (parseFloat(document.getElementById('s-overhead-annual-hours').value)||0),
+      laborAnnualAmount: document.getElementById('s-labor-annual-amount').value === '' ? null : (parseFloat(document.getElementById('s-labor-annual-amount').value)||0),
       multiTimeFactor: Math.max(0, Math.min(1, parseFloat(document.getElementById('s-multi-time').value))) || 0,
       sga: round2(parseFloat(document.getElementById('s-sga').value)||0),
       taxRate: parseFloat(document.getElementById('s-tax').value)||0,
