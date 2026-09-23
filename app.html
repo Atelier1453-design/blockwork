@@ -190,9 +190,11 @@
   .receipt-head span{font-family:"Zen Kaku Gothic New",sans-serif; font-size:11px; font-weight:500; color:var(--ink-soft);}
   .receipt-body{padding:18px 22px;}
   .rline{display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:5px 0; color:var(--ink);}
-  .rline small{font-weight:400; font-size:11.5px; color:var(--ink-faint); margin-left:5px;}
+  .rline small{font-weight:400; font-size:12.5px; color:var(--ink-soft); margin-left:6px;}
   .rline b{color:var(--ink); font-weight:600;}
-  .rline.sub{padding-left:10px; font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+  .rline.sub{padding-left:10px; font-size:13px; color:var(--ink-soft); line-height:1.6;}
+  .receipt-unit-note{font-size:12.5px; color:var(--ink-soft); padding:0 0 8px; border-bottom:1px dashed var(--border); margin-bottom:8px;}
+  .rtotal .lbl small{font-weight:400; font-size:12.5px; color:var(--ink-soft); margin-left:5px;}
   .rdiv{border-top:1px dashed var(--border); margin:10px 0;}
   .rtotal{display:flex; justify-content:space-between; align-items:baseline; padding:6px 0;}
   .rtotal .lbl{font-size:13.5px; font-weight:700;}
@@ -405,7 +407,7 @@
   .cat-chip .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .cat-chip.on{color:var(--ink); font-weight:700; border-color:var(--ink-soft);}
   .product-card{border-left:4px solid transparent;}
-  .pcode-line{font-size:11px; font-weight:700; color:var(--ink-faint); letter-spacing:.04em; margin-bottom:2px;}
+  .pcode-line{font-size:13.5px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em; margin-bottom:3px;}
   .pd-code{display:inline-block; margin-left:8px; padding:2px 8px; border:1px solid var(--border); border-radius:6px;
     font-family:inherit; font-size:12px; font-weight:600; color:var(--ink-soft); vertical-align:middle;}
   .pd-receipt-wrap{max-width:420px;}
@@ -421,6 +423,7 @@
   .proc-chip b{font-size:13px;}
   .proc-chip-role{font-size:11px; font-weight:600;}
   .proc-chip-min{font-size:12px; color:var(--ink-soft);}
+  .proc-chip-now{display:block; font-size:12.5px; font-weight:700; color:var(--ink);}
   .proc-chip.batch{border-color:var(--accent); background:var(--accent-soft);}
   .proc-chip.batch .proc-chip-role{color:var(--accent-strong);}
   .proc-chip.finish{border-color:var(--good); background:var(--good-soft);}
@@ -686,6 +689,7 @@
         <div class="card receipt">
           <div class="receipt-head">原価計算書<span id="receipt-date"></span></div>
           <div class="receipt-body">
+            <div class="receipt-unit-note" id="r-unit-note">—</div>
             <div class="rline"><span>仕込み原価<small>① の材料 ＋ ③ の製造工程</small></span><b class="amt" id="r-ing">¥0</b></div>
             <div class="rline sub"><span id="r-ing-detail">—</span></div>
             <div class="rline" id="r-cont-line" style="display:none;"><span>中身（詰め合わせ）<small>詰め合わせの中身 より</small></span><b class="amt" id="r-cont">¥0</b></div>
@@ -697,7 +701,7 @@
             <div class="rline sub"><span id="r-overhead-detail">—</span></div>
             <div class="rline"><span>販管費<small>設定 より（1個あたり）</small></span><b class="amt" id="r-sga">¥0</b></div>
             <div class="rdiv"></div>
-            <div class="rtotal"><span class="lbl">原価合計</span><span class="val amt" id="r-total">¥0</span></div>
+            <div class="rtotal"><span class="lbl">原価合計<small id="r-total-unit"></small></span><span class="val amt" id="r-total">¥0</span></div>
 
             <div class="rline" style="margin-top:10px;"><span>希望原価率</span>
               <span style="display:flex; align-items:center; gap:4px;">
@@ -908,6 +912,27 @@
       </div>
 
       <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;">人件費と製造時間の内訳<span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（任意）</span></h3>
+        <p class="hint">はたらく人ごとに「時給」と「1年で商品づくりに使う時間」を入れると、上の<b>年間の人件費合計</b>と<b>年間の延べ製造時間</b>が自動で合計され、工賃単価と製造間接費単価がそろいます。自分のぶんは、自分に払うつもりの時給で入れてください。時給が人によってちがっても、ここで足し合わせるので大丈夫です。</p>
+        <div class="table-scroll">
+        <table class="ing-table">
+          <thead><tr>
+            <th class="col-name">だれ</th><th class="col-qty">時給（円）</th>
+            <th class="col-qty">年間の製造時間</th><th class="col-amt">年間の人件費</th><th class="col-del"></th>
+          </tr></thead>
+          <tbody id="staff-cost-body"></tbody>
+          <tfoot><tr class="ing-foot">
+            <td class="col-name">合計</td><td class="col-qty"></td>
+            <td class="col-qty" id="sc-hours">0時間</td>
+            <td class="col-amt amt" id="sc-amount">¥0</td><td class="col-del"></td>
+          </tr></tfoot>
+        </table>
+        </div>
+        <button type="button" class="btn btn-sm add-row-btn" id="btn-add-staff-cost">＋ 人を追加</button>
+        <p class="hint" id="sc-note" style="margin-top:10px;"></p>
+      </div>
+
+      <div class="card section-card" style="margin-top:16px;">
         <h3 style="margin:0 0 4px;">データの保存先（Dropbox）</h3>
         <p class="hint">原材料・商品・ブロックワークのデータはすべて、お使いのDropbox内の専用フォルダ（Appフォルダ）に1つのファイルとして保存されます。iPad・iPhone・パソコンなど、どの端末のブラウザからでも同じDropboxに接続すれば同じデータが使えます。Claudeアプリへのログインや接続は不要です。</p>
         <div style="margin-top:10px;"><span id="db-dot-2" class="db-dot"></span><span id="db-status-2">確認中…</span></div>
@@ -1072,13 +1097,16 @@
     costLabels: null,
     groupOrder: null,      // 中カテゴリの並び順
     catOrder: null,        // 小カテゴリの並び順（中カテゴリごと）
-    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, laborAnnualAmount: null, multiTimeFactor: 0.3 },
+    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, laborAnnualAmount: null, staffCosts: null, multiTimeFactor: 0.3 },
     editingProductId: null,
     currentDetailId: null,
   };
 
   var yen = new Intl.NumberFormat('ja-JP', {style:'currency', currency:'JPY', maximumFractionDigits:0});
   function fmtYen(n){ if(!isFinite(n)) n = 0; return yen.format(Math.round(n)); }
+  // 1個あたりの小さな金額は、四捨五入すると足し算が合わなくなるので小数第2位まで出す
+  var yenFine = new Intl.NumberFormat('ja-JP', {style:'currency', currency:'JPY', minimumFractionDigits:0, maximumFractionDigits:2});
+  function fmtYen2(n){ if(!isFinite(n)) n = 0; return Math.abs(n) < 1000 ? yenFine.format(Math.round(n*100)/100) : yen.format(Math.round(n)); }
   function fmtNum(n, d){ if(!isFinite(n)) n = 0; return n.toLocaleString('ja-JP', {maximumFractionDigits:(d==null?2:d)}); }
   function todayStr(){
     var d = new Date();
@@ -2100,6 +2128,7 @@
     document.getElementById('s-overhead-annual-amount').value = state.settings.overheadAnnualAmount != null ? state.settings.overheadAnnualAmount : '';
     document.getElementById('s-overhead-annual-hours').value = state.settings.overheadAnnualHours != null ? state.settings.overheadAnnualHours : '';
     document.getElementById('s-labor-annual-amount').value = state.settings.laborAnnualAmount != null ? state.settings.laborAnnualAmount : '';
+    renderStaffCosts(state.settings.staffCosts);
     document.getElementById('s-multi-time').value = state.settings.multiTimeFactor != null ? state.settings.multiTimeFactor : 0.3;
     updateMultiTimeHint();
     document.getElementById('s-sga').value = round2(state.settings.sga);
@@ -2691,6 +2720,9 @@
     if(mult <= 0) mult = 1;
     var rows = [];
     var sum = {batch:0, finish:0, off:0};
+    var sumSetup = {batch:0, finish:0, off:0};
+    var sumPer = {batch:0, finish:0, off:0};
+    var timeMultOut = 1;
     order.forEach(function(procId){
       var byStaff = (product.procs && product.procs[procId]) || {};
       var t = staffId ? byStaff[staffId] : null;
@@ -2715,6 +2747,9 @@
       var minutes = setup + per * timeMult;
       var role = procRoleOf(procId);
       sum[role] += minutes;
+      sumSetup[role] += setup;
+      sumPer[role] += per;
+      timeMultOut = timeMult;
       rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role, who:who});
     });
     var laborRate = state.settings.laborRate || 0;
@@ -2723,6 +2758,9 @@
       rows: rows,
       batchMinutes: sum.batch,
       finishMinutes: sum.finish,
+      setupMinutes: sumSetup,
+      perMinutes: sumPer,
+      timeMult: timeMultOut,
       batchLaborCost: sum.batch * laborRate,
       finishLaborCost: sum.finish * laborRate,
       finishOverheadCost: sum.finish * overheadRate,
@@ -2878,7 +2916,7 @@
       var per = y > 0 ? total / y : 0;
       return '<div class="mult-yield-line">×' + fmtNum(m) + '倍の仕込みでの焼き上がりは <b>' + fmtNum(y) + '</b>' +
         escapeHtml(unitLabel) +
-        '<span class="mult-yield-per">1' + escapeHtml(unitLabel) + 'あたり <b class="amt">' + fmtYen(per) + '</b></span></div>';
+        '<span class="mult-yield-per">1' + escapeHtml(unitLabel) + 'あたり <b class="amt">' + fmtYen2(per) + '</b></span></div>';
     }).join('');
   }
 
@@ -2901,13 +2939,23 @@
       wrap.innerHTML = '<p class="hint">この商品名でブロックワークに登録された工程がまだありません。ブロックワークの「商品」で工程を設定すると、ここに自動で表示されます。</p>';
       return info;
     }
+    var multNow = Number(multiplier) || 1;
     function chipHtml(r){
       return '<button type="button" class="proc-chip '+r.role+'" data-proc="'+escapeHtml(r.id)+'">' +
         '<b>'+escapeHtml(r.label)+'</b>' +
-        '<span class="proc-chip-min">段取り'+fmtNum(r.setup,0)+'分＋'+fmtNum(r.per,0)+'分/倍' +
+        '<span class="proc-chip-now">×'+fmtNum(multNow)+'倍で '+fmtNum(r.minutes,1)+'分</span>' +
+        '<span class="proc-chip-min">段取り'+fmtNum(r.setup,0)+'分 ＋ 1倍ぶん'+fmtNum(r.per,0)+'分' +
           (r.who ? '<br>（'+escapeHtml(r.who)+'さんの時間）' : '') + '</span>' +
         '</button>';
     }
+    // 段取り〇分 ＋ 1倍ぶん〇分 × 伸び率 ＝ 合計〇分（チップの足し算と合うように書く）
+    function minutesLine(role){
+      var s = info.setupMinutes[role], p = info.perMinutes[role], t = info.timeMult;
+      var txt = '段取り '+fmtNum(s,1)+'分 ＋ 1倍ぶん '+fmtNum(p,1)+'分';
+      if(multNow !== 1) txt += ' × '+fmtNum(t,2)+'（×'+fmtNum(multNow)+'倍ぶんの伸び）';
+      return txt + ' ＝ <b>'+fmtNum(roleMinutes(role),1)+'分</b>';
+    }
+    function roleMinutes(role){ return role === 'batch' ? info.batchMinutes : (role === 'finish' ? info.finishMinutes : 0); }
     function groupHtml(role, title, note){
       var rows = info.rows.filter(function(r){ return r.role === role; });
       return '<div class="proc-group '+role+'">' +
@@ -2916,19 +2964,23 @@
         '</div>';
     }
     wrap.innerHTML =
-      '<p class="hint">ブロックワークに登録されたトモヒロさんの工程時間です。時間の編集はブロックワーク側で。チップをタップすると 製造 → 仕上げ → 使わない の順に移動します。</p>' +
+      '<p class="hint">ブロックワークに登録された工程の時間です。時間の編集はブロックワーク側で。チップをタップすると 製造 → 仕上げ → 使わない の順に移動します。' +
+        (multNow !== 1
+          ? '<br><b>×'+fmtNum(multNow)+'倍で仕込むときの分数で表示しています。</b>段取りは倍数がふえても1回ぶんのまま、1倍ぶんの時間だけが ×'+fmtNum(info.timeMult,2)+' にふえます（設定の「倍数を増やしたときの時間の伸び」）。'
+          : '<br>×1倍で仕込むときの分数で表示しています。') + '</p>' +
       '<div class="proc-groups">' +
         groupHtml('batch', '製造',
-          '合計 '+fmtNum(info.batchMinutes,0)+'分<br>' +
-          '工賃 '+fmtNum(info.batchMinutes,0)+'分×¥'+fmtNum(state.settings.laborRate||0,1)+' ＝ '+fmtYen(info.batchLaborCost)+'<br>' +
-          '間接費 '+fmtNum(info.batchMinutes,0)+'分×¥'+fmtNum(state.settings.overheadRate||0,1)+' ＝ '+fmtYen(info.batchMinutes * (state.settings.overheadRate||0))+'<br>' +
+          minutesLine('batch')+'<br>' +
+          '工賃 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen(info.batchLaborCost)+'<br>' +
+          '間接費 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen(info.batchMinutes * (state.settings.overheadRate||0))+'<br>' +
           '<b>合計 '+fmtYen(info.batchLaborCost + info.batchMinutes * (state.settings.overheadRate||0))+'</b>') +
         groupHtml('finish', '仕上げ',
-          '仕込み全体で 合計 '+fmtNum(info.finishMinutes,0)+'分<br>' +
+          minutesLine('finish')+'（仕込み全体ぶん）<br>' +
           (fUnits > 0
-            ? ('1包装ぶん '+fmtNum(info.finishMinutes,0)+'分 ÷ '+fmtNum(fUnits,0)+'包装 ＝ '+fmtNum(info.finishMinutes/fUnits,2)+'分<br>' +
-               '工賃 '+fmtYen(info.finishMinutes/fUnits*(state.settings.laborRate||0))+' ＋ 間接費 '+fmtYen(info.finishMinutes/fUnits*(state.settings.overheadRate||0))+'<br>' +
-               '<b>1包装あたり 合計 '+fmtYen(info.finishMinutes/fUnits*((state.settings.laborRate||0)+(state.settings.overheadRate||0)))+'</b>')
+            ? ('1包装ぶん '+fmtNum(info.finishMinutes,1)+'分 ÷ '+fmtNum(fUnits,0)+'包装 ＝ '+fmtNum(info.finishMinutes/fUnits,2)+'分<br>' +
+               '工賃 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.laborRate||0))+'<br>' +
+               '間接費 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.overheadRate||0))+'<br>' +
+               '<b>1包装あたり 合計 '+fmtYen2(Math.round(info.finishMinutes/fUnits*(state.settings.laborRate||0)*100)/100 + Math.round(info.finishMinutes/fUnits*(state.settings.overheadRate||0)*100)/100)+'</b>')
             : '②の「1商品に入れる数」を入れると、1包装ぶんの金額が出ます')) +
         groupHtml('off', '使わない', '原価に入れない工程') +
       '</div>';
@@ -3036,17 +3088,17 @@
     var laborRate = state.settings.laborRate || 0;
     var ovhRate = state.settings.overheadRate || 0;
     setTxt('fx-title', 'この仕込み（×' + fmtNum(mult) + '倍）1回ぶんの費用');
-    setTxt('fx-ing', fmtYen(ingTotal));
+    setTxt('fx-ing', fmtYen2(ingTotal));
     setTxt('fx-ing-src', mult === 1 ? '① の「×1」の材料費合計' : ('① の「×' + fmtNum(mult) + '」の材料費合計（×1の ' + fmtYen(ingTotal1) + ' × ' + fmtNum(mult) + '）'));
-    setTxt('fx-labor', fmtYen(batchLaborCost));
+    setTxt('fx-labor', fmtYen2(batchLaborCost));
     setTxt('fx-labor-src', '「製造」の工程 ' + fmtNum(batchLaborMin, 0) + '分 × 工賃単価 ¥' + fmtNum(laborRate, 1) + '/分（工程の時間はブロックワーク、単価は設定）');
-    setTxt('fx-overhead', fmtYen(batchOverheadCost));
+    setTxt('fx-overhead', fmtYen2(batchOverheadCost));
     setTxt('fx-overhead-src', '同じ ' + fmtNum(batchOverheadMin, 0) + '分 × 製造間接費単価 ¥' + fmtNum(ovhRate, 2) + '/分（家賃・水道光熱費など、時間で割りふる費用）');
-    setTxt('fx-batch-total', fmtYen(batchTotal));
+    setTxt('fx-batch-total', fmtYen2(batchTotal));
     setTxt('fx-yield', fmtNum(yieldCount) + yUnit);
     setTxt('fx-yield-src', '① の1倍の焼き上がり ' + fmtNum(yieldCount1) + yUnit + ' × ' + fmtNum(mult) + '倍');
     setTxt('fx-per-label', '＝ 1' + yUnit + 'あたりの仕込み原価');
-    setTxt('fx-per-unit', fmtYen(costPerYield));
+    setTxt('fx-per-unit', fmtYen2(costPerYield));
 
     // ①の表：×1 の合計と、「×〇」列の合計
     var multColTotal = renderIngMultColumn();
@@ -3057,8 +3109,8 @@
 
     var packCount = parseFloat(document.getElementById('f-pack-count').value) || 0;
     var packMaterialCost = costPerYield * packCount;
-    document.getElementById('disp-pack-material-cost').textContent = fmtYen(packMaterialCost);
-    setTxt('disp-pack-material-note', '1' + yUnit + 'あたりの仕込み原価 ' + fmtYen(costPerYield) + ' × この商品に入れる ' + fmtNum(packCount) + yUnit);
+    document.getElementById('disp-pack-material-cost').textContent = fmtYen2(packMaterialCost);
+    setTxt('disp-pack-material-note', '1' + yUnit + 'あたりの仕込み原価 ' + fmtYen2(costPerYield) + ' × この商品に入れる ' + fmtNum(packCount) + yUnit);
     document.getElementById('f-pack-unit-echo').textContent = document.getElementById('f-yield-unit').value || '個';
 
     var pkg = readRows('pkg-body');
@@ -3084,7 +3136,7 @@
     var priceIn = priceEx * taxRate;
     var profitRate = priceEx > 0 ? (priceEx - totalCost) / priceEx : 0;
 
-    document.getElementById('r-ing').textContent = fmtYen(packMaterialCost);
+    document.getElementById('r-ing').textContent = fmtYen2(packMaterialCost);
     var packUnits = packCount > 0 && yieldCount > 0 ? (yieldCount / packCount) : 0;
     setTxt('r-ing-detail',
       '×' + fmtNum(mult) + '倍の仕込み ' + fmtYen(batchTotal) + '（材料 ' + fmtYen(ingTotal) +
@@ -3092,18 +3144,23 @@
       ' ÷ 焼き上がり ' + fmtNum(yieldCount) + yUnit + ' × この商品に入れる ' + fmtNum(packCount) + yUnit);
     setTxt('r-pkg-detail', pkg.length ? ('② の資材 ' + pkg.length + '点の合計') : '② に資材の入力がありません');
     setTxt('r-labor-detail', finishMin > 0
-      ? ('「仕上げ」の工程 ' + fmtNum(finishMin, 0) + '分 ÷ ' + fmtNum(packUnits, 0) + '包装ぶん ＝ ' + fmtNum(laborMin, 2) + '分 × ¥' + fmtNum(laborRate, 1) + '/分')
+      ? ('「仕上げ」の工程 ' + fmtNum(finishMin, 1) + '分 ÷ ' + fmtNum(packUnits, 0) + '包装ぶん ＝ ' + fmtNum(laborMin, 2) + '分 × ¥' + fmtNum(laborRate, 2) + '/分')
       : '③ で「仕上げ」にした工程がありません');
     setTxt('r-overhead-detail', finishMin > 0
       ? ('同じ ' + fmtNum(overheadMin, 2) + '分 × ¥' + fmtNum(ovhRate, 2) + '/分')
       : '—');
-    document.getElementById('r-cont').textContent = fmtYen(contentsTotal);
+    document.getElementById('r-cont').textContent = fmtYen2(contentsTotal);
     document.getElementById('r-cont-line').style.display = contents.length ? '' : 'none';
-    document.getElementById('r-pkg').textContent = fmtYen(pkgTotal);
-    document.getElementById('r-labor').textContent = fmtYen(laborCost);
-    document.getElementById('r-overhead').textContent = fmtYen(overheadCost);
-    document.getElementById('r-sga').textContent = fmtYen(sgaCost);
-    document.getElementById('r-total').textContent = fmtYen(totalCost);
+    document.getElementById('r-pkg').textContent = fmtYen2(pkgTotal);
+    document.getElementById('r-labor').textContent = fmtYen2(laborCost);
+    document.getElementById('r-overhead').textContent = fmtYen2(overheadCost);
+    document.getElementById('r-sga').textContent = fmtYen2(sgaCost);
+    document.getElementById('r-total').textContent = fmtYen2(totalCost);
+    var cUnit = document.getElementById('f-count-unit').value.trim() || yUnit;
+    document.getElementById('r-unit-note').innerHTML =
+      'この計算書の金額は、すべて <b>商品1つ（1' + escapeHtml(cUnit) + '）あたり</b> の金額です' +
+      (packCount ? ('（中身は ' + fmtNum(packCount) + escapeHtml(yUnit) + '）') : '') + '。';
+    setTxt('r-total-unit', '（1' + cUnit + 'あたり）');
     document.getElementById('r-margin-pct').textContent = fmtNum(marginPct,1);
     var priceUnitLabel = document.getElementById('f-count-unit').value.trim() || document.getElementById('f-yield-unit').value.trim() || '個';
     document.getElementById('r-price-ex').textContent = fmtYen(priceEx);
@@ -4461,6 +4518,75 @@
   });
 
   // ---------------- settings ----------------
+  // ---------------- 人件費と製造時間の内訳 ----------------
+  var DEFAULT_STAFF_COSTS = [{name:'自分', hourly:null, hours:null}, {name:'従業員', hourly:null, hours:null}, {name:'パート', hourly:null, hours:null}];
+  function staffCostRows(){
+    var body = document.getElementById('staff-cost-body');
+    if(!body) return [];
+    return Array.prototype.map.call(body.querySelectorAll('tr'), function(tr){
+      return {
+        name: tr.querySelector('.sc-name').value.trim(),
+        hourly: tr.querySelector('.sc-hourly').value === '' ? null : (parseFloat(tr.querySelector('.sc-hourly').value) || 0),
+        hours: tr.querySelector('.sc-hours').value === '' ? null : (parseFloat(tr.querySelector('.sc-hours').value) || 0)
+      };
+    });
+  }
+  function updateStaffCostTotals(){
+    var rows = staffCostRows();
+    var body = document.getElementById('staff-cost-body');
+    if(!body) return;
+    var totalHours = 0, totalAmount = 0;
+    Array.prototype.forEach.call(body.querySelectorAll('tr'), function(tr, i){
+      var r = rows[i];
+      var amt = (r.hourly || 0) * (r.hours || 0);
+      tr.querySelector('.sc-amount').textContent = fmtYen(amt);
+      totalHours += (r.hours || 0);
+      totalAmount += amt;
+    });
+    document.getElementById('sc-hours').textContent = fmtNum(totalHours, 0) + '時間';
+    document.getElementById('sc-amount').textContent = fmtYen(totalAmount);
+    var note = document.getElementById('sc-note');
+    if(totalHours > 0 && totalAmount > 0){
+      // 上の欄に流し込んで、単価を計算し直す
+      document.getElementById('s-labor-annual-amount').value = Math.round(totalAmount);
+      document.getElementById('s-overhead-annual-hours').value = Math.round(totalHours);
+      updateLaborRateFromAnnual();
+      updateOverheadRateFromAnnual();
+      note.textContent = '平均の工賃単価 ¥' + fmtNum(totalAmount/(totalHours*60), 2) +
+        '／分（時給に直すと ¥' + fmtNum(totalAmount/totalHours, 0) + '）を、上の「製造工賃単価」に入れました。';
+    } else {
+      note.textContent = '時給と年間の製造時間の両方を入れると、上の単価が自動計算されます。';
+    }
+  }
+  function makeStaffCostRow(r){
+    r = r || {};
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="col-name"><input class="sc-name" type="text" placeholder="名前"></td>' +
+      '<td class="col-qty"><input class="sc-hourly" type="number" min="0" step="any" inputmode="decimal" placeholder="1100"></td>' +
+      '<td class="col-qty"><input class="sc-hours" type="number" min="0" step="any" inputmode="decimal" placeholder="900"></td>' +
+      '<td class="col-amt amt sc-amount">¥0</td>' +
+      '<td class="col-del"><button type="button" class="icon-btn sc-del" title="削除">✕</button></td>';
+    tr.querySelector('.sc-name').value = r.name || '';
+    tr.querySelector('.sc-hourly').value = r.hourly != null ? r.hourly : '';
+    tr.querySelector('.sc-hours').value = r.hours != null ? r.hours : '';
+    tr.querySelectorAll('input').forEach(function(inp){
+      inp.addEventListener('input', updateStaffCostTotals);
+    });
+    tr.querySelector('.sc-del').addEventListener('click', function(){ tr.remove(); updateStaffCostTotals(); });
+    return tr;
+  }
+  function renderStaffCosts(list){
+    var body = document.getElementById('staff-cost-body');
+    if(!body) return;
+    body.innerHTML = '';
+    (list && list.length ? list : DEFAULT_STAFF_COSTS).forEach(function(r){ body.appendChild(makeStaffCostRow(r)); });
+    updateStaffCostTotals();
+  }
+  document.getElementById('btn-add-staff-cost').addEventListener('click', function(){
+    document.getElementById('staff-cost-body').appendChild(makeStaffCostRow({}));
+  });
+
   document.getElementById('btn-save-settings').addEventListener('click', function(){
     var s = {
       appName: document.getElementById('s-app-name').value.trim() || '工房ノート',
@@ -4472,7 +4598,8 @@
       multiTimeFactor: Math.max(0, Math.min(1, parseFloat(document.getElementById('s-multi-time').value))) || 0,
       sga: round2(parseFloat(document.getElementById('s-sga').value)||0),
       taxRate: parseFloat(document.getElementById('s-tax').value)||0,
-      margin: parseFloat(document.getElementById('s-margin').value)||0
+      margin: parseFloat(document.getElementById('s-margin').value)||0,
+      staffCosts: staffCostRows().filter(function(r){ return r.name || r.hourly || r.hours; })
     };
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
     state.settings = s;
