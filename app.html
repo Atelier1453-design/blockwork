@@ -256,6 +256,10 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
 
+  .with-unit{display:flex; align-items:center; gap:7px;}
+  .with-unit input, .with-unit select{flex:1 1 auto; min-width:0;}
+  .unit-tag{flex:0 0 auto; font-size:13px; color:var(--ink-soft); white-space:nowrap;}
+  .settings-grid .field label span{display:block; font-weight:400; font-size:12px; color:var(--ink-faint); margin-top:1px;}
   .settings-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; max-width:640px;}
   .settings-grid .field input{max-width:150px;}
   .seg-row{display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; width:fit-content;}
@@ -379,7 +383,50 @@
   .recipe-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
   .recipe-bar select{max-width:280px;}
   .recipe-pageno{font-size:12.5px; color:var(--ink-soft);}
-  .recipe-stage{perspective:1800px;}
+  .recipe-stage{perspective:2400px; position:relative;}
+  /* ページカール：めくれる紙を本物の1枚として重ねる */
+  .page-curl{
+    position:absolute; left:0; top:0; right:0; bottom:0; z-index:6;
+    transform-style:preserve-3d; pointer-events:none;
+    transition:transform .8s cubic-bezier(.5,.04,.5,.96);
+  }
+  .page-curl .curl-face{
+    position:absolute; inset:0; overflow:hidden; backface-visibility:hidden;
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    box-shadow:0 2px 14px rgba(0,0,0,.07);
+  }
+  .page-curl .curl-face.front{padding:34px 40px 40px 64px;}
+  .page-curl .curl-face.front.ruled{
+    background-image:
+      linear-gradient(to right, transparent 46px, rgba(190,120,110,.35) 46px, rgba(190,120,110,.35) 47px, transparent 47px),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.22) 31px, rgba(140,120,95,.22) 32px);
+    background-position:0 0, 0 26px;
+  }
+  .page-curl .curl-face.back{
+    transform:rotateY(180deg);
+    background:var(--surface-2);
+    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px);
+  }
+  /* めくれた紙の内側にできる影＝カールの丸み */
+  .page-curl .curl-shade{
+    position:absolute; inset:0; border-radius:6px; pointer-events:none;
+    background:linear-gradient(to right, rgba(60,40,20,.34) 0%, rgba(60,40,20,.10) 9%, rgba(255,255,255,.18) 20%, rgba(255,255,255,0) 40%);
+    opacity:0; transition:opacity .8s ease;
+  }
+  .page-curl .curl-face.back .curl-shade{
+    background:linear-gradient(to left, rgba(60,40,20,.30) 0%, rgba(60,40,20,.08) 10%, rgba(255,255,255,0) 34%);
+  }
+  .page-curl .curl-face{transition:border-radius .8s ease, box-shadow .8s ease;}
+  .page-curl.curling .curl-face{
+    border-radius:6px 22px 22px 6px / 6px 40px 40px 6px;
+    box-shadow:0 10px 30px rgba(0,0,0,.22);
+  }
+  .page-curl.curling{filter:drop-shadow(0 14px 26px rgba(0,0,0,.28));}
+  .page-curl.curling .curl-shade{opacity:1;}
+  @media (prefers-reduced-motion: reduce){
+    .page-curl{transition:none;}
+  }
+  @media print{ .page-curl{display:none !important;} }
   .recipe-page{
     background:var(--surface); border:1px solid var(--border); border-radius:6px;
     box-shadow:0 2px 14px rgba(0,0,0,.07);
@@ -427,6 +474,14 @@
   .rc-method li{margin:0;}
   .rc-empty{color:var(--ink-faint); font-size:13px; line-height:32px;}
   .recipe-edit .field{max-width:none;}
+  .oven-block{border:1px solid var(--border); border-radius:10px; padding:10px 12px 12px; margin-bottom:10px;}
+  .oven-block-head{display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:700; color:var(--accent-strong); margin-bottom:8px;}
+  .oven-block-head input{flex:1 1 auto; max-width:380px; font-weight:400;}
+  .rc-oven-line{font-size:15px; line-height:32px;}
+  .rc-oven-line .rc-oven-name{font-size:13px; color:var(--ink-soft); margin-right:8px;}
+  .rc-oven-line b{font-size:18px;}
+  .rc-oven-line .rc-arrow{margin:0 8px; color:var(--ink-soft);}
+  .rc-oven-sub{font-size:12.5px; color:var(--ink-soft); line-height:26px; padding-left:2px;}
   .recipe-photo-preview img{max-width:220px; border-radius:6px; border:1px solid var(--border); display:block; margin-top:6px;}
 
   @media (max-width: 760px){
@@ -976,11 +1031,33 @@
           <label>商品の説明</label>
           <textarea id="rc-desc" rows="3" placeholder="どんなお菓子か、味や食感の狙いなど"></textarea>
         </div>
-        <div class="row-inline" style="margin-top:10px;">
-          <div class="field" style="max-width:130px;"><label>オーブン温度（℃）</label><input id="rc-oven-temp" type="number" step="any" inputmode="decimal" placeholder="180"></div>
-          <div class="field" style="max-width:130px;"><label>焼き時間（分）</label><input id="rc-oven-time" type="text" placeholder="14"></div>
-          <div class="field" style="max-width:260px;"><label>オーブンの設定</label><input id="rc-oven-setting" type="text" placeholder="上下火・ファンあり／天板2枚"></div>
-          <div class="field"><label>焼きの備考</label><input id="rc-oven-note" type="text" placeholder="10分で天板の前後を入れ替える など"></div>
+        <div style="margin-top:14px;">
+        <div class="oven-block">
+          <div class="oven-block-head">オーブン1<input id="rc-oven1-name" type="text" placeholder="名前（任意）：デッキ／コンベクション など"></div>
+          <div class="row-inline">
+            <div class="field" style="max-width:150px;"><label>1段目 温度</label><div class="with-unit"><input id="rc-oven1-t1" type="number" step="any" inputmode="decimal" placeholder="180"><span class="unit-tag">℃</span></div></div>
+            <div class="field" style="max-width:150px;"><label>1段目 時間</label><div class="with-unit"><input id="rc-oven1-m1" type="text" inputmode="decimal" placeholder="14"><span class="unit-tag">分</span></div></div>
+            <div class="field" style="max-width:150px;"><label>2段目 温度<span style="color:var(--ink-faint);">なければ空欄</span></label><div class="with-unit"><input id="rc-oven1-t2" type="number" step="any" inputmode="decimal" placeholder="160"><span class="unit-tag">℃</span></div></div>
+            <div class="field" style="max-width:150px;"><label>2段目 時間</label><div class="with-unit"><input id="rc-oven1-m2" type="text" inputmode="decimal" placeholder="8"><span class="unit-tag">分</span></div></div>
+          </div>
+          <div class="row-inline" style="margin-top:8px;">
+            <div class="field" style="max-width:300px;"><label>設定</label><input id="rc-oven1-setting" type="text" placeholder="上下火・ファンあり／天板2枚"></div>
+            <div class="field"><label>備考</label><input id="rc-oven1-note" type="text" placeholder="10分で天板の前後を入れ替える など"></div>
+          </div>
+        </div>
+        <div class="oven-block">
+          <div class="oven-block-head">オーブン2<input id="rc-oven2-name" type="text" placeholder="名前（任意）：デッキ／コンベクション など"></div>
+          <div class="row-inline">
+            <div class="field" style="max-width:150px;"><label>1段目 温度</label><div class="with-unit"><input id="rc-oven2-t1" type="number" step="any" inputmode="decimal" placeholder="180"><span class="unit-tag">℃</span></div></div>
+            <div class="field" style="max-width:150px;"><label>1段目 時間</label><div class="with-unit"><input id="rc-oven2-m1" type="text" inputmode="decimal" placeholder="14"><span class="unit-tag">分</span></div></div>
+            <div class="field" style="max-width:150px;"><label>2段目 温度<span style="color:var(--ink-faint);">なければ空欄</span></label><div class="with-unit"><input id="rc-oven2-t2" type="number" step="any" inputmode="decimal" placeholder="160"><span class="unit-tag">℃</span></div></div>
+            <div class="field" style="max-width:150px;"><label>2段目 時間</label><div class="with-unit"><input id="rc-oven2-m2" type="text" inputmode="decimal" placeholder="8"><span class="unit-tag">分</span></div></div>
+          </div>
+          <div class="row-inline" style="margin-top:8px;">
+            <div class="field" style="max-width:300px;"><label>設定</label><input id="rc-oven2-setting" type="text" placeholder="上下火・ファンあり／天板2枚"></div>
+            <div class="field"><label>備考</label><input id="rc-oven2-note" type="text" placeholder="10分で天板の前後を入れ替える など"></div>
+          </div>
+        </div>
         </div>
         <div class="field" style="margin-top:10px;">
           <label>作り方<span style="color:var(--ink-faint);">1行に1つの手順を書いてください</span></label>
@@ -1019,51 +1096,51 @@
       <div class="card section-card" style="margin-top:16px;">
         <div class="settings-grid">
           <div class="field">
-            <label>製造工賃単価（円／分）</label>
-            <input id="s-labor-rate" type="number" step="any">
+            <label>製造工賃単価</label>
+            <div class="with-unit"><input id="s-labor-rate" type="number" step="any"><span class="unit-tag">円／分</span></div>
             <span class="hint" id="labor-rate-hourly-hint" style="margin-top:2px;"></span>
           </div>
           <div class="field">
-            <label>（参考）時給換算（円／時）</label>
-            <input id="s-labor-rate-hourly" type="number" step="any" placeholder="例：1300">
+            <label>（参考）時給換算</label>
+            <div class="with-unit"><input id="s-labor-rate-hourly" type="number" step="any" placeholder="例：1300"><span class="unit-tag">円／時</span></div>
             <span class="hint" style="margin-top:2px;">ここに時給を入力すると、左の工賃単価が自動計算されます。</span>
           </div>
           <div class="field">
-            <label>製造間接費単価（円／分）</label>
-            <input id="s-overhead-rate" type="number" step="any">
+            <label>製造間接費単価</label>
+            <div class="with-unit"><input id="s-overhead-rate" type="number" step="any"><span class="unit-tag">円／分</span></div>
             <span class="hint" id="overhead-rate-annual-hint" style="margin-top:2px;"></span>
           </div>
           <div class="field">
-            <label>（参考）昨年の年間間接費（円）</label>
-            <input id="s-overhead-annual-amount" type="number" step="any" placeholder="例：480000">
+            <label>（参考）昨年の年間間接費</label>
+            <div class="with-unit"><input id="s-overhead-annual-amount" type="number" step="any" placeholder="例：480000"><span class="unit-tag">円</span></div>
             <span class="hint" style="margin-top:2px;">家賃・水道光熱費・減価償却など、商品ごとに分けられない費用の1年ぶん。</span>
           </div>
           <div class="field">
-            <label>（参考）昨年の年間の人件費合計（円）</label>
-            <input id="s-labor-annual-amount" type="number" step="any" placeholder="例：2400000">
+            <label>（参考）昨年の年間の人件費合計</label>
+            <div class="with-unit"><input id="s-labor-annual-amount" type="number" step="any" placeholder="例：2400000"><span class="unit-tag">円</span></div>
             <span class="hint" style="margin-top:2px;">自分の労務費＋従業員さん＋パートさんの1年ぶん。これと下の延べ製造時間から、上の工賃単価が自動計算されます。</span>
           </div>
           <div class="field">
-            <label>（参考）年間の延べ製造時間（時間）</label>
-            <input id="s-overhead-annual-hours" type="number" step="any" placeholder="例：2400">
+            <label>（参考）年間の延べ製造時間</label>
+            <div class="with-unit"><input id="s-overhead-annual-hours" type="number" step="any" placeholder="例：2400"><span class="unit-tag">時間</span></div>
             <span class="hint" style="margin-top:2px;">お店の全員が、商品づくりに使った時間を1年ぶん足した数字です（接客・レジ・掃除・事務は除く）。ふたりで同時に作った1時間は2時間として数えます。<br>この延べ時間で年間の費用を割るので、全商品に配ったぶんの合計が、実際の1年ぶんの金額とそろいます。</span>
           </div>
           <div class="field">
             <label>倍数を増やしたときの時間の伸び<span style="font-weight:400; color:var(--ink-faint);">0＝増えない／0.3＝2倍で1.3倍／1＝倍数どおり</span></label>
-            <input id="s-multi-time" type="number" min="0" max="1" step="0.05">
+            <div class="with-unit"><input id="s-multi-time" type="number" min="0" max="1" step="0.05"><span class="unit-tag">（0〜1）</span></div>
             <span class="hint" id="multi-time-hint" style="margin-top:2px;"></span>
           </div>
           <div class="field">
-            <label>販管費（円／1個あたり）</label>
-            <input id="s-sga" type="number" step="any">
+            <label>販管費</label>
+            <div class="with-unit"><input id="s-sga" type="number" step="any"><span class="unit-tag">円／1個</span></div>
           </div>
           <div class="field">
-            <label>消費税率（%）</label>
-            <input id="s-tax" type="number" step="any">
+            <label>消費税率</label>
+            <div class="with-unit"><input id="s-tax" type="number" step="any"><span class="unit-tag">％</span></div>
           </div>
           <div class="field">
-            <label>既定の希望原価率（%）</label>
-            <input id="s-margin" type="number" step="any">
+            <label>既定の希望原価率</label>
+            <div class="with-unit"><input id="s-margin" type="number" step="any"><span class="unit-tag">％</span></div>
           </div>
         </div>
         <button class="btn btn-primary" id="btn-save-settings" style="margin-top:18px;">設定を保存</button>
@@ -1090,10 +1167,10 @@
               <option value="landscape">よこ</option>
             </select>
           </div>
-          <div class="field"><label>余白 上（mm）</label><input id="s-margin-top" type="number" min="0" step="1"></div>
-          <div class="field"><label>余白 下（mm）</label><input id="s-margin-bottom" type="number" min="0" step="1"></div>
-          <div class="field"><label>余白 左（mm）<span style="color:var(--ink-faint);">ルーズリーフのとじ穴側</span></label><input id="s-margin-left" type="number" min="0" step="1"></div>
-          <div class="field"><label>余白 右（mm）</label><input id="s-margin-right" type="number" min="0" step="1"></div>
+          <div class="field"><label>余白 上</label><div class="with-unit"><input id="s-margin-top" type="number" min="0" step="1"><span class="unit-tag">mm</span></div></div>
+          <div class="field"><label>余白 下</label><div class="with-unit"><input id="s-margin-bottom" type="number" min="0" step="1"><span class="unit-tag">mm</span></div></div>
+          <div class="field"><label>余白 左<span style="color:var(--ink-faint);">ルーズリーフのとじ穴側</span></label><div class="with-unit"><input id="s-margin-left" type="number" min="0" step="1"><span class="unit-tag">mm</span></div></div>
+          <div class="field"><label>余白 右</label><div class="with-unit"><input id="s-margin-right" type="number" min="0" step="1"><span class="unit-tag">mm</span></div></div>
         </div>
       </div>
 
@@ -1103,8 +1180,8 @@
         <div class="table-scroll">
         <table class="ing-table">
           <thead><tr>
-            <th class="col-name">だれ</th><th class="col-qty">時給（円）</th>
-            <th class="col-qty">年間の製造時間</th><th class="col-amt">年間の人件費</th><th class="col-del"></th>
+            <th class="col-name">だれ</th><th class="col-qty">時給（円／時）</th>
+            <th class="col-qty">年間の製造時間（時間）</th><th class="col-amt">年間の人件費（円）</th><th class="col-del"></th>
           </tr></thead>
           <tbody id="staff-cost-body"></tbody>
           <tfoot><tr class="ing-foot">
@@ -1627,12 +1704,16 @@
   window.addEventListener('scroll', function(){ if(acOwnerRow) hideSuggestions(acOwnerRow); }, true);
   window.addEventListener('resize', function(){ if(acOwnerRow) hideSuggestions(acOwnerRow); });
   document.addEventListener('touchstart', function(e){
-    var ae = document.activeElement;
-    if(!ae || !(ae.tagName === 'INPUT' || ae.tagName === 'SELECT')) return;
-    var t = e.target;
-    if(t && (t === ae || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'BUTTON' || (t.closest && t.closest('label')))) return;
-    ae.blur();
+    dismissKeyboardIfOutside(e.target);
   }, {passive:true});
+  document.addEventListener('mousedown', function(e){ dismissKeyboardIfOutside(e.target); });
+  function dismissKeyboardIfOutside(t){
+    var ae = document.activeElement;
+    if(!ae || !(ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
+    if(t && (t === ae || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' ||
+             t.tagName === 'BUTTON' || (t.closest && t.closest('label')))) return;
+    ae.blur();
+  }
   document.addEventListener('keydown', function(e){
     if(e.key === 'Enter' && document.activeElement && document.activeElement.tagName === 'INPUT'){
       document.activeElement.blur();
@@ -4828,6 +4909,36 @@
     var no = document.getElementById('recipe-pageno');
     if(no) no.textContent = list.length ? (recipeIndex + 1) + ' / ' + list.length + ' ページ' : '';
   }
+  // 古い形（oven:{temp,time,...}）も、新しい形（ovens:[...]）として読む
+  function ovensOf(r){
+    if(r && Array.isArray(r.ovens)) return r.ovens;
+    if(r && r.oven && (r.oven.temp || r.oven.time || r.oven.setting || r.oven.note)){
+      return [{name:'', t1:r.oven.temp || '', m1:r.oven.time || '', t2:'', m2:'', setting:r.oven.setting || '', note:r.oven.note || ''}];
+    }
+    return [];
+  }
+  function ovenSectionHtml(r){
+    var ovens = ovensOf(r).filter(function(o){ return o.t1 || o.m1 || o.t2 || o.m2 || o.setting || o.note || o.name; });
+    if(!ovens.length) return '<p class="rc-empty">（オーブンの設定はまだありません）</p>';
+    return ovens.map(function(o, i){
+      var stage = function(t, m){
+        if(!t && !m) return '';
+        return '<b>' + escapeHtml(String(t || '—')) + '℃</b> <b>' + escapeHtml(String(m || '—')) + '分</b>';
+      };
+      var s1 = stage(o.t1, o.m1), s2 = stage(o.t2, o.m2);
+      var bake = s1 + (s2 ? '<span class="rc-arrow">→</span>' + s2 : '');
+      var sub = [];
+      if(o.setting) sub.push('設定：' + escapeHtml(o.setting));
+      if(o.note) sub.push(escapeHtml(o.note));
+      return '<div class="rc-oven-line">' +
+          (ovens.length > 1 || o.name
+            ? '<span class="rc-oven-name">' + (i === 0 ? '①' : '②') + (o.name ? ' ' + escapeHtml(o.name) : '') + '</span>'
+            : '') +
+          (bake || '<span class="rc-empty">（未入力）</span>') +
+        '</div>' +
+        (sub.length ? '<div class="rc-oven-sub">' + sub.join('　／　') + '</div>' : '');
+    }).join('');
+  }
   function recipeIngredientTable(p){
     var ing = (p.batch && Array.isArray(p.batch.ingredients)) ? p.batch.ingredients : [];
     if(!ing.length) return '<p class="rc-empty">原価計算の①に材料を入れると、ここに出ます。</p>';
@@ -4854,23 +4965,22 @@
   function renderRecipePage(){
     var page = document.getElementById('recipe-page');
     if(!page) return;
+    page.innerHTML = buildRecipeHtml();
+    renderRecipeSelect();
+    if(!document.getElementById('recipe-edit').hidden) loadRecipeIntoForm();
+  }
+  function buildRecipeHtml(){
     var list = recipeProducts();
     if(!list.length){
-      page.innerHTML = '<div class="empty-state"><div class="big">📓</div>まだ商品が登録されていません。原価計算で商品を登録すると、ここにレシピのページができます。</div>';
-      return;
+      return '<div class="empty-state"><div class="big">📓</div>まだ商品が登録されていません。原価計算で商品を登録すると、ここにレシピのページができます。</div>';
     }
     var p = list[recipeIndex];
     var r = recipeOf(p.id);
-    var oven = r.oven || {};
-    var ovenParts = [];
-    if(oven.temp) ovenParts.push('<span>温度 <b>'+escapeHtml(String(oven.temp))+'℃</b></span>');
-    if(oven.time) ovenParts.push('<span>時間 <b>'+escapeHtml(String(oven.time))+'分</b></span>');
-    if(oven.setting) ovenParts.push('<span>設定 <b>'+escapeHtml(oven.setting)+'</b></span>');
+    var ovenHtml = ovenSectionHtml(r);
     var steps = (r.method || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
     var code = (p.planning && p.planning.productCode) || '';
 
-    page.innerHTML =
-      (code ? '<div class="rc-code">'+escapeHtml(code)+'</div>' : '') +
+    return (code ? '<div class="rc-code">'+escapeHtml(code)+'</div>' : '') +
       '<h1 class="rc-title">'+escapeHtml(p.name)+'</h1>' +
       '<div class="rc-head">' +
         '<div style="flex:1 1 auto;">' +
@@ -4882,49 +4992,87 @@
         '</div>' +
       '</div>' +
       '<div class="rc-sec"><h4>材料</h4>' + recipeIngredientTable(p) + '</div>' +
-      '<div class="rc-sec"><h4>焼成</h4>' +
-        (ovenParts.length ? '<div class="rc-oven">'+ovenParts.join('')+'</div>' : '<p class="rc-empty">（オーブンの設定はまだありません）</p>') +
-        (oven.note ? '<div class="rc-source">'+escapeHtml(oven.note)+'</div>' : '') +
-      '</div>' +
+      '<div class="rc-sec"><h4>焼成</h4>' + ovenHtml + '</div>' +
       '<div class="rc-sec"><h4>作り方</h4>' +
         (steps.length
           ? '<div class="rc-method"><ol>'+steps.map(function(s){ return '<li>'+escapeHtml(s)+'</li>'; }).join('')+'</ol></div>'
           : '<p class="rc-empty">（作り方はまだありません。「このページを編集」から書けます）</p>') +
       '</div>';
-    renderRecipeSelect();
-    if(!document.getElementById('recipe-edit').hidden) loadRecipeIntoForm();
+  }
+  // ページカール：めくれる紙を1枚かぶせて、左とじのノートのように回転させる
+  var curlBusy = false;
+  function reducedMotion(){
+    try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; }
   }
   function turnRecipePage(dir){
     var list = recipeProducts();
     var next = recipeIndex + dir;
     if(next < 0 || next >= list.length) return;
+    if(curlBusy){ recipeIndex = next; renderRecipePage(); return; }
+    var stage = document.querySelector('.recipe-stage');
     var page = document.getElementById('recipe-page');
-    recipeIndex = next;
-    renderRecipePage();
-    // 紙をめくる感じ：新しいページが手前に起き上がってくる
-    page.style.transition = 'none';
-    page.style.transformOrigin = dir > 0 ? 'left center' : 'right center';
-    page.style.transform = 'rotateY(' + (dir > 0 ? 55 : -55) + 'deg)';
-    page.style.opacity = '0.25';
+    if(!stage || !page || reducedMotion()){
+      recipeIndex = next; renderRecipePage(); return;
+    }
+    var ruled = page.classList.contains('ruled');
+    var oldHtml = page.innerHTML;
+    var h = page.offsetHeight;
+
+    // 次へ：いま見えている紙がめくれて、下から新しいページが出てくる
+    // 前へ：新しい紙が左から起きてきて、いまのページにかぶさる
+    if(dir > 0){ recipeIndex = next; renderRecipePage(); }
+    var faceHtml = dir > 0 ? oldHtml : (function(){
+      var tmp = recipeIndex; recipeIndex = next;
+      var built = buildRecipeHtml(); recipeIndex = tmp; return built;
+    })();
+
+    var curl = document.createElement('div');
+    curl.className = 'page-curl';
+    curl.style.height = h + 'px';
+    curl.style.transformOrigin = 'left center';
+    curl.innerHTML =
+      '<div class="curl-face front' + (ruled ? ' ruled' : '') + '">' + faceHtml + '<div class="curl-shade"></div></div>' +
+      '<div class="curl-face back"><div class="curl-shade"></div></div>';
+    // ステージの中央（.recipe-page と同じ幅・位置）に重ねる
+    var pr = page.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    curl.style.left = Math.round(pr.left - sr.left) + 'px';
+    curl.style.width = Math.round(pr.width) + 'px';
+    curl.style.right = 'auto';
+    curl.style.bottom = 'auto';
+    curl.style.top = Math.round(pr.top - sr.top) + 'px';
+    curl.style.transform = dir > 0 ? 'rotateY(0deg) rotateZ(0deg)' : 'rotateY(-172deg) rotateZ(-5deg)';
+    stage.appendChild(curl);
+    curlBusy = true;
+
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        page.style.transition = 'transform .32s ease-out, opacity .32s ease-out';
-        page.style.transform = 'rotateY(0deg)';
-        page.style.opacity = '1';
+        curl.classList.add('curling');
+        curl.style.transform = dir > 0 ? 'rotateY(-172deg) rotateZ(-5deg)' : 'rotateY(0deg) rotateZ(0deg)';
       });
     });
+    setTimeout(function(){
+      if(dir < 0){ recipeIndex = next; renderRecipePage(); }
+      if(curl.parentNode) curl.parentNode.removeChild(curl);
+      curlBusy = false;
+    }, 820);
   }
   function loadRecipeIntoForm(){
     var list = recipeProducts();
     if(!list.length) return;
     var r = recipeOf(list[recipeIndex].id);
-    var oven = r.oven || {};
+    var ovens = ovensOf(r);
     document.getElementById('rc-source').value = r.source || '';
     document.getElementById('rc-desc').value = r.desc || '';
-    document.getElementById('rc-oven-temp').value = oven.temp != null ? oven.temp : '';
-    document.getElementById('rc-oven-time').value = oven.time != null ? oven.time : '';
-    document.getElementById('rc-oven-setting').value = oven.setting || '';
-    document.getElementById('rc-oven-note').value = oven.note || '';
+    [1, 2].forEach(function(n){
+      var o = ovens[n-1] || {};
+      document.getElementById('rc-oven'+n+'-name').value = o.name || '';
+      document.getElementById('rc-oven'+n+'-t1').value = o.t1 != null ? o.t1 : '';
+      document.getElementById('rc-oven'+n+'-m1').value = o.m1 != null ? o.m1 : '';
+      document.getElementById('rc-oven'+n+'-t2').value = o.t2 != null ? o.t2 : '';
+      document.getElementById('rc-oven'+n+'-m2').value = o.m2 != null ? o.m2 : '';
+      document.getElementById('rc-oven'+n+'-setting').value = o.setting || '';
+      document.getElementById('rc-oven'+n+'-note').value = o.note || '';
+    });
     document.getElementById('rc-method').value = r.method || '';
     var prev = document.getElementById('rc-photo-preview');
     prev.innerHTML = r.photo ? '<img src="'+r.photo+'" alt="">' : '';
@@ -4938,12 +5086,10 @@
     recipesAll()[id] = {
       source: document.getElementById('rc-source').value.trim(),
       desc: document.getElementById('rc-desc').value,
-      oven: {
-        temp: document.getElementById('rc-oven-temp').value.trim(),
-        time: document.getElementById('rc-oven-time').value.trim(),
-        setting: document.getElementById('rc-oven-setting').value.trim(),
-        note: document.getElementById('rc-oven-note').value.trim()
-      },
+      ovens: [1, 2].map(function(n){
+        var v = function(k){ return document.getElementById('rc-oven'+n+'-'+k).value.trim(); };
+        return {name:v('name'), t1:v('t1'), m1:v('m1'), t2:v('t2'), m2:v('m2'), setting:v('setting'), note:v('note')};
+      }).filter(function(o){ return o.name || o.t1 || o.m1 || o.t2 || o.m2 || o.setting || o.note; }),
       method: document.getElementById('rc-method').value,
       photo: document.getElementById('rc-photo-preview').dataset.photo || '',
       updatedAt: new Date().toISOString()
