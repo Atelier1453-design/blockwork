@@ -220,7 +220,9 @@
   .product-card:hover{border-color:var(--accent);}
   .product-card .pname{font-family:"Shippori Mincho",serif; font-size:16px; font-weight:700;}
   .product-card .pcat{font-size:11px; color:var(--ink-faint); margin-top:2px;}
-  .product-card .pmeta{display:flex; justify-content:space-between; margin-top:10px; font-size:12.5px; color:var(--ink-soft);}
+  .product-card .pmeta{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:12.5px; color:var(--ink-soft);}
+  .product-card .pmeta .pm-main{color:var(--ink); font-weight:600;}
+  .product-card .pmeta .pm-main b{font-size:17px; color:var(--accent-strong);}
   .product-card .pmeta b{color:var(--ink); font-size:14px;}
   .empty-state{padding:40px 20px; text-align:center; color:var(--ink-faint); font-size:13.5px;}
   .empty-state .big{font-size:30px; margin-bottom:8px;}
@@ -361,6 +363,93 @@
   tr.row-dragging{background:var(--accent-soft); box-shadow:0 2px 10px rgba(0,0,0,.18);}
   tr.row-dragging td{border-color:var(--accent);}
   body.dragging-row{user-select:none; -webkit-user-select:none;}
+  .sec-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; justify-content:space-between;}
+  .sec-head h3{margin:0;}
+  .skip-toggle{display:inline-flex; align-items:center; gap:5px; font-size:12.5px; color:var(--ink-soft); cursor:pointer; white-space:nowrap;}
+  .skip-toggle input{width:auto; margin:0;}
+  .section-card.section-skipped > *:not(.sec-head):not(.skip-note){display:none;}
+  .section-card .skip-note{display:none; font-size:13px; color:var(--ink-soft); margin:8px 0 0;}
+  .section-card.section-skipped .skip-note{display:block;}
+  .section-card.section-skipped{opacity:.8;}
+  .miss-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;}
+  .miss-chip{font-size:11.5px; font-weight:700; color:var(--warn); background:var(--warn-soft);
+    border:1px solid var(--warn); border-radius:999px; padding:2px 9px;}
+
+  /* ---------------- レシピ帳 ---------------- */
+  .recipe-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .recipe-bar select{max-width:280px;}
+  .recipe-pageno{font-size:12.5px; color:var(--ink-soft);}
+  .recipe-stage{perspective:1800px;}
+  .recipe-page{
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    box-shadow:0 2px 14px rgba(0,0,0,.07);
+    padding:34px 40px 40px 64px; position:relative; overflow:hidden;
+    max-width:900px; margin:0 auto; min-height:640px;
+    transform-origin:center; will-change:transform, opacity;
+  }
+  /* ノートの罫線 */
+  .recipe-page.ruled{
+    background-image:
+      linear-gradient(to right, transparent 46px, rgba(190,120,110,.35) 46px, rgba(190,120,110,.35) 47px, transparent 47px),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.22) 31px, rgba(140,120,95,.22) 32px);
+    background-position:0 0, 0 26px;
+  }
+  .recipe-page .rc-title{
+    font-family:"Shippori Mincho",serif; font-size:30px; font-weight:700; color:var(--ink);
+    margin:0 0 4px; line-height:1.3;
+  }
+  .rc-code{font-size:13px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em;}
+  .rc-head{display:flex; gap:22px; align-items:flex-start; margin:14px 0 6px;}
+  .rc-desc{flex:1 1 auto; font-size:14px; line-height:32px; color:var(--ink); white-space:pre-wrap; min-height:32px;}
+  .rc-photo{flex:0 0 auto; width:240px;}
+  .rc-photo img{width:100%; border-radius:6px; border:1px solid var(--border); display:block;}
+  .rc-photo .rc-nophoto{
+    width:100%; height:150px; border:1px dashed var(--border); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-faint); font-size:12.5px;
+  }
+  .rc-source{font-size:12.5px; color:var(--ink-soft); line-height:32px;}
+  .rc-sec{margin-top:18px;}
+  .rc-sec h4{
+    font-family:"Shippori Mincho",serif; font-size:16px; margin:0 0 6px;
+    color:var(--accent-strong); border-bottom:1px solid var(--border); padding-bottom:3px;
+  }
+  table.rc-ing{width:100%; border-collapse:collapse; font-size:14px;}
+  table.rc-ing th, table.rc-ing td{padding:5px 8px; border-bottom:1px solid var(--border); line-height:22px;}
+  table.rc-ing th{font-size:12.5px; color:var(--ink-soft); font-weight:700; text-align:right; white-space:nowrap;}
+  table.rc-ing th:first-child, table.rc-ing td:first-child{text-align:left;}
+  table.rc-ing td{text-align:right; font-variant-numeric:tabular-nums;}
+  table.rc-ing .rc-base{background:var(--accent-soft); font-weight:700;}
+  table.rc-ing tfoot td{font-weight:700; border-top:2px solid var(--border);}
+  .rc-oven{display:flex; gap:22px; flex-wrap:wrap; font-size:15px; line-height:32px;}
+  .rc-oven b{font-size:18px;}
+  .rc-method{font-size:14px; line-height:32px; color:var(--ink);}
+  .rc-method ol{margin:0; padding-left:1.4em;}
+  .rc-method li{margin:0;}
+  .rc-empty{color:var(--ink-faint); font-size:13px; line-height:32px;}
+  .recipe-edit .field{max-width:none;}
+  .recipe-photo-preview img{max-width:220px; border-radius:6px; border:1px solid var(--border); display:block; margin-top:6px;}
+
+  @media (max-width: 760px){
+    .recipe-page{padding:24px 20px 28px 34px; min-height:0;}
+    .rc-head{flex-direction:column;}
+    .rc-photo{width:100%;}
+  }
+
+  /* 印刷：レシピのページだけを出す */
+  @media print{
+    body{background:#fff;}
+    .sidebar, .page-head, .recipe-bar, .recipe-edit, .toast, .modal-backdrop{display:none !important;}
+    .app, .content{display:block; margin:0; padding:0;}
+    .view{display:none !important;}
+    .view#view-recipes{display:block !important;}
+    .recipe-page{
+      border:none; box-shadow:none; border-radius:0; margin:0; max-width:none; min-height:0;
+      padding:0; background:#fff !important; background-image:none !important; color:#000;
+    }
+    .recipe-page .rc-title, .rc-method, .rc-desc, table.rc-ing td{color:#000;}
+    table.rc-ing .rc-base{background:#eee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+
   .reorder-controls{display:flex; gap:4px; margin-bottom:8px;}
   .ing-pick{display:flex; gap:6px;}
   .ing-pick select{min-width:0; width:100%;}
@@ -407,7 +496,9 @@
   .cat-chip .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .cat-chip.on{color:var(--ink); font-weight:700; border-color:var(--ink-soft);}
   .product-card{border-left:4px solid transparent;}
-  .pcode-line{font-size:13.5px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em; margin-bottom:3px;}
+  .pcode-line{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:3px; min-height:18px;}
+  .pcode-tag{font-size:13.5px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em;}
+  .pcat-inline{font-size:12.5px; color:var(--ink-soft);}
   .pd-code{display:inline-block; margin-left:8px; padding:2px 8px; border:1px solid var(--border); border-radius:6px;
     font-family:inherit; font-size:12px; font-weight:600; color:var(--ink-soft); vertical-align:middle;}
   .pd-receipt-wrap{max-width:420px;}
@@ -475,6 +566,7 @@
       <button data-view="blockwork" class="active"><span class="ico">📋</span><span class="label">ブロックワーク</span></button>
       <button data-view="products"><span class="ico">📖</span><span class="label">登録済み商品</span></button>
       <button data-view="materials"><span class="ico">🧺</span><span class="label">原材料マスタ</span></button>
+      <button data-view="recipes"><span class="ico">📓</span><span class="label">レシピ帳</span></button>
       <button data-view="settings"><span class="ico">⚙️</span><span class="label">設定</span></button>
     </div>
     <div class="sidebar-foot">
@@ -537,7 +629,7 @@
       <div class="calc-grid">
         <div>
           <div class="card section-card">
-            <h3>① 仕込み全体の原材料</h3>
+            <div class="sec-head"><h3>① 仕込み全体の原材料</h3><label class="skip-toggle"><input type="checkbox" id="f-skip-ing">この商品には不要</label></div>
             <p class="hint">一度に仕込む分量をそのまま入力してください。行を長押しすると、つかんで上下に動かせます。</p>
             <div class="table-scroll">
             <table class="ing-table ing-table-multi">
@@ -567,6 +659,7 @@
             </table>
             </div>
             <button class="btn btn-sm add-row-btn" data-add="ing">＋原材料</button>
+            <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
             <div class="yield-block">
               <div class="yield-line">
@@ -588,7 +681,7 @@
             </div>
           </div>
           <div class="card section-card">
-            <h3>② 1包装あたりの資材・仕上げ</h3>
+            <div class="sec-head"><h3>② 1包装あたりの資材・仕上げ</h3><label class="skip-toggle"><input type="checkbox" id="f-skip-pkg">この商品には不要</label></div>
             <p class="hint">①の焼き上がりのうち、商品1つに入れる数と、袋・ラベルなどの資材を入力してください。</p>
             <div class="row-inline" style="margin-bottom:14px;">
               <div class="field" style="max-width:170px;">
@@ -615,12 +708,13 @@
             </table>
             </div>
             <button class="btn btn-sm add-row-btn" data-add="pkg">＋資材</button>
+            <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
             <p class="hint" id="finish-proc-note" style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--border);">袋詰め・ラベル貼りなどの仕上げ時間は、③の工程で「仕上げ」に切り替えた工程から自動計算します。</p>
           </div>
 
           <div class="card section-card">
-            <h3>③ 製造に関わる費用</h3>
+            <div class="sec-head"><h3>③ 製造に関わる費用</h3><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">この商品には不要</label></div>
             <div id="proc-readonly-wrap"></div>
 
             <div class="formula-box">
@@ -635,6 +729,7 @@
               </table>
             </div>
             <p class="hint" style="margin:8px 0 0;">「仕上げ」に切り替えた工程の工賃・間接費は、ここではなく ② の1包装ぶんに割り当てて、原価計算書の「仕上げの工賃」「仕上げの製造間接費」に出ます。</p>
+            <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
           </div>
 
           <div class="card section-card">
@@ -844,6 +939,70 @@
       </div>
     </section>
 
+
+    <!-- ===================== RECIPES VIEW ===================== -->
+    <section class="view" id="view-recipes">
+      <div class="page-head">
+        <div><h2>レシピ帳</h2><p>登録済み商品ごとのレシピです。左右にスワイプするか ◀ ▶ でページをめくれます。</p></div>
+        <div style="display:flex; gap:8px; flex:none;">
+          <button type="button" class="btn btn-ghost" id="btn-recipe-print">🖨 印刷</button>
+          <button type="button" class="btn btn-primary" id="btn-recipe-edit">このページを編集</button>
+        </div>
+      </div>
+
+      <div class="recipe-bar">
+        <button type="button" class="btn btn-sm" id="recipe-prev">◀ 前</button>
+        <select id="recipe-select"></select>
+        <button type="button" class="btn btn-sm" id="recipe-next">次 ▶</button>
+        <span class="recipe-pageno" id="recipe-pageno"></span>
+        <label class="skip-toggle" style="margin-left:auto;"><input type="checkbox" id="recipe-ruled" checked>罫線</label>
+      </div>
+
+      <div class="recipe-stage">
+        <div class="recipe-page ruled" id="recipe-page"></div>
+      </div>
+
+      <div class="card section-card recipe-edit" id="recipe-edit" hidden style="margin-top:16px;">
+        <div class="sec-head"><h3>レシピを編集</h3>
+          <span style="font-size:12.5px; color:var(--ink-soft);">材料・倍数は原価計算から、工程はブロックワークから自動で入ります</span>
+        </div>
+        <div class="row-inline">
+          <div class="field" style="max-width:340px;">
+            <label>参照元（ノートの何ページ、本の名前など）</label>
+            <input id="rc-source" type="text" placeholder="例：レシピノート3 p.42">
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>商品の説明</label>
+          <textarea id="rc-desc" rows="3" placeholder="どんなお菓子か、味や食感の狙いなど"></textarea>
+        </div>
+        <div class="row-inline" style="margin-top:10px;">
+          <div class="field" style="max-width:130px;"><label>オーブン温度（℃）</label><input id="rc-oven-temp" type="number" step="any" inputmode="decimal" placeholder="180"></div>
+          <div class="field" style="max-width:130px;"><label>焼き時間（分）</label><input id="rc-oven-time" type="text" placeholder="14"></div>
+          <div class="field" style="max-width:260px;"><label>オーブンの設定</label><input id="rc-oven-setting" type="text" placeholder="上下火・ファンあり／天板2枚"></div>
+          <div class="field"><label>焼きの備考</label><input id="rc-oven-note" type="text" placeholder="10分で天板の前後を入れ替える など"></div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>作り方<span style="color:var(--ink-faint);">1行に1つの手順を書いてください</span></label>
+          <textarea id="rc-method" rows="10" placeholder="バターを室温にもどす&#10;粉をふるう&#10;…"></textarea>
+          <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-sm" id="rc-method-from-proc">ブロックワークの工程を差し込む</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>写真</label>
+          <input type="file" id="rc-photo-file" accept="image/*">
+          <div class="recipe-photo-preview" id="rc-photo-preview"></div>
+          <div style="margin-top:6px;"><button type="button" class="btn btn-sm btn-ghost" id="rc-photo-clear">写真を削除</button></div>
+          <span class="hint" style="margin-top:4px;">長辺1000pxくらいに縮めてから保存します。枚数がふえると保存データが重くなるので、必要なものだけにしてください。</span>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:8px;">
+          <button type="button" class="btn btn-primary" id="rc-save">レシピを保存</button>
+          <button type="button" class="btn btn-ghost" id="rc-cancel">とじる</button>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
       <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p></div></div>
@@ -909,6 +1068,33 @@
         </div>
         <button class="btn btn-primary" id="btn-save-settings" style="margin-top:18px;">設定を保存</button>
         <p class="hint" style="margin-top:10px;">工賃単価も間接費単価も、分母は「年間の延べ製造時間」でそろえます。工賃単価は「年間の人件費合計 ÷ 延べ製造時間 ÷ 60分」（自分ひとりぶんで出したいときは「時給 ÷ 60分」）、間接費単価は「年間の水道光熱費など ÷ 延べ製造時間 ÷ 60分」。販管費は「年間の販管費 ÷ 年間販売点数」です。どちらも分母をそろえてあるので、全商品に配ったぶんの合計が1年ぶんの金額とだいたい一致します。数値はすべて小数点第2位までの表示です。</p>
+      </div>
+
+      <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;">レシピ帳の印刷</h3>
+        <p class="hint">レシピ帳のページを印刷するときの用紙と余白です。ルーズリーフに印刷するときは、とじ穴の側の余白を広めにしてください。</p>
+        <div class="settings-grid">
+          <div class="field">
+            <label>用紙サイズ</label>
+            <select id="s-paper-size">
+              <option value="A4">A4</option>
+              <option value="B5">B5</option>
+              <option value="A5">A5</option>
+              <option value="letter">レター</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>向き</label>
+            <select id="s-paper-orient">
+              <option value="portrait">たて</option>
+              <option value="landscape">よこ</option>
+            </select>
+          </div>
+          <div class="field"><label>余白 上（mm）</label><input id="s-margin-top" type="number" min="0" step="1"></div>
+          <div class="field"><label>余白 下（mm）</label><input id="s-margin-bottom" type="number" min="0" step="1"></div>
+          <div class="field"><label>余白 左（mm）<span style="color:var(--ink-faint);">ルーズリーフのとじ穴側</span></label><input id="s-margin-left" type="number" min="0" step="1"></div>
+          <div class="field"><label>余白 右（mm）</label><input id="s-margin-right" type="number" min="0" step="1"></div>
+        </div>
       </div>
 
       <div class="card section-card" style="margin-top:16px;">
@@ -1097,7 +1283,9 @@
     costLabels: null,
     groupOrder: null,      // 中カテゴリの並び順
     catOrder: null,        // 小カテゴリの並び順（中カテゴリごと）
-    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, laborAnnualAmount: null, staffCosts: null, multiTimeFactor: 0.3 },
+    settings: { laborRate: 21.6667, overheadRate: 2.2011, sga: 4.7727, taxRate: 8, margin: 35, appName: '工房ノート', overheadAnnualAmount: null, overheadAnnualHours: null, laborAnnualAmount: null, staffCosts: null, multiTimeFactor: 0.3,
+               paperSize: 'A4', paperOrient: 'portrait', marginTop: 15, marginBottom: 15, marginLeft: 25, marginRight: 12 },
+    recipes: null,         // {商品ID: {desc, photo, source, oven, method}}
     editingProductId: null,
     currentDetailId: null,
   };
@@ -1404,10 +1592,17 @@
     });
     if(name === 'products') renderProductList();
     if(name === 'materials') renderMaterialTable();
+    if(name === 'recipes'){ renderRecipePage(); }
     if(name === 'blockwork') loadBlockworkFrame(bwNeedsReload);
   }
   document.querySelectorAll('[data-view]').forEach(function(el){
-    el.addEventListener('click', function(){ showView(el.getAttribute('data-view')); });
+    el.addEventListener('click', function(){
+      // 一覧の「＋ 新規原価計算」は、前に編集していた商品が残っていたら白紙にする
+      if(el.getAttribute('data-view') === 'calc' && el.closest('#view-products') && state.editingProductId){
+        clearForm();
+      }
+      showView(el.getAttribute('data-view'));
+    });
   });
 
   // ---------------- sidebar collapse ----------------
@@ -1643,6 +1838,7 @@
       costLabels: state.costLabels,
       groupOrder: state.groupOrder,
       catOrder: state.catOrder,
+      recipes: state.recipes,
       blockworkValue: state.blockworkValue
     };
   }
@@ -1749,6 +1945,7 @@
       state.catOrder = (d.catOrder && typeof d.catOrder === 'object') ? Object.assign({}, d.catOrder) : null;
         state.productCategories = (Array.isArray(d.productCategories) && d.productCategories.length) ? d.productCategories.slice() : DEFAULT_PRODUCT_CATEGORIES.slice();
         if(d.settings) Object.assign(state.settings, d.settings);
+        state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
         state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
         hint.textContent = '保存しています…';
         doSave().then(function(){
@@ -1806,6 +2003,7 @@
       state.catOrder = (d.catOrder && typeof d.catOrder === 'object') ? Object.assign({}, d.catOrder) : null;
       state.productCategories = (Array.isArray(d.productCategories) && d.productCategories.length) ? d.productCategories.slice() : DEFAULT_PRODUCT_CATEGORIES.slice();
       if(d.settings) Object.assign(state.settings, d.settings);
+      state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
       state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
       state.dbxReady = true;
       setDbStatus(true, result.notFound ? '接続済み（新規データ）' : '接続済み');
@@ -2129,6 +2327,13 @@
     document.getElementById('s-overhead-annual-hours').value = state.settings.overheadAnnualHours != null ? state.settings.overheadAnnualHours : '';
     document.getElementById('s-labor-annual-amount').value = state.settings.laborAnnualAmount != null ? state.settings.laborAnnualAmount : '';
     renderStaffCosts(state.settings.staffCosts);
+    document.getElementById('s-paper-size').value = state.settings.paperSize || 'A4';
+    document.getElementById('s-paper-orient').value = state.settings.paperOrient || 'portrait';
+    document.getElementById('s-margin-top').value = state.settings.marginTop != null ? state.settings.marginTop : 15;
+    document.getElementById('s-margin-bottom').value = state.settings.marginBottom != null ? state.settings.marginBottom : 15;
+    document.getElementById('s-margin-left').value = state.settings.marginLeft != null ? state.settings.marginLeft : 25;
+    document.getElementById('s-margin-right').value = state.settings.marginRight != null ? state.settings.marginRight : 12;
+    applyPrintPageStyle();
     document.getElementById('s-multi-time').value = state.settings.multiTimeFactor != null ? state.settings.multiTimeFactor : 0.3;
     updateMultiTimeHint();
     document.getElementById('s-sga').value = round2(state.settings.sga);
@@ -3058,6 +3263,32 @@
 
   // ---------------- calculation ----------------
   function setTxt(id, text){ var el = document.getElementById(id); if(el) el.textContent = text; }
+
+  // ---------------- 「この商品には不要」 ----------------
+  var SKIP_KEYS = ['ing', 'pkg', 'proc'];
+  function skipBox(key){ return document.getElementById('f-skip-' + key); }
+  function applySkipUI(){
+    SKIP_KEYS.forEach(function(key){
+      var box = skipBox(key);
+      if(!box) return;
+      var card = box.closest('.section-card');
+      if(card) card.classList.toggle('section-skipped', box.checked);
+    });
+  }
+  function readSkip(){
+    var out = {};
+    SKIP_KEYS.forEach(function(key){ var b = skipBox(key); out[key] = !!(b && b.checked); });
+    return out;
+  }
+  function setSkip(skip){
+    skip = skip || {};
+    SKIP_KEYS.forEach(function(key){ var b = skipBox(key); if(b) b.checked = !!skip[key]; });
+    applySkipUI();
+  }
+  SKIP_KEYS.forEach(function(key){
+    var b = skipBox(key);
+    if(b) b.addEventListener('change', function(){ applySkipUI(); saveCalcDraft(); });
+  });
   function recalc(){
     var ing = readRows('ing-body');
     var ingTotal1 = ing.reduce(function(s,r){ return s + r.amount; }, 0);
@@ -3203,6 +3434,7 @@
     document.getElementById('f-yield-unit').value = '個';
     setAllowedMultipliers([1], true);
     setCostMultiplier(null, true);
+    setSkip(null);
     document.getElementById('f-pack-count').value = 1;
     document.getElementById('f-margin').value = state.settings.margin;
     document.getElementById('ing-body').innerHTML = '';
@@ -3230,6 +3462,7 @@
       yieldUnit: document.getElementById('f-yield-unit').value,
       multipliers: allowedMultipliers.slice(),
       costMultiplier: costMultiplier,
+      skip: readSkip(),
       packCount: document.getElementById('f-pack-count').value,
       countUnit: document.getElementById('f-count-unit').value,
       margin: document.getElementById('f-margin').value,
@@ -3270,6 +3503,7 @@
     procViewKey = null;
     setAllowedMultipliers(d.multipliers || [d.multiplier || 1], true);
     setCostMultiplier(d.costMultiplier, true);
+    setSkip(d.skip);
     fillRows('ing-body', d.ing);
     fillRows('pkg-body', d.pkg);
     fillContentRows(d.contents);
@@ -3348,6 +3582,7 @@
     document.getElementById('f-yield-unit').value = (p.batch && p.batch.yieldUnit) || '個';
     setAllowedMultipliers((p.batch && p.batch.allowedMultipliers) || [(p.batch && p.batch.multiplier) || 1], true);
     setCostMultiplier(p.batch && p.batch.costMultiplier, true);
+    setSkip(p.skip);
     document.getElementById('f-pack-count').value = (p.pack && p.pack.piecesPerPackage) || 1;
     document.getElementById('f-margin').value = (p.marginRate!=null ? p.marginRate*100 : state.settings.margin);
     procRoles = (p.procRoles && typeof p.procRoles === 'object') ? Object.assign({}, p.procRoles) : {};
@@ -3413,6 +3648,7 @@
       },
       totalCost: c.totalCost,
       procRoles: Object.assign({}, procRoles),
+      skip: readSkip(),
       marginRate: c.marginRate,
       priceExTax: c.priceEx,
       priceInTax: c.priceIn,
@@ -3442,6 +3678,7 @@
       document.getElementById('calc-edit-banner').style.display = '';
       document.getElementById('calc-heading').textContent = '原価計算を編集';
       btn.disabled = false;
+      showView('products');       // 登録したら一覧に戻る
     }catch(e){
       showToast('保存に失敗しました：' + (e && e.message ? e.message : e));
       document.getElementById('btn-save').disabled = false;
@@ -3450,6 +3687,27 @@
 
   // ---------------- products list & detail ----------------
   var productReorderMode = false;
+  // 昔に登録した商品は税込価格を持っていないことがあるので、そのときは税抜から出す
+  // ①②③のうち、まだ入力がなくて「不要」でもないものを返す
+  function missingParts(p){
+    var skip = (p && p.skip) || {};
+    var out = [];
+    var ingN = (p.batch && Array.isArray(p.batch.ingredients)) ? p.batch.ingredients.length : 0;
+    var pkgN = (p.pack && Array.isArray(p.pack.items)) ? p.pack.items.length : 0;
+    var hasProc = false;
+    try{
+      var info = getProcessCosting(p.name, 1, (p.planning && p.planning.productCode) || '');
+      hasProc = !!(info && info.rows && info.rows.length);
+    }catch(e){ hasProc = false; }
+    if(!skip.ing && !ingN) out.push('①原材料');
+    if(!skip.pkg && !pkgN) out.push('②資材');
+    if(!skip.proc && !hasProc) out.push('③工程');
+    return out;
+  }
+  function priceInTaxOf(p){
+    if(p && p.priceInTax != null) return p.priceInTax;
+    return (p && p.priceExTax ? p.priceExTax : 0) * (1 + (state.settings.taxRate || 0) / 100);
+  }
   function categoryRank(cat){
     var idx = state.productCategories.indexOf(cat);
     return idx >= 0 ? idx : 999;
@@ -3623,10 +3881,20 @@
       var bwHidden = !!p.hiddenInBlockwork;
       html += '<div class="card product-card" data-id="'+p.id+'" style="border-left-color:'+categoryColor(p.category||'')+';">' +
         ((productReorderMode && grouped) ? '<div class="reorder-controls"><button type="button" class="icon-btn reorder-up" data-id="'+p.id+'" title="上へ">▲</button><button type="button" class="icon-btn reorder-down" data-id="'+p.id+'" title="下へ">▼</button></div>' : '') +
-        (pcode ? '<div class="pcode-line">'+escapeHtml(pcode)+'</div>' : '') +
+        '<div class="pcode-line">' +
+          (pcode ? '<span class="pcode-tag">'+escapeHtml(pcode)+'</span>' : '') +
+          '<span class="pcat-inline"><span class="dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:'+categoryColor(p.category||'')+'; margin-right:5px;"></span>'+escapeHtml(p.category||'カテゴリ未設定')+'</span>' +
+        '</div>' +
         '<div class="pname">'+escapeHtml(p.name)+'</div>' +
-        '<div class="pcat"><span class="dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:'+categoryColor(p.category||'')+'; margin-right:5px;"></span>'+escapeHtml(p.category||'カテゴリ未設定')+'</div>' +
-        '<div class="pmeta"><span>原価 <b>'+fmtYen(p.totalCost)+'</b></span><span>価格 <b>'+fmtYen(p.priceExTax)+'</b></span></div>' +
+        '<div class="pmeta">' +
+          '<span class="pm-main">税込 <b>'+fmtYen(priceInTaxOf(p))+'</b></span>' +
+          '<span>税抜 <b>'+fmtYen(p.priceExTax)+'</b></span>' +
+          '<span>原価 <b>'+fmtYen2(p.totalCost)+'</b></span>' +
+        '</div>' +
+        (function(){
+          var miss = missingParts(p);
+          return miss.length ? '<div class="miss-chips">'+miss.map(function(m){ return '<span class="miss-chip">'+m+'未入力</span>'; }).join('')+'</div>' : '';
+        })() +
         '<button type="button" class="btn btn-sm bw-hide-btn'+(bwHidden?' on':'')+'" data-id="'+p.id+'">'+
           (bwHidden ? 'ブロックワーク：非表示' : 'ブロックワークに非表示') + '</button>' +
         '</div>';
@@ -4517,6 +4785,260 @@
     if(e.target === this) closeConfirmModal();
   });
 
+
+  // ---------------- レシピ帳 ----------------
+  var recipeIndex = 0;
+  function recipesAll(){
+    if(!state.recipes || typeof state.recipes !== 'object') state.recipes = {};
+    return state.recipes;
+  }
+  function recipeOf(id){
+    var r = recipesAll()[id];
+    return r && typeof r === 'object' ? r : {};
+  }
+  // 一覧と同じ並び（カテゴリ順／商品番号順／商品名順）で、ページをめくる順番を決める
+  function recipeProducts(){
+    return sortedProductList(state.products.slice());
+  }
+  function applyPrintPageStyle(){
+    var el = document.getElementById('print-page-style');
+    if(!el){
+      el = document.createElement('style');
+      el.id = 'print-page-style';
+      document.head.appendChild(el);
+    }
+    var s = state.settings || {};
+    var size = (s.paperSize || 'A4') + ' ' + (s.paperOrient || 'portrait');
+    el.textContent = '@page{ size:' + size + '; margin:' +
+      (s.marginTop != null ? s.marginTop : 15) + 'mm ' +
+      (s.marginRight != null ? s.marginRight : 12) + 'mm ' +
+      (s.marginBottom != null ? s.marginBottom : 15) + 'mm ' +
+      (s.marginLeft != null ? s.marginLeft : 25) + 'mm; }';
+  }
+  function renderRecipeSelect(){
+    var sel = document.getElementById('recipe-select');
+    if(!sel) return;
+    var list = recipeProducts();
+    sel.innerHTML = list.map(function(p, i){
+      var code = (p.planning && p.planning.productCode) || '';
+      return '<option value="'+i+'">'+escapeHtml((code ? code + '　' : '') + p.name)+'</option>';
+    }).join('');
+    if(recipeIndex >= list.length) recipeIndex = Math.max(0, list.length - 1);
+    sel.value = String(recipeIndex);
+    var no = document.getElementById('recipe-pageno');
+    if(no) no.textContent = list.length ? (recipeIndex + 1) + ' / ' + list.length + ' ページ' : '';
+  }
+  function recipeIngredientTable(p){
+    var ing = (p.batch && Array.isArray(p.batch.ingredients)) ? p.batch.ingredients : [];
+    if(!ing.length) return '<p class="rc-empty">原価計算の①に材料を入れると、ここに出ます。</p>';
+    var mults = (p.batch && Array.isArray(p.batch.allowedMultipliers) && p.batch.allowedMultipliers.length)
+      ? p.batch.allowedMultipliers.slice() : [1];
+    var baseM = (p.batch && p.batch.costMultiplier) || Math.min.apply(null, mults);
+    var headHtml = '<tr><th>原材料</th>' + mults.map(function(m){
+      return '<th'+(m === baseM ? ' class="rc-base"' : '')+'>×'+fmtNum(m)+'</th>';
+    }).join('') + '<th>単位</th></tr>';
+    var bodyHtml = ing.map(function(r){
+      return '<tr><td>'+escapeHtml(r.name || '')+'</td>' +
+        mults.map(function(m){
+          return '<td'+(m === baseM ? ' class="rc-base"' : '')+'>'+fmtNum((Number(r.qty)||0) * m)+'</td>';
+        }).join('') +
+        '<td style="text-align:left; color:var(--ink-soft);">'+escapeHtml(r.unit || '')+'</td></tr>';
+    }).join('');
+    var yield1 = (p.batch && (p.batch.baseYieldCount != null ? p.batch.baseYieldCount : p.batch.yieldCount)) || 0;
+    var yUnit = (p.batch && p.batch.yieldUnit) || '個';
+    var footHtml = '<tr><td>焼き上がり</td>' + mults.map(function(m){
+      return '<td'+(m === baseM ? ' class="rc-base"' : '')+'>'+fmtNum((Number(yield1)||0) * m)+'</td>';
+    }).join('') + '<td style="text-align:left; color:var(--ink-soft);">'+escapeHtml(yUnit)+'</td></tr>';
+    return '<table class="rc-ing"><thead>'+headHtml+'</thead><tbody>'+bodyHtml+'</tbody><tfoot>'+footHtml+'</tfoot></table>';
+  }
+  function renderRecipePage(){
+    var page = document.getElementById('recipe-page');
+    if(!page) return;
+    var list = recipeProducts();
+    if(!list.length){
+      page.innerHTML = '<div class="empty-state"><div class="big">📓</div>まだ商品が登録されていません。原価計算で商品を登録すると、ここにレシピのページができます。</div>';
+      return;
+    }
+    var p = list[recipeIndex];
+    var r = recipeOf(p.id);
+    var oven = r.oven || {};
+    var ovenParts = [];
+    if(oven.temp) ovenParts.push('<span>温度 <b>'+escapeHtml(String(oven.temp))+'℃</b></span>');
+    if(oven.time) ovenParts.push('<span>時間 <b>'+escapeHtml(String(oven.time))+'分</b></span>');
+    if(oven.setting) ovenParts.push('<span>設定 <b>'+escapeHtml(oven.setting)+'</b></span>');
+    var steps = (r.method || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    var code = (p.planning && p.planning.productCode) || '';
+
+    page.innerHTML =
+      (code ? '<div class="rc-code">'+escapeHtml(code)+'</div>' : '') +
+      '<h1 class="rc-title">'+escapeHtml(p.name)+'</h1>' +
+      '<div class="rc-head">' +
+        '<div style="flex:1 1 auto;">' +
+          '<div class="rc-desc">'+(r.desc ? escapeHtml(r.desc) : '<span class="rc-empty">（説明はまだありません）</span>')+'</div>' +
+          (r.source ? '<div class="rc-source">参照元：'+escapeHtml(r.source)+'</div>' : '') +
+        '</div>' +
+        '<div class="rc-photo">' +
+          (r.photo ? '<img src="'+r.photo+'" alt="">' : '<div class="rc-nophoto">写真なし</div>') +
+        '</div>' +
+      '</div>' +
+      '<div class="rc-sec"><h4>材料</h4>' + recipeIngredientTable(p) + '</div>' +
+      '<div class="rc-sec"><h4>焼成</h4>' +
+        (ovenParts.length ? '<div class="rc-oven">'+ovenParts.join('')+'</div>' : '<p class="rc-empty">（オーブンの設定はまだありません）</p>') +
+        (oven.note ? '<div class="rc-source">'+escapeHtml(oven.note)+'</div>' : '') +
+      '</div>' +
+      '<div class="rc-sec"><h4>作り方</h4>' +
+        (steps.length
+          ? '<div class="rc-method"><ol>'+steps.map(function(s){ return '<li>'+escapeHtml(s)+'</li>'; }).join('')+'</ol></div>'
+          : '<p class="rc-empty">（作り方はまだありません。「このページを編集」から書けます）</p>') +
+      '</div>';
+    renderRecipeSelect();
+    if(!document.getElementById('recipe-edit').hidden) loadRecipeIntoForm();
+  }
+  function turnRecipePage(dir){
+    var list = recipeProducts();
+    var next = recipeIndex + dir;
+    if(next < 0 || next >= list.length) return;
+    var page = document.getElementById('recipe-page');
+    recipeIndex = next;
+    renderRecipePage();
+    // 紙をめくる感じ：新しいページが手前に起き上がってくる
+    page.style.transition = 'none';
+    page.style.transformOrigin = dir > 0 ? 'left center' : 'right center';
+    page.style.transform = 'rotateY(' + (dir > 0 ? 55 : -55) + 'deg)';
+    page.style.opacity = '0.25';
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        page.style.transition = 'transform .32s ease-out, opacity .32s ease-out';
+        page.style.transform = 'rotateY(0deg)';
+        page.style.opacity = '1';
+      });
+    });
+  }
+  function loadRecipeIntoForm(){
+    var list = recipeProducts();
+    if(!list.length) return;
+    var r = recipeOf(list[recipeIndex].id);
+    var oven = r.oven || {};
+    document.getElementById('rc-source').value = r.source || '';
+    document.getElementById('rc-desc').value = r.desc || '';
+    document.getElementById('rc-oven-temp').value = oven.temp != null ? oven.temp : '';
+    document.getElementById('rc-oven-time').value = oven.time != null ? oven.time : '';
+    document.getElementById('rc-oven-setting').value = oven.setting || '';
+    document.getElementById('rc-oven-note').value = oven.note || '';
+    document.getElementById('rc-method').value = r.method || '';
+    var prev = document.getElementById('rc-photo-preview');
+    prev.innerHTML = r.photo ? '<img src="'+r.photo+'" alt="">' : '';
+    prev.dataset.photo = r.photo || '';
+  }
+  function saveRecipeFromForm(){
+    var list = recipeProducts();
+    if(!list.length) return;
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var id = list[recipeIndex].id;
+    recipesAll()[id] = {
+      source: document.getElementById('rc-source').value.trim(),
+      desc: document.getElementById('rc-desc').value,
+      oven: {
+        temp: document.getElementById('rc-oven-temp').value.trim(),
+        time: document.getElementById('rc-oven-time').value.trim(),
+        setting: document.getElementById('rc-oven-setting').value.trim(),
+        note: document.getElementById('rc-oven-note').value.trim()
+      },
+      method: document.getElementById('rc-method').value,
+      photo: document.getElementById('rc-photo-preview').dataset.photo || '',
+      updatedAt: new Date().toISOString()
+    };
+    scheduleSave();
+    renderRecipePage();
+    showToast('「'+list[recipeIndex].name+'」のレシピを保存しました');
+  }
+  function shrinkImageToDataUrl(file, maxSide, cb){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxSide / Math.max(w, h));
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(w * scale);
+        cv.height = Math.round(h * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        cb(cv.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = function(){ cb(null); };
+      img.src = reader.result;
+    };
+    reader.onerror = function(){ cb(null); };
+    reader.readAsDataURL(file);
+  }
+  document.getElementById('recipe-prev').addEventListener('click', function(){ turnRecipePage(-1); });
+  document.getElementById('recipe-next').addEventListener('click', function(){ turnRecipePage(1); });
+  document.getElementById('recipe-select').addEventListener('change', function(){
+    var v = parseInt(this.value, 10) || 0;
+    if(v === recipeIndex){ renderRecipePage(); return; }
+    turnRecipePage(v - recipeIndex);
+  });
+  document.getElementById('recipe-ruled').addEventListener('change', function(){
+    document.getElementById('recipe-page').classList.toggle('ruled', this.checked);
+  });
+  document.getElementById('btn-recipe-edit').addEventListener('click', function(){
+    var box = document.getElementById('recipe-edit');
+    box.hidden = !box.hidden;
+    if(!box.hidden){ loadRecipeIntoForm(); box.scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
+  document.getElementById('rc-cancel').addEventListener('click', function(){
+    document.getElementById('recipe-edit').hidden = true;
+  });
+  document.getElementById('rc-save').addEventListener('click', saveRecipeFromForm);
+  document.getElementById('rc-photo-clear').addEventListener('click', function(){
+    var prev = document.getElementById('rc-photo-preview');
+    prev.innerHTML = ''; prev.dataset.photo = '';
+    document.getElementById('rc-photo-file').value = '';
+  });
+  document.getElementById('rc-photo-file').addEventListener('change', function(){
+    var f = this.files && this.files[0];
+    if(!f) return;
+    shrinkImageToDataUrl(f, 1000, function(url){
+      if(!url){ showToast('写真を読み込めませんでした'); return; }
+      var prev = document.getElementById('rc-photo-preview');
+      prev.innerHTML = '<img src="'+url+'" alt="">';
+      prev.dataset.photo = url;
+    });
+  });
+  document.getElementById('rc-method-from-proc').addEventListener('click', function(){
+    var list = recipeProducts();
+    if(!list.length) return;
+    var p = list[recipeIndex];
+    var info = getProcessCosting(p.name, 1, (p.planning && p.planning.productCode) || '');
+    if(!info || !info.rows.length){ showToast('この商品の工程がブロックワークにありません'); return; }
+    var ta = document.getElementById('rc-method');
+    var lines = info.rows.map(function(r){ return r.label; });
+    ta.value = (ta.value ? ta.value.replace(/\s*$/, '') + '\n' : '') + lines.join('\n');
+    ta.focus();
+  });
+  document.getElementById('btn-recipe-print').addEventListener('click', function(){
+    applyPrintPageStyle();
+    window.print();
+  });
+  // 左右スワイプでページをめくる
+  (function(){
+    var stage = document.querySelector('.recipe-stage');
+    if(!stage) return;
+    var sx = 0, sy = 0, tracking = false;
+    stage.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, {passive:true});
+    stage.addEventListener('touchend', function(e){
+      if(!tracking) return;
+      tracking = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if(!t) return;
+      var dx = t.clientX - sx, dy = t.clientY - sy;
+      if(Math.abs(dx) > 60 && Math.abs(dy) < 70) turnRecipePage(dx < 0 ? 1 : -1);
+    }, {passive:true});
+  })();
+
   // ---------------- settings ----------------
   // ---------------- 人件費と製造時間の内訳 ----------------
   var DEFAULT_STAFF_COSTS = [{name:'自分', hourly:null, hours:null}, {name:'従業員', hourly:null, hours:null}, {name:'パート', hourly:null, hours:null}];
@@ -4599,12 +5121,19 @@
       sga: round2(parseFloat(document.getElementById('s-sga').value)||0),
       taxRate: parseFloat(document.getElementById('s-tax').value)||0,
       margin: parseFloat(document.getElementById('s-margin').value)||0,
-      staffCosts: staffCostRows().filter(function(r){ return r.name || r.hourly || r.hours; })
+      staffCosts: staffCostRows().filter(function(r){ return r.name || r.hourly || r.hours; }),
+      paperSize: document.getElementById('s-paper-size').value,
+      paperOrient: document.getElementById('s-paper-orient').value,
+      marginTop: parseFloat(document.getElementById('s-margin-top').value) || 0,
+      marginBottom: parseFloat(document.getElementById('s-margin-bottom').value) || 0,
+      marginLeft: parseFloat(document.getElementById('s-margin-left').value) || 0,
+      marginRight: parseFloat(document.getElementById('s-margin-right').value) || 0
     };
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
     state.settings = s;
     scheduleSave();
     applyAppName();
+    applyPrintPageStyle();
     showToast('設定を保存しました');
     recalc();
   });
