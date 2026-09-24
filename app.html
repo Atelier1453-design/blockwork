@@ -383,7 +383,7 @@
   .recipe-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
   .recipe-bar select{max-width:280px;}
   .recipe-pageno{font-size:12.5px; color:var(--ink-soft);}
-  .recipe-stage{perspective:2400px; position:relative;}
+  .recipe-stage{perspective:2400px; position:relative; overflow:hidden; padding:10px 0 18px;}
   /* ページカール：紙を細い短冊に分けて、丸まりながらめくれるようにする */
   .curl-sheet{
     position:absolute; transform-style:preserve-3d; pointer-events:none; z-index:6;
@@ -483,6 +483,10 @@
   .rc-oven-line .rc-arrow{margin:0 8px; color:var(--ink-soft);}
   .rc-oven-sub{font-size:12.5px; color:var(--ink-soft); line-height:26px; padding-left:2px;}
   .rc-oven-extra{font-size:12.5px; color:var(--ink-soft); margin-left:8px;}
+  .rc-sec h4 .rc-sec-from{font-family:"Zen Kaku Gothic New",sans-serif; font-size:11.5px; font-weight:400; color:var(--ink-faint); margin-left:10px;}
+  .rc-procnotes{display:flex; flex-direction:column;}
+  .rc-procnote{font-size:14px; line-height:32px; color:var(--ink);}
+  .rc-procnote b{display:inline-block; min-width:5.5em; color:var(--accent-strong);}
   .recipe-photo-preview img{max-width:220px; border-radius:6px; border:1px solid var(--border); display:block; margin-top:6px;}
 
   @media (max-width: 760px){
@@ -3044,7 +3048,9 @@
       sumSetup[role] += setup;
       sumPer[role] += per;
       timeMultOut = timeMult;
-      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role, who:who});
+      rows.push({id:procId, label:procLabel(bw, procId), setup:setup, per:per, minutes:minutes, role:role, who:who,
+        note:((product.procNote || {})[procId] || ''),
+        wait:(Number((product.procWait || {})[procId]) || 0)});
     });
     var laborRate = state.settings.laborRate || 0;
     var overheadRate = state.settings.overheadRate || 0;
@@ -5016,6 +5022,21 @@
     }).join('') + '<td style="text-align:left; color:var(--ink-soft);">'+escapeHtml(yUnit)+'</td></tr>';
     return '<table class="rc-ing"><thead>'+headHtml+'</thead><tbody>'+bodyHtml+'</tbody><tfoot>'+footHtml+'</tfoot></table>';
   }
+  // ブロックワークの工程に書いたメモ（温度・時間・注意点）をレシピにも出す
+  function recipeProcNotesHtml(p){
+    var info = null;
+    try{ info = getProcessCosting(p.name, 1, (p.planning && p.planning.productCode) || ''); }catch(e){ info = null; }
+    if(!info || !info.rows.length) return '';
+    var rows = info.rows.filter(function(r){ return r.note || r.wait; });
+    if(!rows.length) return '';
+    return '<div class="rc-sec"><h4>工程のメモ<span class="rc-sec-from">ブロックワークの工程から</span></h4>' +
+      '<div class="rc-procnotes">' + rows.map(function(r){
+        var t = [];
+        if(r.note) t.push(escapeHtml(r.note));
+        if(r.wait) t.push('このあと ' + fmtNum(r.wait, 0) + '分あける');
+        return '<div class="rc-procnote"><b>' + escapeHtml(r.label) + '</b>' + t.join('　／　') + '</div>';
+      }).join('') + '</div></div>';
+  }
   function renderRecipePage(){
     var page = document.getElementById('recipe-page');
     if(!page) return;
@@ -5047,6 +5068,7 @@
       '</div>' +
       '<div class="rc-sec"><h4>材料</h4>' + recipeIngredientTable(p) + '</div>' +
       '<div class="rc-sec"><h4>焼成</h4>' + ovenHtml + '</div>' +
+      recipeProcNotesHtml(p) +
       '<div class="rc-sec"><h4>作り方</h4>' +
         (steps.length
           ? '<div class="rc-method"><ol>'+steps.map(function(s){ return '<li>'+escapeHtml(s)+'</li>'; }).join('')+'</ol></div>'
@@ -5119,20 +5141,23 @@
         if(s.shades){ s.shades[0].style.opacity = '0'; s.shades[1].style.opacity = '0'; }
         continue;
       }
-      var d = x - axis, th = d / R, nx, z, deg;
+      var d = x - axis, th = d / R, nx, z, deg, shade;
       if(th <= Math.PI){
         nx = axis - R * Math.sin(th);
         z = R * (1 - Math.cos(th));
         deg = -th * 180 / Math.PI;
+        shade = Math.sin(th);
       } else {
-        nx = axis - (d - Math.PI * R);          // 巻き切ったあとは裏返って平らに寝る
+        var over = d - Math.PI * R;
+        nx = axis - over;                       // 巻き切ったあとは裏返って平らに寝る
         z = 2 * R;
         deg = -180;
+        // 巻きぎわがいちばん暗く、離れるほど明るくなる（紙の厚みの影）
+        shade = 0.42 * Math.exp(-over / (R * 1.6)) + 0.05;
       }
       s.style.transform = 'translate3d(' + (nx - x).toFixed(2) + 'px,0,' + z.toFixed(2) + 'px) rotateY(' + deg.toFixed(2) + 'deg)';
-      var shade = Math.sin(Math.min(th, Math.PI));
       if(s.shades){
-        var a = (0.30 * shade).toFixed(3);
+        var a = (0.34 * shade).toFixed(3);
         s.shades[0].style.opacity = a;
         s.shades[1].style.opacity = a;
       }
@@ -5176,7 +5201,7 @@
     cancelAnimationFrame(curlRaf);
     var step = function(ts){
       if(!t0) t0 = ts;
-      var k = Math.min(1, (ts - t0) / 300);
+      var k = Math.min(1, (ts - t0) / 240);
       var e = 1 - Math.pow(1 - k, 3);
       setCurlProgress(c, from + (to - from) * e);
       if(k < 1){ curlRaf = requestAnimationFrame(step); return; }
@@ -5299,7 +5324,12 @@
     var info = getProcessCosting(p.name, 1, (p.planning && p.planning.productCode) || '');
     if(!info || !info.rows.length){ showToast('この商品の工程がブロックワークにありません'); return; }
     var ta = document.getElementById('rc-method');
-    var lines = info.rows.map(function(r){ return r.label; });
+    var lines = info.rows.map(function(r){
+      var s = r.label;
+      if(r.note) s += '　' + r.note;
+      if(r.wait) s += '　このあと' + fmtNum(r.wait, 0) + '分あける';
+      return s;
+    });
     ta.value = (ta.value ? ta.value.replace(/\s*$/, '') + '\n' : '') + lines.join('\n');
     ta.focus();
   });
@@ -5316,22 +5346,31 @@
     stage.addEventListener('touchstart', function(e){
       if(e.touches.length !== 1 || curlNow) return;
       sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+      lastX = sx; lastT = Date.now(); vx = 0; grab = 0;
       tracking = true; decided = false;
     }, {passive:true});
+    var grab = 0, lastX = 0, lastT = 0, vx = 0;
     stage.addEventListener('touchmove', function(e){
       if(!tracking || e.touches.length !== 1) return;
-      var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+      var cx = e.touches[0].clientX;
+      var dx = cx - sx, dy = e.touches[0].clientY - sy;
+      var now = Date.now();
+      if(now > lastT){ vx = (cx - lastX) / (now - lastT); }   // px／ミリ秒
+      lastX = cx; lastT = now;
       if(!decided){
         if(Math.abs(dy) > 26 && Math.abs(dy) > Math.abs(dx)){ reset(); return; }   // 縦スクロール
-        if(Math.abs(dx) < 14) return;
+        if(Math.abs(dx) < 12) return;
         decided = true;
+        grab = dx;                                   // つまみ始めのぶんは差し引く
         curlNow = startCurl(dx < 0 ? 1 : -1);
         if(!curlNow){ reset(); return; }
       }
       if(!curlNow) return;
       if(e.cancelable) e.preventDefault();
-      var w = curlNow.w || 1;
-      var p = curlNow.dir > 0 ? (-dx / w) : (1 - (dx / w));
+      // 紙の幅いっぱい動かさなくても、半分弱の動きでめくり切れるようにする
+      var span = Math.max(160, (curlNow.w || 1) * 0.45);
+      var moved = (dx - grab);
+      var p = curlNow.dir > 0 ? (-moved / span) : (1 - (moved / span));
       setCurlProgress(curlNow, p);
     }, {passive:false});
     function release(){
@@ -5339,7 +5378,11 @@
       reset();
       if(!curlNow) return;
       var c = curlNow;
-      var done = c.dir > 0 ? (c.p > 0.32) : (c.p < 0.68);
+      var flick = Math.abs(vx) > 0.45;               // すっと払った
+      var done;
+      if(c.dir > 0) done = flick ? (vx < 0) : (c.p > 0.28);
+      else          done = flick ? (vx > 0) : (c.p < 0.72);
+      vx = 0;
       finishCurl(c, done);
     }
     stage.addEventListener('touchend', release, {passive:true});
