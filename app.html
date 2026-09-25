@@ -664,7 +664,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.29</div>
+      <div style="margin-top:2px;">ver.30</div>
     </div>
   </nav>
 
@@ -1123,7 +1123,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.29</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.30</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -2776,10 +2776,23 @@
     }, {passive:true});
     ov.addEventListener('touchmove', function(e){
       acHolding = true; acTouchAt = Date.now();
-      if(!acTouch) return;
       var t = e.touches[0];
-      if(t && (Math.abs(t.clientX - acTouch.x) > 6 || Math.abs(t.clientY - acTouch.y) > 6)) acTouch.moved = true;
-    }, {passive:true});
+      if(acTouch && t){
+        if(Math.abs(t.clientX - acTouch.x) > 6 || Math.abs(t.clientY - acTouch.y) > 6) acTouch.moved = true;
+      }
+      // リストの中で動かせる分だけ動かし、それ以上は画面に伝えない
+      //  ・候補が少なくてスクロールの必要がない → まわりを一切動かさない
+      //  ・いちばん上／下まで来ていて、さらに同じ向きになぞった → まわりを動かさない
+      if(!t || !e.cancelable) return;
+      var lastY = (acTouch && acTouch.lastY != null) ? acTouch.lastY : (acTouch ? acTouch.y : t.clientY);
+      var dy = t.clientY - lastY;
+      if(acTouch) acTouch.lastY = t.clientY;
+      var room = ov.scrollHeight - ov.clientHeight;
+      if(room <= 1){ e.preventDefault(); return; }
+      if(dy > 0 && ov.scrollTop <= 0){ e.preventDefault(); return; }
+      if(dy < 0 && ov.scrollTop >= room - 1){ e.preventDefault(); return; }
+      if(dy === 0 && acTouch && Math.abs(t.clientX - acTouch.x) > Math.abs(t.clientY - acTouch.y)){ e.preventDefault(); }
+    }, {passive:false});
     ov.addEventListener('touchcancel', function(){
       acTouch = null; acTouchAt = Date.now();
       setTimeout(function(){ acHolding = false; }, 400);
@@ -2862,6 +2875,7 @@
     var list = acOverlayEl();
     acOwnerRow = tr;
     var q = (input.value || '').trim().toLowerCase();
+    if(!q){ hideSuggestions(tr); return; }            // 何も打っていないときは候補を出さない
     var want = (kind === 'pkg') ? 'supply' : 'food';
     var matches = q ? state.materials.filter(function(m){
       return (m.name||'').toLowerCase().indexOf(q) >= 0;   // 部分一致
@@ -5358,7 +5372,8 @@
     var c = curlNow;
     if(!c || !c.released) return;
     var k = Math.min(1, (curlNowMs() - c.animStart) / c.animDur);
-    var e = 1 - Math.pow(1 - k, 3);                 // 勢いよく出て、ゆっくり止まる
+    // はじめは指の勢いのまま、終わりはそっと着地する
+    var e = 1 - Math.pow(1 - k, 2);
     setCurlProgress(c, c.animFrom + (c.animTo - c.animFrom) * e);
     if(k >= 1){ finalizeCurl(c); return; }
     scheduleCurlTick();
@@ -5414,6 +5429,7 @@
     // めくっている間、レシピ欄の高さが変わって「大きさが変わった」ように見えないようにする
     stage.style.minHeight = Math.max(h, page.offsetHeight) + 20 + 'px';
     c.wrap.style.left = Math.round(pr.left - sr.left) + 'px';
+    c.pageLeft = pr.left;                      // 指の位置を紙の上の位置に直すため
     c.wrap.style.top = Math.round(pr.top - sr.top) + 'px';
     c.dir = dir;
     c.target = target;
@@ -5446,7 +5462,8 @@
     var sp = Math.max(1, Math.abs(speed || 0) / 0.9);
     c.animFrom = from;
     c.animTo = to;
-    c.animDur = Math.max(180, Math.min(560, rest * CURL_FULL_MS / sp));
+    // 速く払っても一瞬で終わらせず、紙がふわっと倒れていく時間をとる
+    c.animDur = Math.max(c.commit ? 560 : 340, Math.min(900, rest * 1000 / sp));
     c.animStart = curlNowMs();
     c.released = true;
     scheduleCurlTick();
@@ -5626,7 +5643,7 @@
       lastX = e.clientX; lastT = now;
       if(!decided){
         if(Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)){ gid = null; return; }  // 縦スクロール
-        if(Math.abs(dx) < 10) return;
+        if(Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return;
         decided = true; grab = dx;
         curlNow = startCurl(dx < 0 ? 1 : -1);
         document.body.classList.add('recipe-dragging');
@@ -5636,7 +5653,11 @@
       if(!curlNow) return;
       if(e.cancelable) e.preventDefault();
       // 紙の端は指と同じだけ（少しだけ多めに）動く
-      dragCurlToEdge(curlNow, curlNow.edge0 + (dx - grab) * 1.3);
+      // 紙の端は、動かし始めの数ミリで指の位置まで寄ってきて、そのあとは指にぴったりついてくる
+      var rel = e.clientX - (curlNow.pageLeft || 0);
+      var k = Math.min(1, Math.abs(dx) / 40);
+      var ease = 1 - (1 - k) * (1 - k);
+      dragCurlToEdge(curlNow, curlNow.edge0 + (rel - curlNow.edge0) * ease);
     }
     function up(e){
       if(gid === null) return;
@@ -5664,7 +5685,10 @@
       var half = (c.w || 1) * 0.55;
       var ex = (c.edgeX != null) ? c.edgeX : c.edge0;
       // 払ったら向きどおりに、ゆっくりなら紙の端がページの半分を越えたかで決める
-      var done = c.dir > 0 ? (flick ? vx < 0 : ex < half) : (flick ? vx > 0 : ex > (c.w || 1) * 0.35);
+      var movedPx = (e && e.clientX != null) ? (e.clientX - gx) : dx;
+      var far = Math.abs(movedPx) > Math.max(70, (c.w || 1) * 0.2);
+      var done = c.dir > 0 ? (flick ? vx < 0 : (ex < half || (far && movedPx < 0)))
+                           : (flick ? vx > 0 : (ex > (c.w || 1) * 0.35 || (far && movedPx > 0)));
       var speed = vx; vx = 0;
       finishCurl(c, done, speed);
     }
