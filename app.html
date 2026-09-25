@@ -53,7 +53,7 @@
   input,select,textarea{font-family:inherit; font-size:14px;}
   ::selection{background:var(--accent-soft);}
 
-  .app{display:flex; min-height:100vh;}
+  .app{display:flex; min-height:100vh; min-height:100dvh;}
 
   /* ---------- Sidebar ---------- */
   .sidebar{
@@ -62,7 +62,7 @@
     border-right:1px solid var(--border);
     padding:22px 14px;
     display:flex; flex-direction:column; gap:22px;
-    position:sticky; top:0; height:100vh;
+    position:sticky; top:0; height:100vh; height:100dvh;
   }
   .brand{padding:0 8px;}
   .brand .mark{font-size:12px; letter-spacing:.14em; color:var(--accent); font-weight:700;}
@@ -242,7 +242,9 @@
   .ac-item{padding:7px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; font-size:13px;}
   .ac-item small{color:var(--ink-faint); font-size:11px;}
   .ac-item.active, .ac-item:hover{background:rgba(0,0,0,.06);}
-  .mat-biggroup td{background:var(--ink, #3a3226); color:#fff; font-weight:700; font-size:13px; padding:7px 10px; letter-spacing:.04em; position:relative; z-index:1;}
+  .mat-biggroup td{background:var(--accent-soft); color:var(--accent-strong); font-weight:700; font-size:13.5px;
+    padding:8px 10px; letter-spacing:.04em; position:relative; z-index:1;
+    border-top:2px solid var(--accent); border-bottom:1px solid var(--accent);}
   .mat-group select.group-picker{font-size:11px; margin-left:10px; padding:1px 4px; width:auto;}
   .mat-group td{background:var(--surface-2); font-weight:700; font-size:13px; padding:8px 10px; position:relative; z-index:1;}
   .mat-group td span{font-weight:400; color:var(--ink-faint); font-size:12px; margin-left:8px;}
@@ -256,12 +258,12 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
 
-  /* 指で使う端末では、入力欄の文字を大きくする（小さいと画面が勝手に拡大して、
-     キーボードや画面の位置が飛んでしまうため） */
-  @media (pointer: coarse){
-    input, select, textarea{font-size:16px !important;}
-    table.ing-table-multi td input, table.oven-table input{padding:6px 3px;}
-  }
+  /* 入力欄の文字は16px以上にする。これより小さいと iPad が入力のたびに
+     画面を勝手に拡大して、画面やキーボードの位置が飛んでしまう。 */
+  input, select, textarea,
+  table.ing-table input, table.mat-table input, table.oven-table input,
+  .mult-custom-input{font-size:16px !important;}
+  table.ing-table-multi td input, table.oven-table input{padding:6px 3px;}
   .with-unit{display:flex; align-items:center; gap:7px;}
   .with-unit input, .with-unit select{flex:1 1 auto; min-width:0;}
   .unit-tag{flex:0 0 auto; font-size:13px; color:var(--ink-soft); white-space:nowrap;}
@@ -277,8 +279,15 @@
     font-family:inherit; font-size:11px; color:inherit; padding:1px 6px; margin-right:6px;}
   .band-btn:disabled{opacity:.3; cursor:default;}
   .band-count{font-weight:400; font-size:11px; color:var(--ink-faint); margin-left:6px;}
-  .mat-biggroup .band-btn{border-color:rgba(255,255,255,.4); color:#fff;}
-  .mat-biggroup .band-count{color:rgba(255,255,255,.75);}
+  .mat-biggroup .band-btn{border-color:var(--accent); color:var(--accent-strong); background:var(--surface);}
+  .mat-biggroup .band-count{color:var(--ink-soft);}
+  .mat-group td{border-left:3px solid var(--border);}
+  /* 選んでいる行がひと目で分かるように */
+  table.mat-table tr.mat-selected td{background:#fdf3d8;}
+  table.mat-table tr.mat-selected td:first-child{box-shadow:inset 4px 0 0 var(--accent);}
+  table.mat-table tr.mat-selected:hover td{background:#fbecc4;}
+  /* 値段の更新が古い・入っていないものの目印 */
+  .mat-stale{color:var(--ink-faint); margin-right:5px; font-size:12px;}
   .band-moves{float:right; white-space:nowrap;}
   .mat-kind-tag{display:inline-block; font-size:10.5px; padding:1px 6px; border-radius:5px; border:1px solid var(--border); color:var(--ink-faint); margin-left:6px;}
   @media (max-width:640px){.settings-grid{grid-template-columns:1fr;}}
@@ -1391,6 +1400,17 @@
     return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0');
   }
   // stored as YYYY-MM (or legacy YYYY-MM-DD / YYYY) -> displayed as YYYY年MM月
+  // 値段の更新が1年以上前、または入っていないものに付けるしるし
+  function priceAgeMark(v){
+    var s = v ? String(v).trim() : '';
+    if(!s) return '<span class="mat-stale" title="更新年月が入っていません">⚠</span>';
+    var m = s.match(/^(\d{4})-(\d{1,2})/) || s.match(/^(\d{4})$/);
+    if(!m) return '';
+    var y = Number(m[1]), mo = m[2] ? Number(m[2]) : 12;
+    var then = new Date(y, mo - 1, 1), now = new Date();
+    var months = (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
+    return months >= 12 ? '<span class="mat-stale" title="値段の更新から1年以上たっています">⚠</span>' : '';
+  }
   function fmtYm(v){
     if(!v) return '—';
     var s = String(v).trim();
@@ -2747,30 +2767,27 @@
         e.stopPropagation();
         chooseSuggestion(tr, el.dataset.name);
       };
-      // 指を置いたまま動かしたときは「スクロールしたい」ので、選ばない
-      var sx = 0, sy = 0, movedAway = false;
-      el.addEventListener('touchstart', function(e){
-        var t = e.touches && e.touches[0];
-        if(!t) return;
-        sx = t.clientX; sy = t.clientY; movedAway = false;
+      // 指を置いたまま動かしたときは「スクロールしたい」ので、絶対に選ばない。
+      // 指・ペン・マウスをまとめて同じ仕組みで扱う。
+      var sx = 0, sy = 0, movedAway = false, pid = null;
+      el.addEventListener('pointerdown', function(e){
+        pid = e.pointerId; sx = e.clientX; sy = e.clientY; movedAway = false;
+        acHolding = true; acTouchAt = Date.now();
+      });
+      el.addEventListener('pointermove', function(e){
+        if(pid === null || e.pointerId !== pid) return;
+        if(Math.abs(e.clientX - sx) > 8 || Math.abs(e.clientY - sy) > 8) movedAway = true;
         acTouchAt = Date.now();
-      }, {passive:true});
-      el.addEventListener('touchmove', function(e){
-        var t = e.touches && e.touches[0];
-        if(!t) return;
-        if(Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) movedAway = true;
+      });
+      el.addEventListener('pointerup', function(e){
+        if(pid === null || e.pointerId !== pid) return;
+        pid = null;
         acTouchAt = Date.now();
-      }, {passive:true});
-      el.addEventListener('touchend', function(e){
-        acTouchAt = Date.now();
-        if(movedAway) return;                 // スクロールだったので何もしない
+        if(movedAway) return;            // スクロールだったので何もしない
         pick(e);
       });
-      el.addEventListener('mousedown', function(e){
-        if(Date.now() - acTouchAt < 800) return;   // 指で操作した直後の「幽霊クリック」は無視
-        pick(e);
-      });
-      el.addEventListener('click', function(e){ e.stopPropagation(); });
+      el.addEventListener('pointercancel', function(){ pid = null; movedAway = true; });
+      el.addEventListener('click', function(e){ e.stopPropagation(); e.preventDefault(); });
     });
   }
   function moveActive(tr, dir){
@@ -2788,7 +2805,8 @@
     hideSuggestions(tr);
     setRowMaterial(tr, name);
     var q = tr.querySelector('.row-qty');
-    focusSoft(q);
+    // 指で選んだときは、キーボードが文字→数字に切り替わって位置が飛ぶので自動で移らない
+    if(Date.now() - acTouchAt > 900) focusSoft(q);
   }
   function setRowMaterial(tr, name){
     name = (name || '').trim();
@@ -4512,7 +4530,7 @@
     var catNames = Object.keys(groups).sort(function(a,b){ return a.localeCompare(b,'ja'); });
 
     function matRow(m){
-      return '<tr data-id="'+m.id+'">' +
+      return '<tr data-id="'+m.id+'"'+(matBulkSel[m.id]?' class="mat-selected"':'')+'>' +
         '<td><input type="checkbox" class="mat-pick" data-id="'+m.id+'" style="width:auto;"'+(matBulkSel[m.id]?' checked':'')+'></td>' +
         '<td>'+escapeHtml(m.name)+
           '<span class="mat-kind-tag">'+kindLabel(kindOf(m))+(m.costLabel?'・'+escapeHtml(m.costLabel):'')+'</span>' +
@@ -4522,7 +4540,7 @@
         '<td>'+(m.price!=null?fmtYen(m.price):'—')+'</td>' +
         '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
         '<td>'+escapeHtml(m.supplier||'—')+'</td>' +
-        '<td>'+escapeHtml(fmtYm(m.priceUpdatedAt))+'</td>' +
+        '<td>'+priceAgeMark(m.priceUpdatedAt)+escapeHtml(fmtYm(m.priceUpdatedAt))+'</td>' +
         '<td><button class="btn btn-sm mat-edit-btn">編集</button></td>' +
         '</tr>';
     }
@@ -4586,6 +4604,8 @@
     body.querySelectorAll('.mat-pick').forEach(function(cb){
       cb.addEventListener('change', function(){
         matBulkSel[cb.dataset.id] = cb.checked;
+        var tr = cb.closest('tr');
+        if(tr) tr.classList.toggle('mat-selected', cb.checked);
         updateBulkBar();
       });
     });
@@ -5229,7 +5249,9 @@
     var dt = Math.min(64, now - (c.lastT != null ? c.lastT : now));
     c.lastT = now;
     var diff = c.pTarget - c.pShown;
-    var maxStep = dt / CURL_FULL_MS;
+    // 指を置いているあいだは、そのまま指についてくる。
+    // 指を離したあとだけ、めくれていく様子が見えるだけの時間をかける。
+    var maxStep = c.released ? (dt / (c.finishMs || CURL_FULL_MS)) : 1;
     if(Math.abs(diff) <= maxStep) c.pShown = c.pTarget;
     else c.pShown += (diff > 0 ? maxStep : -maxStep);
     setCurlProgress(c, c.pShown);
@@ -5287,8 +5309,12 @@
   }
   function finishCurl(c, commit){
     c.commit = !!commit;
+    var to = (c.dir > 0) ? (commit ? 1 : 0) : (commit ? 0 : 1);
+    // 残りの距離に応じた時間をかける（短くても動きが見えるように下限を置く）
+    var rest = Math.abs(to - c.pShown);
+    c.finishMs = Math.max(240, Math.round(CURL_FULL_MS * rest));
     c.released = true;
-    c.pTarget = (c.dir > 0) ? (commit ? 1 : 0) : (commit ? 0 : 1);
+    c.pTarget = to;
     scheduleCurlTick();
   }
   function loadRecipeIntoForm(){
@@ -5423,8 +5449,23 @@
     if(!c.released){ c.released = true; c.commit = (c.dir > 0); }
     finalizeCurl(c);
   }
-  var swipeGuardUntil = 0;
-  ['click', 'mouseup', 'mousedown'].forEach(function(type){
+  var swipeGuardUntil = 0, swipeShield = null;
+  // めくっているあいだは画面全体に透明な覆いをかけて、
+  // 指の下にあるボタンが押されたり点滅したりしないようにする
+  function showSwipeShield(on){
+    if(on){
+      if(!swipeShield){
+        swipeShield = document.createElement('div');
+        swipeShield.style.cssText = 'position:fixed; inset:0; z-index:9998; background:transparent; cursor:grabbing;';
+        swipeShield.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); });
+        swipeShield.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); });
+      }
+      if(!swipeShield.parentNode) document.body.appendChild(swipeShield);
+    } else if(swipeShield && swipeShield.parentNode){
+      swipeShield.parentNode.removeChild(swipeShield);
+    }
+  }
+  ['click', 'mouseup', 'mousedown', 'pointerup', 'pointerdown'].forEach(function(type){
     document.addEventListener(type, function(e){
       if(Date.now() >= swipeGuardUntil) return;
       if(e.target && e.target.closest && e.target.closest('.recipe-bar')) return;
@@ -5455,6 +5496,7 @@
         decided = true; grab = dx;
         curlNow = startCurl(dx < 0 ? 1 : -1);
         document.body.classList.add('recipe-dragging');
+        showSwipeShield(true);
         if(curlNow){ try{ stage.setPointerCapture(gid); }catch(err){} }
       }
       if(!curlNow) return;
@@ -5469,6 +5511,7 @@
       var dx = (e && e.clientX != null) ? (e.clientX - gx) : 0;
       var id = gid; gid = null;
       document.body.classList.remove('recipe-dragging');
+      showSwipeShield(false);
       try{ stage.releasePointerCapture(id); }catch(err){}
       if(!curlNow){
         // 演出が出せなかったときでも、はらった向きにページは動かす
