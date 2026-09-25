@@ -248,9 +248,12 @@
   .mat-cat-tag{font-size:10.5px; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft);}
   .mat-scroll{max-height:62vh; overflow:auto; border:1px solid var(--border); border-radius:12px;}
   .mat-count{font-size:12px; color:var(--ink-faint); margin-bottom:10px;}
-  .ac-overlay{position:fixed; max-height:45vh; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;}
+  .ac-overlay{position:fixed; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;}
   .ac-list{position:absolute; z-index:40; left:0; right:0; top:100%; background:var(--paper,#fff); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14); max-height:240px; overflow-y:auto;}
-  .ac-item{padding:7px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; font-size:13px;}
+  .ac-list.ac-overlay{max-height:300px;}
+  .ac-item{padding:7px 10px; cursor:pointer; display:flex; flex-direction:column; gap:2px; font-size:13px;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent;}
+  @media (pointer: coarse){ .ac-item{padding:10px 12px; font-size:15px;} .ac-item.active{background:transparent;} }
   .ac-item small{color:var(--ink-faint); font-size:11px;}
   .ac-item.active{background:rgba(0,0,0,.06);}
   @media (hover: hover) and (pointer: fine){ .ac-item:hover{background:rgba(0,0,0,.06);} }
@@ -661,6 +664,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
+      <div style="margin-top:2px;">ver.29</div>
     </div>
   </nav>
 
@@ -1119,7 +1123,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.29</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -1754,8 +1758,22 @@
   try{ setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1'); }catch(e){}
 
   // ---------------- iPad: 入力欄の外をタップしたらキーボードを閉じる ----------------
-  window.addEventListener('scroll', function(){ if(acOwnerRow) hideSuggestions(acOwnerRow); }, true);
-  window.addEventListener('resize', function(){ if(acOwnerRow) hideSuggestions(acOwnerRow); });
+  window.addEventListener('scroll', function(e){
+    if(!acOwnerRow) return;
+    // 候補リストそのものをスクロールしたときは閉じない
+    if(acOverlay && (e.target === acOverlay || (e.target && e.target.nodeType === 1 && acOverlay.contains(e.target)))){
+      acListScrollAt = Date.now(); return;
+    }
+    acPageScrollAt = Date.now();
+    // 候補リストを指で動かした勢いで画面まで動いたときは、閉じずに入力欄の横についていく
+    if(acTouch || Date.now() - acTouchAt < 1200 || Date.now() - acListScrollAt < 1200){
+      var inp = acOwnerRow.querySelector('.row-name');
+      var ir = inp ? inp.getBoundingClientRect() : null;
+      if(ir && ir.bottom > 0 && ir.top < window.innerHeight){ placeAcOverlay(inp); return; }
+    }
+    hideSuggestions(acOwnerRow);
+  }, true);
+  window.addEventListener('resize', function(){ if(acOwnerRow && !acTouch) hideSuggestions(acOwnerRow); });
   document.addEventListener('touchstart', function(e){
     dismissKeyboardIfOutside(e.target);
   }, {passive:true});
@@ -1764,7 +1782,7 @@
     var ae = document.activeElement;
     if(!ae || !(ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
     if(t && (t === ae || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' ||
-             t.tagName === 'BUTTON' || (t.closest && t.closest('label')))) return;
+             t.tagName === 'BUTTON' || (t.closest && (t.closest('label') || t.closest('.ac-overlay'))))) return;
     ae.blur();
   }
   document.addEventListener('keydown', function(e){
@@ -2655,7 +2673,7 @@
     nameInput.addEventListener('change', function(){ setRowMaterial(tr, nameInput.value); });
     nameInput.addEventListener('focus', function(){ showSuggestions(tr, kind); });
     nameInput.addEventListener('blur', function(){
-      setTimeout(function(){ if(acHolding) return; hideSuggestions(tr); }, 200);
+      setTimeout(function(){ if(acHolding || acTouch) return; if(acOwnerRow === tr) hideSuggestions(tr); }, 200);
     });
     qtyInput.addEventListener('focus', function(){
       // 前の数字を覚えてから空にする（すぐ打ち直せるように）
@@ -2689,7 +2707,7 @@
       e.preventDefault();
       if(open){
         var act = list.querySelector('.ac-item.active');
-        if(act){ chooseSuggestion(tr, act.dataset.name); return; }
+        if(act){ chooseSuggestion(tr, act.dataset.name, false); return; }
       }
       hideSuggestions(tr);
       var body = tr.parentNode;
@@ -2723,6 +2741,7 @@
   }
   // 候補リストは画面に重ねて出す（表の枠に切られないように）
   var acOverlay = null, acOwnerRow = null, acTouchAt = 0, acHolding = false;
+  var acTouch = null, acListScrollAt = 0, acPageScrollAt = 0, acOverlayGen = 0;
   // 候補リストと材料名の欄、どちらでもないところを触ったら閉じる
   document.addEventListener('pointerdown', function(e){
     if(!acOwnerRow) return;
@@ -2736,12 +2755,73 @@
     acOverlay = document.createElement('div');
     acOverlay.className = 'ac-list ac-overlay';
     acOverlay.hidden = true;
-    // リストに触れているあいだは閉じない（スクロールしたいだけのことがあるため）
-    acOverlay.addEventListener('touchstart', function(){ acHolding = true; acTouchAt = Date.now(); }, {passive:true});
-    acOverlay.addEventListener('touchmove', function(){ acHolding = true; acTouchAt = Date.now(); }, {passive:true});
-    acOverlay.addEventListener('touchend', function(){ setTimeout(function(){ acHolding = false; }, 400); }, {passive:true});
-    acOverlay.addEventListener('mousedown', function(){ acHolding = true; }, true);
-    acOverlay.addEventListener('mouseup', function(){ setTimeout(function(){ acHolding = false; }, 80); }, true);
+    // ▼ 指で選ぶしくみ
+    //   「指を置いた候補」と「指を離した候補」が同じで、指がほとんど動いておらず、
+    //   リストもスクロールしておらず、すっと離したときだけ選ぶ。
+    //   それ以外（なぞった・スクロールした・長く置いた・途中でキャンセル）は絶対に選ばない。
+    //   ブラウザが後から送ってくる「クリック」は、指で触った直後は一切使わない。
+    var ov = acOverlay;
+    ov.addEventListener('touchstart', function(e){
+      acHolding = true; acTouchAt = Date.now();
+      if(e.touches.length !== 1){ acTouch = null; return; }
+      var t = e.touches[0];
+      var item = e.target && e.target.closest ? e.target.closest('.ac-item') : null;
+      acTouch = {
+        x: t.clientX, y: t.clientY, at: Date.now(), item: item, gen: acOverlayGen,
+        top: ov.scrollTop, wy: window.pageYOffset || 0,
+        // リストが勢いで動いている最中の「止めるためのタッチ」は選ばない
+        stopping: (Date.now() - Math.max(acListScrollAt, acPageScrollAt)) < 180,
+        moved: false
+      };
+    }, {passive:true});
+    ov.addEventListener('touchmove', function(e){
+      acHolding = true; acTouchAt = Date.now();
+      if(!acTouch) return;
+      var t = e.touches[0];
+      if(t && (Math.abs(t.clientX - acTouch.x) > 6 || Math.abs(t.clientY - acTouch.y) > 6)) acTouch.moved = true;
+    }, {passive:true});
+    ov.addEventListener('touchcancel', function(){
+      acTouch = null; acTouchAt = Date.now();
+      setTimeout(function(){ acHolding = false; }, 400);
+    }, {passive:true});
+    ov.addEventListener('touchend', function(e){
+      acTouchAt = Date.now();
+      setTimeout(function(){ acHolding = false; }, 400);
+      var s = acTouch; acTouch = null;
+      if(!s || !s.item) return;
+      var t = e.changedTouches && e.changedTouches[0];
+      if(!t) return;
+      var ok = !s.moved && !s.stopping &&
+        Math.abs(t.clientX - s.x) <= 6 && Math.abs(t.clientY - s.y) <= 6 &&   // 指が動いていない
+        (Date.now() - s.at) < 500 &&                                        // すっと離した
+        Math.abs(ov.scrollTop - s.top) < 1 &&                               // リストが動いていない
+        Math.abs((window.pageYOffset || 0) - s.wy) < 1 &&                   // 画面も動いていない
+        s.gen === acOverlayGen && !ov.hidden && s.item.isConnected;         // 候補が作り直されていない
+      if(ok){
+        // 指を離した場所にある候補が、置いた候補と同じかも確かめる
+        var under = document.elementFromPoint(t.clientX, t.clientY);
+        under = under && under.closest ? under.closest('.ac-item') : null;
+        if(under !== s.item) ok = false;
+      }
+      if(!ok) return;
+      if(e.cancelable) e.preventDefault();      // このあと届くクリックを出させない
+      var tr = acOwnerRow;
+      if(tr) chooseSuggestion(tr, s.item.dataset.name, true);
+    }, {passive:false});
+    // マウス（パソコン）用：クリックで選ぶ。指で触った直後に届くクリックは無視する
+    ov.addEventListener('mousedown', function(e){
+      acHolding = true;
+      if(e.cancelable) e.preventDefault();      // 入力欄からカーソルを外さない
+    }, true);
+    ov.addEventListener('mouseup', function(){ setTimeout(function(){ acHolding = false; }, 80); }, true);
+    ov.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(e.cancelable) e.preventDefault();
+      if(Date.now() - acTouchAt < 1200) return;
+      var item = e.target && e.target.closest ? e.target.closest('.ac-item') : null;
+      if(item && acOwnerRow) chooseSuggestion(acOwnerRow, item.dataset.name, false);
+    });
+    ov.addEventListener('scroll', function(){ acListScrollAt = Date.now(); }, {passive:true});
     document.body.appendChild(acOverlay);
     return acOverlay;
   }
@@ -2753,12 +2833,26 @@
     el.style.top = Math.round(r.bottom + 2) + 'px';
     el.style.width = Math.max(220, Math.round(r.width)) + 'px';
     el.style.zIndex = '400';
+    var vv = window.visualViewport;
+    var viewBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
+    var viewTop = vv ? vv.offsetTop : 0;
+    var below = viewBottom - r.bottom - 10;
+    var above = r.top - viewTop - 10;
+    if(below < 150 && above > below){
+      // 下に余裕がないときは、入力欄の上に出す
+      var hAbove = Math.min(300, above);
+      el.style.maxHeight = Math.round(hAbove) + 'px';
+      el.style.top = Math.round(r.top - 2 - Math.min(hAbove, el.scrollHeight)) + 'px';
+    } else {
+      el.style.maxHeight = Math.round(Math.max(120, Math.min(300, below))) + 'px';
+    }
   }
   function hideSuggestions(tr){
     var el = acOverlayEl();
     el.hidden = true;
     el.innerHTML = '';
     acOwnerRow = null;
+    acOverlayGen++;
     if(tr) tr.classList.remove('ac-open');
     document.querySelectorAll('tr.ac-open').forEach(function(x){ x.classList.remove('ac-open'); });
   }
@@ -2786,39 +2880,10 @@
         '</div>';
     }).join('');
     list.hidden = false;
+    list.scrollTop = 0;
     placeAcOverlay(input);
     tr.classList.add('ac-open');        // 候補が出ているあいだは下の通知ボタンを隠す（誤タップ防止）
-    list.querySelectorAll('.ac-item').forEach(function(el){
-      var pick = function(e){
-        if(e.cancelable) e.preventDefault();
-        e.stopPropagation();
-        chooseSuggestion(tr, el.dataset.name);
-      };
-      // 指を置いたまま動かしたときは「スクロールしたい」ので、絶対に選ばない。
-      // 指・ペン・マウスをまとめて同じ仕組みで扱う。
-      var sx = 0, sy = 0, movedAway = false, pid = null, downAt = 0;
-      el.addEventListener('pointerdown', function(e){
-        pid = e.pointerId; sx = e.clientX; sy = e.clientY; movedAway = false;
-        downAt = Date.now();
-        acHolding = true; acTouchAt = Date.now();
-      });
-      el.addEventListener('pointermove', function(e){
-        if(pid === null || e.pointerId !== pid) return;
-        if(Math.abs(e.clientX - sx) > 8 || Math.abs(e.clientY - sy) > 8) movedAway = true;
-        acTouchAt = Date.now();
-      });
-      el.addEventListener('pointerup', function(e){
-        if(pid === null || e.pointerId !== pid) return;
-        pid = null;
-        acTouchAt = Date.now();
-        if(movedAway) return;            // スクロールだったので何もしない
-        // 指で押したときは、すっと離した「タップ」だけを選ぶ（置いたままは選ばない）
-        if(e.pointerType !== 'mouse' && Date.now() - downAt > 450) return;
-        pick(e);
-      });
-      el.addEventListener('pointercancel', function(){ pid = null; movedAway = true; });
-      el.addEventListener('click', function(e){ e.stopPropagation(); e.preventDefault(); });
-    });
+    acOverlayGen++;
   }
   function moveActive(tr, dir){
     var list = acOverlayEl();
@@ -2830,13 +2895,19 @@
     items[next].classList.add('active');
     items[next].scrollIntoView({block:'nearest'});
   }
-  function chooseSuggestion(tr, name){
-    tr.querySelector('.row-name').value = name;
+  function chooseSuggestion(tr, name, byTouch){
+    var nameEl = tr.querySelector('.row-name');
+    nameEl.value = name;
     hideSuggestions(tr);
     setRowMaterial(tr, name);
+    recalc();
     var q = tr.querySelector('.row-qty');
-    // 指で選んだときは、キーボードが文字→数字に切り替わって位置が飛ぶので自動で移らない
-    if(Date.now() - acTouchAt > 900) focusSoft(q);
+    if(byTouch){
+      // 指で選んだときは、キーボードを閉じるだけ（次の欄へ自動で移ると、キーボードが切り替わって位置が飛ぶため）
+      try{ nameEl.blur(); }catch(e){}
+    } else if(Date.now() - acTouchAt > 900){
+      focusSoft(q);
+    }
   }
   function setRowMaterial(tr, name){
     name = (name || '').trim();
