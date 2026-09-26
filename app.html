@@ -429,12 +429,19 @@
     position:absolute; top:0; transform-style:preserve-3d; will-change:transform;
   }
   /* めくれた紙が下のページに落とす影 */
+  .curl-flat{position:absolute; left:0; top:0; overflow:hidden;}
+  .curl-flat > .curl-page-copy{left:0;}
+  .curl-flap{
+    position:absolute; top:0; box-sizing:border-box; background:var(--surface-2);
+    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px);
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  }
   .curl-drop{
     position:absolute; top:0; height:100%; width:0; pointer-events:none;
     background:linear-gradient(to left, rgba(60,38,15,.30), rgba(60,38,15,.12) 35%, rgba(60,38,15,0));
   }
   .curl-slice-shade{
-    position:absolute; inset:0; background:#2a1b0c; opacity:0; pointer-events:none;
+    position:absolute; inset:0; background:transparent; pointer-events:none;
   }
   .curl-slice-front, .curl-slice-back{
     position:absolute; top:0; left:0; width:100%; height:100%;
@@ -664,7 +671,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.32</div>
+      <div style="margin-top:2px;">ver.33</div>
     </div>
   </nav>
 
@@ -1123,7 +1130,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.32</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.33</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -5257,7 +5264,7 @@
 
   // ---------------- ページカール（スワイプ用） ----------------
   // 紙を縦の短冊に分けて、短冊ごとに円筒に巻きつける形で動かす
-  var CURL_SLICES = 44;
+  var CURL_SLICES = 56;
   var CURL_LEAD = 0.22;             // 指を追い越す割合（指が10動くと紙は12.2動く）
   var CURL_FULL_MS = 620;          // 端から端までめくり切るのに最低これだけかける
   function buildCurlSheet(pageEl, html, w, h){
@@ -5274,15 +5281,29 @@
     if(html != null) proto.innerHTML = html;
     var sw = w / CURL_SLICES;
     var strips = [];
+    // まだ持ち上がっていない部分（1枚もの）
+    var flat = document.createElement('div');
+    flat.className = 'curl-flat';
+    flat.style.height = h + 'px';
+    flat.appendChild(proto.cloneNode(true));
+    wrap.appendChild(flat);
+    // 下のページに落ちる影
     var cast = document.createElement('div');
     cast.className = 'curl-drop';
     wrap.appendChild(cast);
+    // 裏返って寝ている部分（1枚もの。紙の裏なので中身はなし）
+    var flap = document.createElement('div');
+    flap.className = 'curl-flap';
+    flap.style.height = h + 'px';
+    wrap.appendChild(flap);
+    // 丸まっている部分だけ、細い短冊で丸みを出す
     for(var i = 0; i < CURL_SLICES; i++){
       var s = document.createElement('div');
       s.className = 'curl-slice';
       s.style.left = (i * sw) + 'px';
-      s.style.width = (sw + 0.6) + 'px';
+      s.style.width = (sw + 1.2) + 'px';          // となりと少し重ねて、すき間の線を出さない
       s.style.height = h + 'px';
+      s.style.display = 'none';
       var front = document.createElement('div');
       front.className = 'curl-slice-front';
       var copy = proto.cloneNode(true);
@@ -5302,20 +5323,68 @@
       wrap.appendChild(s);
       strips.push(s);
     }
-    return {wrap:wrap, cast:cast, strips:strips, sw:sw, w:w, h:h, p:-1, pShown:0, pTarget:0};
+    return {wrap:wrap, flat:flat, flap:flap, cast:cast, strips:strips, sw:sw, w:w, h:h, p:-1, pShown:0, pTarget:0};
+  }
+  function curlR(w){ return Math.max(22, w * 0.085); }
+  // 丸まりの陰（2段階）：th＝丸まりの角度（0＝持ち上がりはじめ、π＝折り返しのつけ根）
+  function curlShadeAt(th){
+    if(th <= 0) return 0;
+    if(th < Math.PI / 2) return 0.30;                    // 下側（上からはほぼ見えない）
+    var q = (Math.PI - th) / (Math.PI / 2);              // 1＝ふくらみの端、0＝つけ根
+    return q <= 0.5 ? q * 0.16 : 0.08 + (q - 0.5) * 0.44; // つけ根→中ほどは淡く、端に向かってぐっと濃く
   }
   function setCurlProgress(c, p){
     p = Math.max(0, Math.min(1, p));
     if(c.p === p) return;
     c.p = p;
-    var w = c.w;
-    var R = Math.max(22, w * 0.085);           // 巻きの太さ
+    var w = c.w, sw = c.sw;
+    var R = curlR(w);
     var travel = w + Math.PI * R;               // 端から端まで巻き切るまでの長さ
     var axis = w - travel * p;                  // 巻きの軸（右から左へ動く）
+    var roll = Math.PI * R;
+    var flatEnd = w;                            // 平らな1枚ものの右端
+    for(var i = 0; i < c.strips.length; i++){
+      var s = c.strips[i];
+      var x0 = i * sw, x1 = x0 + sw, xc = x0 + sw / 2;
+      var d = xc - axis;
+      if(d <= 0 || d > roll){
+        if(s.style.display !== 'none') s.style.display = 'none';
+        if(d > 0 && x0 < flatEnd) flatEnd = Math.min(flatEnd, x0);
+        continue;
+      }
+      if(x0 < flatEnd) flatEnd = x0;
+      if(s.style.display === 'none') s.style.display = '';
+      var th = d / R;
+      var nx = axis + R * Math.sin(th);
+      var z = R * (1 - Math.cos(th));
+      var deg = -th * 180 / Math.PI;
+      s.style.transform = 'translate3d(' + (nx - xc).toFixed(2) + 'px,0,' + z.toFixed(2) + 'px) rotateY(' + deg.toFixed(2) + 'deg)';
+      // 陰は短冊ごとに左右でなめらかにつなぐ（段々にならないように）
+      var aL = curlShadeAt((x0 - axis) / R), aR = curlShadeAt((x1 - axis) / R);
+      var col = 'rgba(42,27,12,';
+      s.shades[0].style.opacity = '1';
+      s.shades[1].style.opacity = '1';
+      s.shades[0].style.background = 'linear-gradient(to right,' + col + aL.toFixed(3) + '),' + col + aR.toFixed(3) + '))';
+      s.shades[1].style.background = 'linear-gradient(to right,' + col + aR.toFixed(3) + '),' + col + aL.toFixed(3) + '))';  // 裏は左右が逆
+    }
+    // 平らな部分：丸まりが始まるところまで
+    var fw = Math.max(0, Math.min(w, flatEnd));
+    c.flat.style.width = fw.toFixed(1) + 'px';
+    c.flat.style.display = fw <= 0 ? 'none' : '';
+    // 裏返って寝ている部分：紙の端から、折り返しのつけ根（軸）まで
+    var ex = curlEdgeX(c, p);
+    var lifted = w - axis;
+    if(lifted > roll){
+      var fl = ex, fr = axis + sw * 0.9 + 0.8;   // 丸まりのてっぺんの短冊と少し重ねて、すき間を作らない
+      c.flap.style.display = '';
+      c.flap.style.left = fl.toFixed(1) + 'px';
+      c.flap.style.width = Math.max(0, fr - fl).toFixed(1) + 'px';
+      c.flap.style.transform = 'translateZ(' + (2 * R).toFixed(2) + 'px)';
+    } else {
+      c.flap.style.display = 'none';
+    }
     if(c.cast){
       // 裏返った紙の端（いちばん左）から、左へ向かって下のページに落ちる影
-      var ex = curlEdgeX(c, p);
-      var lifted = w - axis;                               // 持ち上がっている紙の幅
       var sw2 = Math.max(10, Math.min(R * 1.3, lifted * 0.35));
       var left = Math.max(0, ex - sw2), right = Math.min(w, ex);
       var vis = right - left;
@@ -5327,37 +5396,6 @@
       c.cast.style.backgroundRepeat = 'no-repeat';
       c.cast.style.opacity = Math.min(1, lifted / (R * 1.2), Math.max(0, (ex + sw2) / sw2)).toFixed(3);
       c.cast.style.transform = 'translateZ(1px)';        // 下の紙より上、めくれた紙より下
-    }
-    for(var i = 0; i < c.strips.length; i++){
-      var s = c.strips[i];
-      var x = i * c.sw + c.sw / 2;
-      if(x <= axis){
-        // 巻きの軸より左（とじ側）は、まだ持ち上がっていない
-        s.style.transform = 'translate3d(0,0,0)';
-        if(s.shades){ s.shades[0].style.opacity = '0'; s.shades[1].style.opacity = '0'; }
-        continue;
-      }
-      var d = x - axis, th = d / R, nx, z, deg, shade;
-      if(th <= Math.PI){
-        nx = axis + R * Math.sin(th);
-        z = R * (1 - Math.cos(th));
-        deg = -th * 180 / Math.PI;
-        var q = (Math.PI - th) / (Math.PI / 2);          // 1＝ふくらみの端、0＝折り返しのつけ根
-        shade = (th < Math.PI / 2) ? 0.9 : (q <= 0.5 ? q * 0.5 : 0.25 + (q - 0.5) * 1.3);
-      } else {
-        var over = d - Math.PI * R;
-        nx = axis - over;                       // 巻き切ったあとは裏返って平らに寝る
-        z = 2 * R;
-        deg = -180;
-        // 巻きぎわがいちばん暗く、離れるほど明るくなる（紙の厚みの影）
-        shade = 0;
-      }
-      s.style.transform = 'translate3d(' + (nx - x).toFixed(2) + 'px,0,' + z.toFixed(2) + 'px) rotateY(' + deg.toFixed(2) + 'deg)';
-      if(s.shades){
-        var a = (0.34 * shade).toFixed(3);
-        s.shades[0].style.opacity = a;
-        s.shades[1].style.opacity = a;
-      }
     }
   }
   var curlNow = null, curlRaf = 0, curlTimer = 0;
@@ -5396,6 +5434,29 @@
     var th = d / R;
     if(th <= Math.PI) return axis + R * Math.sin(th);
     return axis - (d - Math.PI * R);
+  }
+  // 折り目（丸まりのいちばん右のふくらみ）が、画面のどこにあるか
+  function curlFoldX(c, p){
+    var w = c.w, R = curlR(w), travel = w + Math.PI * R;
+    var axis = w - travel * p, d = w - axis;
+    if(d <= 0) return w;
+    return axis + R * Math.sin(Math.min(d / R, Math.PI / 2));
+  }
+  function curlPForFold(c, x){
+    var lo = 0, hi = 1;
+    for(var i = 0; i < 26; i++){
+      var mid = (lo + hi) / 2;
+      if(curlFoldX(c, mid) > x) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+  function dragCurlToFold(c, x){
+    var R = curlR(c.w);
+    x = Math.max(-Math.PI * R, Math.min(c.w, x));
+    var p = curlPForFold(c, x);
+    c.pShown = p;
+    c.edgeX = curlEdgeX(c, p);
+    setCurlProgress(c, p);
   }
   // 紙の端をその位置に持ってくるには、どれだけめくればよいか
   function curlPForEdge(c, x){
@@ -5646,7 +5707,7 @@
     if(!stage) return;
     var gid = null, gx = 0, gy = 0, decided = false, grab = 0, lastX = 0, lastT = 0, vx = 0;
     var useTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    var DECIDE_PX = 10;                    // 約2mm動いたら、縦か横かを決める
+    var DECIDE_PX = 5;                     // 約1mm動いたら、縦か横かを決める
 
     function down(e){
       if(useTouch && e.pointerType === 'touch' && !e.fromTouch) return;   // 指はtouchの方で受け取る
@@ -5678,8 +5739,14 @@
       // 横と決まった瞬間、紙の端は指の位置（判定までの2mmぶんもその場で追いつく）。
       // そこから先は指より少しだけ速く動き、ゆっくり指を追い越していく
       var rel = e.clientX - (curlNow.pageLeft || 0);
-      if(curlNow.rel0 == null) curlNow.rel0 = rel;
-      dragCurlToEdge(curlNow, rel + (rel - curlNow.rel0) * CURL_LEAD);
+      if(curlNow.dir < 0){
+        // 左→右（前のページ）：めくるページの右側（折り目）を指で持っている。指とずっと一緒に動く
+        dragCurlToFold(curlNow, rel);
+      } else {
+        // 右→左（次のページ）：紙の端を持ち、指を少しずつ追い越していく
+        if(curlNow.rel0 == null) curlNow.rel0 = rel;
+        dragCurlToEdge(curlNow, rel + (rel - curlNow.rel0) * CURL_LEAD);
+      }
     }
     function up(e){
       if(useTouch && e.pointerType === 'touch' && !e.fromTouch) return;
