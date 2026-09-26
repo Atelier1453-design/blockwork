@@ -664,7 +664,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.30</div>
+      <div style="margin-top:2px;">ver.31</div>
     </div>
   </nav>
 
@@ -1123,7 +1123,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.30</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.31</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -5628,8 +5628,11 @@
     var stage = document.querySelector('.recipe-stage');
     if(!stage) return;
     var gid = null, gx = 0, gy = 0, decided = false, grab = 0, lastX = 0, lastT = 0, vx = 0;
+    var useTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    var DECIDE_PX = 10;                    // 約2mm動いたら、縦か横かを決める
 
     function down(e){
+      if(useTouch && e.pointerType === 'touch' && !e.fromTouch) return;   // 指はtouchの方で受け取る
       if(e.pointerType === 'mouse' && e.button !== 0) return;
       if(e.target && e.target.closest && e.target.closest('input,textarea,select,button,a')) return;
       hardStopCurl();                       // 前のめくりが残っていたら片づける
@@ -5637,29 +5640,29 @@
       lastX = gx; lastT = Date.now(); vx = 0; decided = false; grab = 0;
     }
     function move(e){
+      if(useTouch && e.pointerType === 'touch' && !e.fromTouch) return;
       if(gid === null || e.pointerId !== gid) return;
       var dx = e.clientX - gx, dy = e.clientY - gy, now = Date.now();
       if(now > lastT){ var v = (e.clientX - lastX) / (now - lastT); vx = vx * 0.4 + v * 0.6; }
       lastX = e.clientX; lastT = now;
       if(!decided){
-        if(Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)){ gid = null; return; }  // 縦スクロール
-        if(Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return;
+        // 横向きに動きかけているあいだは、Safariに画面を動かさせない
+        if(e.fromTouch && Math.abs(dx) > Math.abs(dy) && e.cancelable) e.preventDefault();
+        if(Math.max(Math.abs(dx), Math.abs(dy)) < DECIDE_PX) return;       // まだ判定しない
+        if(Math.abs(dy) >= Math.abs(dx)){ gid = null; return; }             // 縦＝ふつうのスクロール
         decided = true; grab = dx;
         curlNow = startCurl(dx < 0 ? 1 : -1);
         document.body.classList.add('recipe-dragging');
         showSwipeShield(true);
-        if(curlNow){ try{ stage.setPointerCapture(gid); }catch(err){} }
+        if(curlNow && !e.fromTouch){ try{ stage.setPointerCapture(gid); }catch(err){} }
       }
       if(!curlNow) return;
       if(e.cancelable) e.preventDefault();
-      // 紙の端は指と同じだけ（少しだけ多めに）動く
-      // 紙の端は、動かし始めの数ミリで指の位置まで寄ってきて、そのあとは指にぴったりついてくる
-      var rel = e.clientX - (curlNow.pageLeft || 0);
-      var k = Math.min(1, Math.abs(dx) / 40);
-      var ease = 1 - (1 - k) * (1 - k);
-      dragCurlToEdge(curlNow, curlNow.edge0 + (rel - curlNow.edge0) * ease);
+      // 横と決まった瞬間から、紙の端は指の位置にある（判定までの2mmぶんもその場で追いつく）
+      dragCurlToEdge(curlNow, e.clientX - (curlNow.pageLeft || 0));
     }
     function up(e){
+      if(useTouch && e.pointerType === 'touch' && !e.fromTouch) return;
       if(gid === null) return;
       if(decided) swipeGuardUntil = Date.now() + 500;   // 直後のタップ扱いを打ち消す
       var dx = (e && e.clientX != null) ? (e.clientX - gx) : 0;
@@ -5672,7 +5675,7 @@
         clearTimeout(window.__swipeCool);
         window.__swipeCool = setTimeout(function(){ document.body.classList.remove('swipe-cooldown'); }, 600);
       }
-      try{ stage.releasePointerCapture(id); }catch(err){}
+      if(!e || !e.fromTouch){ try{ stage.releasePointerCapture(id); }catch(err){} }
       if(!curlNow){
         // 演出が出せなかったときでも、はらった向きにページは動かす
         if(decided && Math.abs(dx) > 40) turnRecipePage(dx < 0 ? 1 : -1);
@@ -5686,30 +5689,62 @@
       var ex = (c.edgeX != null) ? c.edgeX : c.edge0;
       // 払ったら向きどおりに、ゆっくりなら紙の端がページの半分を越えたかで決める
       var movedPx = (e && e.clientX != null) ? (e.clientX - gx) : dx;
-      var far = Math.abs(movedPx) > Math.max(70, (c.w || 1) * 0.2);
-      var done = c.dir > 0 ? (flick ? vx < 0 : (ex < half || (far && movedPx < 0)))
-                           : (flick ? vx > 0 : (ex > (c.w || 1) * 0.35 || (far && movedPx > 0)));
+      var far = Math.abs(movedPx) > Math.max(50, (c.w || 1) * 0.1);
+      var done = c.dir > 0 ? (flick ? vx < 0 : (far && movedPx < 0))
+                           : (flick ? vx > 0 : (far && movedPx > 0));
       var speed = vx; vx = 0;
       finishCurl(c, done, speed);
     }
     if(window.PointerEvent){
+      // マウス・ペン用（指は下の touch で受け取る）
       stage.addEventListener('pointerdown', down);
       stage.addEventListener('pointermove', move, {passive:false});
       stage.addEventListener('pointerup', up);
       stage.addEventListener('pointercancel', up);
-    } else {
-      // 古いブラウザ用（ポインタ操作が使えないとき）
+    }
+    if(useTouch || !window.PointerEvent){
+      // 指の動きをそのまま受け取る。Safariが「スクロールかな？」と迷う前に、こちらで横スワイプを判定する
       var wrapTouch = function(fn, pick){
         return function(ev){
+          if(fn === down && ev.touches && ev.touches.length > 1){
+            // 2本指（拡大など）はページめくりにしない
+            if(gid !== null){ var t0 = ev.touches[0]; up({fromTouch:true, pointerId:1, pointerType:'touch', clientX:gx, clientY:gy}); }
+            return;
+          }
           var t = pick(ev); if(!t) return;
-          fn({pointerId:1, pointerType:'touch', clientX:t.clientX, clientY:t.clientY,
+          fn({fromTouch:true, pointerId:1, pointerType:'touch', clientX:t.clientX, clientY:t.clientY,
               target:ev.target, cancelable:ev.cancelable, preventDefault:function(){ if(ev.cancelable) ev.preventDefault(); }});
         };
       };
-      stage.addEventListener('touchstart', wrapTouch(down, function(e){ return e.touches[0]; }), {passive:true});
-      stage.addEventListener('touchmove', wrapTouch(move, function(e){ return e.touches[0]; }), {passive:false});
-      stage.addEventListener('touchend', wrapTouch(up, function(e){ return e.changedTouches[0]; }), {passive:true});
-      stage.addEventListener('touchcancel', wrapTouch(up, function(e){ return e.changedTouches[0]; }), {passive:true});
+      var onDown = wrapTouch(down, function(e){ return e.touches[0]; });
+      var onMove = wrapTouch(move, function(e){ return e.touches[0]; });
+      var onUp = wrapTouch(up, function(e){ return e.changedTouches[0]; });
+      // めくり始めると紙の中身を描き直すので、指を置いた部品が画面から外れることがある。
+      // 外れても指の動きを受け取れるよう、指を置いた部品そのものにも耳をつけておく
+      var touchEl = null;
+      var detach = function(){
+        if(!touchEl) return;
+        touchEl.removeEventListener('touchmove', onMoveT, {passive:false});
+        touchEl.removeEventListener('touchend', onUpT);
+        touchEl.removeEventListener('touchcancel', onUpT);
+        touchEl = null;
+      };
+      var onMoveT = function(ev){ if(!ev.__bw){ ev.__bw = 1; onMove(ev); } };
+      var onUpT = function(ev){ if(!ev.__bw){ ev.__bw = 1; onUp(ev); } if(!ev.touches || ev.touches.length === 0) detach(); };
+      stage.addEventListener('touchstart', function(ev){
+        onDown(ev);
+        detach();
+        touchEl = ev.target;
+        if(touchEl && touchEl.addEventListener){
+          touchEl.addEventListener('touchmove', onMoveT, {passive:false});
+          touchEl.addEventListener('touchend', onUpT);
+          touchEl.addEventListener('touchcancel', onUpT);
+        }
+      }, {passive:true});
+      // 部品が画面にあるときは、ここにも届く（同じ動きを二重に数えないように印をつける）
+      stage.addEventListener('touchmove', onMoveT, {passive:false});
+      stage.addEventListener('touchend', onUpT);
+      stage.addEventListener('touchcancel', onUpT);
     }
 
     // トラックパッドの2本指の横スワイプ
