@@ -393,6 +393,30 @@
   .proc-area-head h4{margin:0; font-size:14.5px; color:var(--ink);}
   .proc-area-head .skip-toggle{margin-left:auto;}
   .proc-area.proc-skipped > *:not(.proc-area-head){display:none;}
+  /* v35：①の上の行・焼き上がり数・工程チップのならび */
+  .mult-top{justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:8px 12px;}
+  .mult-top-label{padding-top:0;}
+  .mult-top .mult-btns{flex-direction:row; flex-wrap:wrap; align-items:center; gap:4px;}
+  .mult-top .mult-row{display:inline-flex; gap:4px; align-items:center;}
+  .mult-top .mult-custom-input{width:64px;}
+  .unit-fields{display:inline-flex; gap:10px; margin-left:auto; flex-wrap:wrap;}
+  .unit-field{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--ink-soft); white-space:nowrap;}
+  .unit-field input{width:60px; padding:5px 8px; border:1px solid var(--border); background:var(--bg); color:var(--ink); border-radius:6px; box-sizing:border-box;}
+  .grp-yield-edit{display:flex; align-items:center; justify-content:center; gap:4px; color:var(--ink); font-size:12.5px;}
+  table.ing-table-multi th .grp-yield-edit input{width:68px !important; flex:0 0 68px; padding:3px 6px; text-align:right; font-weight:700; box-sizing:border-box;}
+  .proc-hint{margin:2px 0 6px; line-height:1.55;}
+  .proc-groups{margin:4px 0 2px; gap:8px;}
+  .proc-group{display:flex; gap:10px 16px; align-items:flex-start; flex-wrap:wrap; padding:8px 10px;}
+  .proc-group-left{flex:0 0 auto;}
+  .proc-group-title{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:5px;}
+  .proc-group .proc-chips{display:grid; grid-template-columns:repeat(2, auto); gap:6px; justify-content:start;}
+  .proc-group .proc-total{flex:1 1 220px; margin-left:auto; text-align:right; font-size:12.5px; color:var(--ink); line-height:1.7; padding-top:2px;}
+  .receipt-details{margin:4px 0 8px;}
+  .receipt-details summary{cursor:pointer; font-size:13px; font-weight:700; color:var(--accent-strong); padding:6px 0; list-style:none;}
+  .receipt-details summary::-webkit-details-marker{display:none;}
+  .receipt-details summary::before{content:'▸ '; }
+  .receipt-details[open] summary::before{content:'▾ ';}
+  .receipt-details .formula-table{font-size:13px;}
   /* 倍数ごとの焼き上がり */
   .mult-yields{display:flex; flex-direction:column; gap:3px; padding:6px 0 2px;}
   .mult-yield-line{font-size:13.5px; color:var(--ink);}
@@ -683,7 +707,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.34</div>
+      <div style="margin-top:2px;">ver.35</div>
     </div>
   </nav>
 
@@ -742,13 +766,17 @@
             <div class="mult-top">
               <span class="mult-top-label">使用可能倍数</span>
               <span class="mult-btns" id="f-multi-btns"></span>
+              <span class="unit-fields">
+                <label class="unit-field">仕込みの単位<input id="f-yield-unit" type="text" value="個"></label>
+                <label class="unit-field">1商品の単位<input id="f-count-unit" type="text" placeholder="個" value="個"></label>
+              </span>
             </div>
             <div class="table-scroll">
             <table class="ing-table ing-table-multi">
               <thead>
                 <tr>
                   <th class="col-name" rowspan="2">材料名</th>
-                  <th class="grp-head" colspan="4">×1<div class="grp-yield" id="grp-yield-base">—</div></th>
+                  <th class="grp-head" colspan="4">×1<div class="grp-yield grp-yield-edit"><input id="f-yield-count" type="number" inputmode="decimal" min="0" step="any" value="1" aria-label="1倍の焼き上がり数"><span><span class="per-unit-lbl">個</span>分</span></div></th>
                   <th class="grp-head grp-mult m-col" colspan="4"><button type="button" class="mult-col-btn" id="ing-mult-col-btn" title="タップで倍数が切り替わります">×2</button><div class="grp-yield" id="grp-yield-mult">—</div></th>
                   <th class="col-del" rowspan="2"></th>
                 </tr>
@@ -782,12 +810,6 @@
             <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
             <div class="yield-block">
-              <div class="yield-line">
-                <span>1倍の仕込みで焼き上がりが</span>
-                <input id="f-yield-count" type="number" inputmode="decimal" min="0" step="any" value="1" style="max-width:80px;">
-                <input id="f-yield-unit" type="text" value="個" style="width:60px;">
-                <span>できる</span>
-              </div>
               <div class="mult-yields" id="disp-mult-yields"></div>
               <div class="yield-line">
                 <span>原価の基準にする倍数</span>
@@ -798,19 +820,7 @@
             <div class="proc-area" id="proc-area-batch">
               <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
               <div id="proc-batch-wrap"></div>
-              <div class="formula-box">
-              <div class="formula-title" id="fx-title">この仕込み1回分の費用</div>
-              <table class="formula-table">
-                <tr><td class="fl">材料費</td><td class="fv amt" id="fx-ing">¥0</td><td class="fs" id="fx-ing-src">—</td></tr>
-                <tr><td class="fl">＋ 仕込みの製造工賃</td><td class="fv amt" id="fx-labor">¥0</td><td class="fs" id="fx-labor-src">—</td></tr>
-                <tr><td class="fl">＋ 仕込みの製造間接費</td><td class="fv amt" id="fx-overhead">¥0</td><td class="fs" id="fx-overhead-src">—</td></tr>
-                <tr class="sum"><td class="fl">＝ 仕込み合計</td><td class="fv amt" id="fx-batch-total">¥0</td><td class="fs"></td></tr>
-                <tr><td class="fl">÷ 焼き上がり</td><td class="fv" id="fx-yield">—</td><td class="fs" id="fx-yield-src">—</td></tr>
-                <tr class="sum"><td class="fl" id="fx-per-label">＝ 1個あたりの仕込み原価</td><td class="fv amt" id="fx-per-unit">¥0</td><td class="fs"></td></tr>
-              </table>
-            </div>
               <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
-              <p class="hint" style="margin:8px 0 0;">チップをタップすると ② の「仕上げ」に移ります。「仕上げ」の工程の工賃・間接費は ② の1包装分に割り当てて、原価計算書の「仕上げの工賃」「仕上げの製造間接費」に出ます。</p>
             </div>
           </div>
           <div class="card section-card">
@@ -847,7 +857,6 @@
               <div class="proc-area-head"><h4>工程に関わる費用（仕上げ）</h4></div>
               <div id="proc-finish-wrap"></div>
               <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
-              <p class="hint" style="margin:8px 0 0;">袋詰め・ラベル貼りなど、仕上げの工程です。チップをタップすると ① の「製造」に戻ります。</p>
             </div>
           </div>
 
@@ -855,10 +864,6 @@
             <h3>生産計画 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワークで編集）</span></h3>
             <p class="hint">安全在庫・曜日ごとの見込みは、ブロックワーク側でだけ入力できます。ここでは確認のみできます。変更したいときは下のボタンでブロックワークへ移動してください。</p>
             <div class="row-inline">
-              <div class="field" style="max-width:120px;">
-                <label>数の単位</label>
-                <input id="f-count-unit" type="text" placeholder="個" value="個">
-              </div>
               <div class="field" style="max-width:140px;">
                 <label>安全在庫</label>
                 <div class="ro-display" id="ro-safety-stock">—</div>
@@ -906,6 +911,20 @@
             <div class="receipt-unit-note" id="r-unit-note">—</div>
             <div class="rline"><span>仕込み原価<small>① の材料 ＋ ① の製造工程</small></span><b class="amt" id="r-ing">¥0</b></div>
             <div class="rline sub"><span id="r-ing-detail">—</span></div>
+            <details class="receipt-details">
+              <summary>原価計算の詳細（仕込み1回分の費用）</summary>
+              <div class="formula-box" style="margin-top:8px;">
+              <div class="formula-title" id="fx-title">この仕込み1回分の費用</div>
+              <table class="formula-table">
+                <tr><td class="fl">材料費</td><td class="fv amt" id="fx-ing">¥0</td><td class="fs" id="fx-ing-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造工賃</td><td class="fv amt" id="fx-labor">¥0</td><td class="fs" id="fx-labor-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造間接費</td><td class="fv amt" id="fx-overhead">¥0</td><td class="fs" id="fx-overhead-src">—</td></tr>
+                <tr class="sum"><td class="fl">＝ 仕込み合計</td><td class="fv amt" id="fx-batch-total">¥0</td><td class="fs"></td></tr>
+                <tr><td class="fl">÷ 焼き上がり</td><td class="fv" id="fx-yield">—</td><td class="fs" id="fx-yield-src">—</td></tr>
+                <tr class="sum"><td class="fl" id="fx-per-label">＝ 1個あたりの仕込み原価</td><td class="fv amt" id="fx-per-unit">¥0</td><td class="fs"></td></tr>
+              </table>
+            </div>
+            </details>
             <div class="rline" id="r-cont-line" style="display:none;"><span>中身（詰め合わせ）<small>詰め合わせの中身 より</small></span><b class="amt" id="r-cont">¥0</b></div>
             <div class="rline"><span>資材費<small>② の資材 より</small></span><b class="amt" id="r-pkg">¥0</b></div>
             <div class="rline sub"><span id="r-pkg-detail">—</span></div>
@@ -1152,7 +1171,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.34</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.35</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -3409,7 +3428,6 @@
       return {per: y > 0 ? total / y : 0, y: y, procMin: procMin};
     }
     var b = perUnit(1);
-    setTxt('grp-yield-base', fmtNum(b.y) + unitLabel + '分');
     setTxt('ing-per-base', fmtYen2(b.per));
     var mc = currentMultCol();
     var anyProc = b.procMin > 0;
@@ -3469,12 +3487,15 @@
     function groupHtml(role, title, note){
       var rows = info.rows.filter(function(r){ return r.role === role; });
       return '<div class="proc-group '+role+'">' +
-        '<div class="proc-group-head">'+title+'<span class="proc-total">'+note+'</span></div>' +
-        '<div class="proc-chips">'+(rows.length ? rows.map(chipHtml).join('') : '<span class="proc-group-empty">（なし）</span>')+'</div>' +
+        '<div class="proc-group-left">' +
+          '<div class="proc-group-title">'+title+'</div>' +
+          '<div class="proc-chips">'+(rows.length ? rows.map(chipHtml).join('') : '<span class="proc-group-empty">（なし）</span>')+'</div>' +
+        '</div>' +
+        '<div class="proc-total">'+note+'</div>' +
         '</div>';
     }
     wrap.innerHTML =
-      '<p class="hint">ブロックワークに登録された工程の時間です。時間の編集はブロックワーク側で。チップをタップすると「製造」と「仕上げ」が切り替わります。' +
+      '<p class="hint proc-hint">ブロックワークに登録された工程の時間です（編集はブロックワークで）。チップをタップすると ①の「製造」と ②の「仕上げ」が切り替わります。' +
         (multNow !== 1
           ? '<br><b>×'+fmtNum(multNow)+'倍で仕込むときの分数で表示しています。</b>段取りは倍数がふえても1回分のまま、1倍分の時間だけが ×'+fmtNum(info.timeMult,2)+' にふえます（設定の「倍数を増やしたときの時間の伸び」）。'
           : '<br>×1倍で仕込むときの分数で表示しています。') + '</p>' +
@@ -5081,10 +5102,13 @@
     var saveBtn = document.getElementById('mm-save');
     saveBtn.disabled = true;
     try{
+      var renamedIn = 0, oldMatName = null;
       if(materialModalEditId){
         var existing = state.materials.find(function(x){ return x.id===materialModalEditId; });
+        oldMatName = existing ? existing.name : null;
         if(existing) Object.assign(existing, data);
         data.id = materialModalEditId;
+        if(oldMatName && oldMatName !== name) renamedIn = renameMaterialEverywhere(oldMatName, name);
       } else {
         data.id = 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
         state.materials.push(data);
@@ -5099,13 +5123,41 @@
       scheduleSave();
       var cb = materialModalOnSaved;
       closeMaterialModal();
-      showToast('「'+name+'」を保存しました');
+      showToast('「'+name+'」を保存しました' + (renamedIn ? '（' + renamedIn + '件の商品の材料名も変えました）' : ''));
       if(cb) cb(data);
     }catch(e){
       showToast('保存に失敗しました：' + (e && e.message ? e.message : e));
     }
     saveBtn.disabled = false;
   });
+
+  // 材料の名前を変えたとき：登録済み商品の①②と、いま編集中の行の名前をそろえる
+  function renameMaterialEverywhere(oldName, newName){
+    var changed = 0;
+    (state.products || []).forEach(function(p){
+      var hit = false;
+      [p.batch && p.batch.ingredients, p.pack && p.pack.items].forEach(function(list){
+        if(!Array.isArray(list)) return;
+        list.forEach(function(r){ if(r && r.name === oldName){ r.name = newName; hit = true; } });
+      });
+      if(hit) changed++;
+    });
+    ['ing-body', 'pkg-body'].forEach(function(id){
+      var body = document.getElementById(id);
+      if(!body) return;
+      body.querySelectorAll('tr').forEach(function(tr){
+        var inp = tr.querySelector('.row-name');
+        if(!inp) return;
+        if((tr.dataset.materialName || inp.value.trim()) === oldName){
+          inp.value = newName;
+          setRowMaterial(tr, newName);
+        }
+      });
+    });
+    try{ recalc(); }catch(e){}
+    try{ saveCalcDraft(); }catch(e){}
+    return changed;
+  }
 
   // ---- generic confirm modal ----
   function openConfirmModal(message, onOk){
