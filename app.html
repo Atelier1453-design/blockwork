@@ -381,6 +381,18 @@
   }
   table.ing-table tfoot .ing-foot .col-name{color:var(--ink-soft); font-size:12.5px;}
 
+  /* ①：使用可能倍数（表の右上）・〇個分・1個あたり */
+  .mult-top{display:flex; justify-content:flex-end; align-items:flex-start; gap:10px; margin:6px 0 8px; font-size:13px; color:var(--ink-soft);}
+  .mult-top-label{padding-top:5px; font-weight:700; white-space:nowrap;}
+  .grp-yield{font-size:12px; font-weight:700; color:var(--ink); margin-top:3px;}
+  table.ing-table tfoot .ing-foot-per td{padding-top:6px; font-weight:700; color:var(--accent-strong);}
+  table.ing-table tfoot .ing-foot-per .col-name{color:var(--ink-soft); font-size:12.5px; font-weight:700;}
+  table.ing-table tfoot .ing-foot-per .col-name small{display:block; font-weight:400; font-size:11px; color:var(--ink-faint);}
+  .proc-area{margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);}
+  .proc-area-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;}
+  .proc-area-head h4{margin:0; font-size:14.5px; color:var(--ink);}
+  .proc-area-head .skip-toggle{margin-left:auto;}
+  .proc-area.proc-skipped > *:not(.proc-area-head){display:none;}
   /* 倍数ごとの焼き上がり */
   .mult-yields{display:flex; flex-direction:column; gap:3px; padding:6px 0 2px;}
   .mult-yield-line{font-size:13.5px; color:var(--ink);}
@@ -432,7 +444,7 @@
   .curl-flat{position:absolute; left:0; top:0; overflow:hidden;}
   .curl-flat > .curl-page-copy{left:0;}
   .curl-flap{
-    position:absolute; top:0; box-sizing:border-box; background:var(--surface-2);
+    position:absolute; top:0; box-sizing:border-box; background-color:var(--surface-2);
     background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px);
     border-top:1px solid var(--border); border-bottom:1px solid var(--border);
   }
@@ -671,7 +683,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.33</div>
+      <div style="margin-top:2px;">ver.34</div>
     </div>
   </nav>
 
@@ -727,13 +739,17 @@
           <div class="card section-card">
             <div class="sec-head"><h3>① 仕込み全体の原材料</h3><label class="skip-toggle"><input type="checkbox" id="f-skip-ing">この商品には不要</label></div>
             <p class="hint">一度に仕込む分量をそのまま入力してください。行を長押しすると、つかんで上下に動かせます。</p>
+            <div class="mult-top">
+              <span class="mult-top-label">使用可能倍数</span>
+              <span class="mult-btns" id="f-multi-btns"></span>
+            </div>
             <div class="table-scroll">
             <table class="ing-table ing-table-multi">
               <thead>
                 <tr>
                   <th class="col-name" rowspan="2">材料名</th>
-                  <th class="grp-head" colspan="4">×1</th>
-                  <th class="grp-head grp-mult m-col" colspan="4"><button type="button" class="mult-col-btn" id="ing-mult-col-btn" title="タップで倍数が切り替わります">×2</button></th>
+                  <th class="grp-head" colspan="4">×1<div class="grp-yield" id="grp-yield-base">—</div></th>
+                  <th class="grp-head grp-mult m-col" colspan="4"><button type="button" class="mult-col-btn" id="ing-mult-col-btn" title="タップで倍数が切り替わります">×2</button><div class="grp-yield" id="grp-yield-mult">—</div></th>
                   <th class="col-del" rowspan="2"></th>
                 </tr>
                 <tr>
@@ -751,6 +767,14 @@
                 <td class="col-qty m-col"></td><td class="col-unit m-col"></td><td class="col-price m-col"></td>
                 <td class="col-amt amt m-col" id="ing-total-mult">¥0</td>
                 <td class="col-del"></td>
+              </tr>
+              <tr class="ing-foot-per">
+                <td class="col-name">1<span class="per-unit-lbl">個</span>あたり<small>材料＋製造工賃・間接費</small></td>
+                <td class="col-qty"></td><td class="col-unit"></td><td class="col-price"></td>
+                <td class="col-amt amt" id="ing-per-base">¥0</td>
+                <td class="col-qty m-col"></td><td class="col-unit m-col"></td><td class="col-price m-col"></td>
+                <td class="col-amt amt m-col" id="ing-per-mult">¥0</td>
+                <td class="col-del"></td>
               </tr></tfoot>
             </table>
             </div>
@@ -766,14 +790,27 @@
               </div>
               <div class="mult-yields" id="disp-mult-yields"></div>
               <div class="yield-line">
-                <span>使用可能倍数</span>
-                <span class="mult-btns" id="f-multi-btns"></span>
-              </div>
-              <div class="yield-line">
                 <span>原価の基準にする倍数</span>
                 <span class="costbase-btns" id="f-costbase-btns"></span>
                 <span class="eq costbase-note" id="f-costbase-note"></span>
               </div>
+            </div>
+            <div class="proc-area" id="proc-area-batch">
+              <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
+              <div id="proc-batch-wrap"></div>
+              <div class="formula-box">
+              <div class="formula-title" id="fx-title">この仕込み1回分の費用</div>
+              <table class="formula-table">
+                <tr><td class="fl">材料費</td><td class="fv amt" id="fx-ing">¥0</td><td class="fs" id="fx-ing-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造工賃</td><td class="fv amt" id="fx-labor">¥0</td><td class="fs" id="fx-labor-src">—</td></tr>
+                <tr><td class="fl">＋ 仕込みの製造間接費</td><td class="fv amt" id="fx-overhead">¥0</td><td class="fs" id="fx-overhead-src">—</td></tr>
+                <tr class="sum"><td class="fl">＝ 仕込み合計</td><td class="fv amt" id="fx-batch-total">¥0</td><td class="fs"></td></tr>
+                <tr><td class="fl">÷ 焼き上がり</td><td class="fv" id="fx-yield">—</td><td class="fs" id="fx-yield-src">—</td></tr>
+                <tr class="sum"><td class="fl" id="fx-per-label">＝ 1個あたりの仕込み原価</td><td class="fv amt" id="fx-per-unit">¥0</td><td class="fs"></td></tr>
+              </table>
+            </div>
+              <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
+              <p class="hint" style="margin:8px 0 0;">チップをタップすると ② の「仕上げ」に移ります。「仕上げ」の工程の工賃・間接費は ② の1包装分に割り当てて、原価計算書の「仕上げの工賃」「仕上げの製造間接費」に出ます。</p>
             </div>
           </div>
           <div class="card section-card">
@@ -788,7 +825,7 @@
                 </div>
               </div>
               <div class="field" style="max-width:340px;">
-                <label>仕込み原価<span style="color:var(--ink-faint);">（自動）③の1個あたり×入れる数</span></label>
+                <label>仕込み原価<span style="color:var(--ink-faint);">（自動）①の1個あたり×入れる数</span></label>
                 <div class="ro-display" id="disp-pack-material-cost" style="max-width:150px;">¥0</div>
                 <span class="calc-sub" id="disp-pack-material-note">—</span>
               </div>
@@ -806,27 +843,12 @@
             <button class="btn btn-sm add-row-btn" data-add="pkg">＋資材</button>
             <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
-            <p class="hint" id="finish-proc-note" style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--border);">袋詰め・ラベル貼りなどの仕上げ時間は、③の工程で「仕上げ」に切り替えた工程から自動計算します。</p>
-          </div>
-
-          <div class="card section-card">
-            <div class="sec-head"><h3>③ 製造に関わる費用</h3><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">この商品には不要</label></div>
-            <div id="proc-readonly-wrap"></div>
-
-            <div class="formula-box">
-              <div class="formula-title" id="fx-title">この仕込み1回分の費用</div>
-              <table class="formula-table">
-                <tr><td class="fl">材料費</td><td class="fv amt" id="fx-ing">¥0</td><td class="fs" id="fx-ing-src">—</td></tr>
-                <tr><td class="fl">＋ 仕込みの製造工賃</td><td class="fv amt" id="fx-labor">¥0</td><td class="fs" id="fx-labor-src">—</td></tr>
-                <tr><td class="fl">＋ 仕込みの製造間接費</td><td class="fv amt" id="fx-overhead">¥0</td><td class="fs" id="fx-overhead-src">—</td></tr>
-                <tr class="sum"><td class="fl">＝ 仕込み合計</td><td class="fv amt" id="fx-batch-total">¥0</td><td class="fs"></td></tr>
-                <tr><td class="fl">÷ 焼き上がり</td><td class="fv" id="fx-yield">—</td><td class="fs" id="fx-yield-src">—</td></tr>
-                <tr class="sum"><td class="fl" id="fx-per-label">＝ 1個あたりの仕込み原価</td><td class="fv amt" id="fx-per-unit">¥0</td><td class="fs"></td></tr>
-              </table>
+            <div class="proc-area" id="proc-area-finish">
+              <div class="proc-area-head"><h4>工程に関わる費用（仕上げ）</h4></div>
+              <div id="proc-finish-wrap"></div>
+              <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
+              <p class="hint" style="margin:8px 0 0;">袋詰め・ラベル貼りなど、仕上げの工程です。チップをタップすると ① の「製造」に戻ります。</p>
             </div>
-            <p class="hint" style="margin:8px 0 0;">「仕上げ」に切り替えた工程の工賃・間接費は、ここではなく ② の1包装分に割り当てて、原価計算書の「仕上げの工賃」「仕上げの製造間接費」に出ます。</p>
-            <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
-            <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
           </div>
 
           <div class="card section-card">
@@ -882,14 +904,14 @@
           <div class="receipt-head">原価計算書<span id="receipt-date"></span></div>
           <div class="receipt-body">
             <div class="receipt-unit-note" id="r-unit-note">—</div>
-            <div class="rline"><span>仕込み原価<small>① の材料 ＋ ③ の製造工程</small></span><b class="amt" id="r-ing">¥0</b></div>
+            <div class="rline"><span>仕込み原価<small>① の材料 ＋ ① の製造工程</small></span><b class="amt" id="r-ing">¥0</b></div>
             <div class="rline sub"><span id="r-ing-detail">—</span></div>
             <div class="rline" id="r-cont-line" style="display:none;"><span>中身（詰め合わせ）<small>詰め合わせの中身 より</small></span><b class="amt" id="r-cont">¥0</b></div>
             <div class="rline"><span>資材費<small>② の資材 より</small></span><b class="amt" id="r-pkg">¥0</b></div>
             <div class="rline sub"><span id="r-pkg-detail">—</span></div>
-            <div class="rline"><span>仕上げの工賃<small>③ の「仕上げ」工程 より</small></span><b class="amt" id="r-labor">¥0</b></div>
+            <div class="rline"><span>仕上げの工賃<small>② の「仕上げ」工程 より</small></span><b class="amt" id="r-labor">¥0</b></div>
             <div class="rline sub"><span id="r-labor-detail">—</span></div>
-            <div class="rline"><span>仕上げの製造間接費<small>③ の「仕上げ」工程 より</small></span><b class="amt" id="r-overhead">¥0</b></div>
+            <div class="rline"><span>仕上げの製造間接費<small>② の「仕上げ」工程 より</small></span><b class="amt" id="r-overhead">¥0</b></div>
             <div class="rline sub"><span id="r-overhead-detail">—</span></div>
             <div class="rline"><span>販管費<small>設定 より（1個あたり）</small></span><b class="amt" id="r-sga">¥0</b></div>
             <div class="rdiv"></div>
@@ -1130,7 +1152,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.33</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.34</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -3172,11 +3194,11 @@
   }
   // 工程ごとの役割（製造／仕上げ／使わない）。商品ごとに持ち、保存・復元する。
   var procRoles = {};                       // {procId: 'batch' | 'finish' | 'off'}
-  var PROC_ROLE_LABEL = {batch:'製造', finish:'仕上げ', off:'使わない'};
-  var PROC_ROLE_NEXT  = {batch:'finish', finish:'off', off:'batch'};
+  var PROC_ROLE_LABEL = {batch:'製造', finish:'仕上げ'};
+  var PROC_ROLE_NEXT  = {batch:'finish', finish:'batch'};
   function procRoleOf(procId){
     var r = procRoles[procId];
-    return (r === 'finish' || r === 'off') ? r : 'batch';   // 既定は製造
+    return (r === 'finish') ? r : 'batch';   // 既定は製造（前の「使わない」も製造に戻す）
   }
 
   // トモヒロさんの工程時間を集計する。
@@ -3376,37 +3398,41 @@
   }
   // 倍数ごとの「焼き上がり」と「1単位あたりの原価」
   function renderMultYields(ingTotal1, yieldCount1){
-    var box = document.getElementById('disp-mult-yields');
-    if(!box) return;
     var unitLabel = document.getElementById('f-yield-unit').value || '個';
     var name = document.getElementById('f-name').value.trim();
     var code = currentFormCode();
-    var anyProcTime = false;
-    var html = allowedMultipliers.map(function(m){
+    function perUnit(m){
       var pc = getProcessCosting(name, m, code);
       var procMin = pc ? pc.batchMinutes : 0;
-      if(procMin > 0) anyProcTime = true;
-      var total = ingTotal1 * m + (pc ? pc.batchLaborCost : 0) +
-                  procMin * (state.settings.overheadRate || 0);
+      var total = ingTotal1 * m + (pc ? pc.batchLaborCost : 0) + procMin * (state.settings.overheadRate || 0);
       var y = yieldCount1 * m;
-      var per = y > 0 ? total / y : 0;
-      return '<div class="mult-yield-line">×' + fmtNum(m) + '倍の仕込みでの焼き上がりは <b>' + fmtNum(y) + '</b>' +
-        escapeHtml(unitLabel) +
-        '<span class="mult-yield-per">1' + escapeHtml(unitLabel) + 'あたり <b class="amt">' + fmtYen2(per) + '</b></span></div>';
-    }).join('');
-    // 工程の時間がないと材料費だけになり、倍数を変えても1単位あたりは変わらない
-    if(!anyProcTime && allowedMultipliers.length > 1){
-      html += '<div class="mult-yield-note">※ ③の「製造」に時間が入っていないため、いまは材料費だけで計算しています。' +
-        '材料費は倍数どおりに増えるので、倍数を変えても1' + escapeHtml(unitLabel) + 'あたりは変わりません。' +
-        'ブロックワークで工程の時間を入れると、まとめて仕込むほど安くなるのが出ます。</div>';
+      return {per: y > 0 ? total / y : 0, y: y, procMin: procMin};
     }
-    box.innerHTML = html;
+    var b = perUnit(1);
+    setTxt('grp-yield-base', fmtNum(b.y) + unitLabel + '分');
+    setTxt('ing-per-base', fmtYen2(b.per));
+    var mc = currentMultCol();
+    var anyProc = b.procMin > 0;
+    if(mc){
+      var mm = perUnit(mc);
+      if(mm.procMin > 0) anyProc = true;
+      setTxt('grp-yield-mult', fmtNum(mm.y) + unitLabel + '分');
+      setTxt('ing-per-mult', fmtYen2(mm.per));
+    }
+    document.querySelectorAll('.per-unit-lbl').forEach(function(el){ el.textContent = unitLabel; });
+    var box = document.getElementById('disp-mult-yields');
+    if(box){
+      box.innerHTML = (!anyProc && allowedMultipliers.length > 1)
+        ? '<div class="mult-yield-note">※ 下の「製造」の工程に時間が入っていないため、1' + escapeHtml(unitLabel) + 'あたりは材料費だけで計算しています（倍数を変えても同じになります）。</div>'
+        : '';
+    }
   }
 
   var procViewKey = null;   // 直前に描画した内容のキー（同じなら描き直さない）
   function renderProcessSection(name, multiplier){
-    var wrap = document.getElementById('proc-readonly-wrap');
-    if(!wrap) return null;
+    var wrap = document.getElementById('proc-batch-wrap');
+    var wrapF = document.getElementById('proc-finish-wrap');
+    if(!wrap || !wrapF) return null;
     var code = currentFormCode();
     var info = getProcessCosting(name, multiplier, code);
     // 仕上げは「1包装分」に割り当てて表示するので、包装の数も描き直しの条件に入れる
@@ -3420,6 +3446,7 @@
     procViewKey = key;
     if(!info || !info.rows.length){
       wrap.innerHTML = '<p class="hint">この商品名でブロックワークに登録された工程がまだありません。ブロックワークの「商品」で工程を設定すると、ここに自動で表示されます。</p>';
+      wrapF.innerHTML = '<p class="hint">工程がまだありません。</p>';
       return info;
     }
     var multNow = Number(multiplier) || 1;
@@ -3447,7 +3474,7 @@
         '</div>';
     }
     wrap.innerHTML =
-      '<p class="hint">ブロックワークに登録された工程の時間です。時間の編集はブロックワーク側で。チップをタップすると 製造 → 仕上げ → 使わない の順に移動します。' +
+      '<p class="hint">ブロックワークに登録された工程の時間です。時間の編集はブロックワーク側で。チップをタップすると「製造」と「仕上げ」が切り替わります。' +
         (multNow !== 1
           ? '<br><b>×'+fmtNum(multNow)+'倍で仕込むときの分数で表示しています。</b>段取りは倍数がふえても1回分のまま、1倍分の時間だけが ×'+fmtNum(info.timeMult,2)+' にふえます（設定の「倍数を増やしたときの時間の伸び」）。'
           : '<br>×1倍で仕込むときの分数で表示しています。') + '</p>' +
@@ -3457,6 +3484,9 @@
           '工賃 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen(info.batchLaborCost)+'<br>' +
           '間接費 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen(info.batchMinutes * (state.settings.overheadRate||0))+'<br>' +
           '<b>合計 '+fmtYen(info.batchLaborCost + info.batchMinutes * (state.settings.overheadRate||0))+'</b>') +
+      '</div>';
+    wrapF.innerHTML =
+      '<div class="proc-groups">' +
         groupHtml('finish', '仕上げ',
           minutesLine('finish')+'（仕込み全体分）<br>' +
           (fUnits > 0
@@ -3464,10 +3494,9 @@
                '工賃 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.laborRate||0))+'<br>' +
                '間接費 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.overheadRate||0))+'<br>' +
                '<b>1包装あたり 合計 '+fmtYen2(Math.round(info.finishMinutes/fUnits*(state.settings.laborRate||0)*100)/100 + Math.round(info.finishMinutes/fUnits*(state.settings.overheadRate||0)*100)/100)+'</b>')
-            : '②の「1商品に入れる数」を入れると、1包装分の金額が出ます')) +
-        groupHtml('off', '使わない', '原価に入れない工程') +
+            : '「1商品に入れる数」を入れると、1包装分の金額が出ます')) +
       '</div>';
-    wrap.querySelectorAll('.proc-chip').forEach(function(btn){
+    Array.prototype.slice.call(wrap.querySelectorAll('.proc-chip')).concat(Array.prototype.slice.call(wrapF.querySelectorAll('.proc-chip'))).forEach(function(btn){
       btn.addEventListener('click', function(){
         var id = btn.dataset.proc;
         procRoles[id] = PROC_ROLE_NEXT[procRoleOf(id)];
@@ -3570,6 +3599,13 @@
     SKIP_KEYS.forEach(function(key){
       var box = skipBox(key);
       if(!box) return;
+      if(key === 'proc'){
+        var area = document.getElementById('proc-area-batch');
+        if(area) area.classList.toggle('proc-skipped', box.checked);
+        var areaF = document.getElementById('proc-area-finish');
+        if(areaF) areaF.classList.toggle('proc-skipped', box.checked);
+        return;
+      }
       var card = box.closest('.section-card');
       if(card) card.classList.toggle('section-skipped', box.checked);
     });
@@ -3675,7 +3711,7 @@
     setTxt('r-pkg-detail', pkg.length ? ('② の資材 ' + pkg.length + '点の合計') : '② に資材の入力がありません');
     setTxt('r-labor-detail', finishMin > 0
       ? ('「仕上げ」の工程 ' + fmtNum(finishMin, 1) + '分 ÷ ' + fmtNum(packUnits, 0) + '包装分 ＝ ' + fmtNum(laborMin, 2) + '分 × ¥' + fmtNum(laborRate, 2) + '/分')
-      : '③ で「仕上げ」にした工程がありません');
+      : '② の「仕上げ」に工程がありません');
     setTxt('r-overhead-detail', finishMin > 0
       ? ('同じ ' + fmtNum(overheadMin, 2) + '分 × ¥' + fmtNum(ovhRate, 2) + '/分')
       : '—');
@@ -4000,7 +4036,7 @@
     }catch(e){ hasProc = false; }
     if(!skip.ing && !ingN) out.push('①原材料');
     if(!skip.pkg && !pkgN) out.push('②資材');
-    if(!skip.proc && !hasProc) out.push('③工程');
+    if(!skip.proc && !hasProc) out.push('工程');
     return out;
   }
   function priceInTaxOf(p){
@@ -5279,123 +5315,62 @@
     proto.style.width = w + 'px';
     proto.style.height = h + 'px';
     if(html != null) proto.innerHTML = html;
-    var sw = w / CURL_SLICES;
-    var strips = [];
-    // まだ持ち上がっていない部分（1枚もの）
+    // まだめくれていない部分
     var flat = document.createElement('div');
     flat.className = 'curl-flat';
     flat.style.height = h + 'px';
-    flat.appendChild(proto.cloneNode(true));
+    flat.appendChild(proto);
     wrap.appendChild(flat);
-    // 下のページに落ちる影
+    // 裏返った紙の端から、下のページに落ちる影
     var cast = document.createElement('div');
     cast.className = 'curl-drop';
     wrap.appendChild(cast);
-    // 裏返って寝ている部分（1枚もの。紙の裏なので中身はなし）
+    // 裏返った部分（紙の裏）
     var flap = document.createElement('div');
     flap.className = 'curl-flap';
     flap.style.height = h + 'px';
     wrap.appendChild(flap);
-    // 丸まっている部分だけ、細い短冊で丸みを出す
-    for(var i = 0; i < CURL_SLICES; i++){
-      var s = document.createElement('div');
-      s.className = 'curl-slice';
-      s.style.left = (i * sw) + 'px';
-      s.style.width = (sw + 1.2) + 'px';          // となりと少し重ねて、すき間の線を出さない
-      s.style.height = h + 'px';
-      s.style.display = 'none';
-      var front = document.createElement('div');
-      front.className = 'curl-slice-front';
-      var copy = proto.cloneNode(true);
-      copy.style.left = (-i * sw) + 'px';
-      front.appendChild(copy);
-      var shadeF = document.createElement('div');
-      shadeF.className = 'curl-slice-shade';
-      front.appendChild(shadeF);
-      var back = document.createElement('div');
-      back.className = 'curl-slice-back';
-      var shadeB = document.createElement('div');
-      shadeB.className = 'curl-slice-shade';
-      back.appendChild(shadeB);
-      s.shades = [shadeF, shadeB];
-      s.appendChild(front);
-      s.appendChild(back);
-      wrap.appendChild(s);
-      strips.push(s);
-    }
-    return {wrap:wrap, flat:flat, flap:flap, cast:cast, strips:strips, sw:sw, w:w, h:h, p:-1, pShown:0, pTarget:0};
+    return {wrap:wrap, flat:flat, flap:flap, cast:cast, w:w, h:h, p:-1, pShown:0, pTarget:0};
   }
-  function curlR(w){ return Math.max(22, w * 0.085); }
-  // 丸まりの陰（2段階）：th＝丸まりの角度（0＝持ち上がりはじめ、π＝折り返しのつけ根）
-  function curlShadeAt(th){
-    if(th <= 0) return 0;
-    if(th < Math.PI / 2) return 0.30;                    // 下側（上からはほぼ見えない）
-    var q = (Math.PI - th) / (Math.PI / 2);              // 1＝ふくらみの端、0＝つけ根
-    return q <= 0.5 ? q * 0.16 : 0.08 + (q - 0.5) * 0.44; // つけ根→中ほどは淡く、端に向かってぐっと濃く
-  }
+  // 裏返った部分の見かけの幅の割合（前のページへ戻るときは、紙が立ち上がって見える分だけ細く）
+  var CURL_PREV_K = 0.35;
+  function curlK(c){ return (c && c.dir < 0) ? CURL_PREV_K : 1; }
   function setCurlProgress(c, p){
     p = Math.max(0, Math.min(1, p));
     if(c.p === p) return;
     c.p = p;
-    var w = c.w, sw = c.sw;
-    var R = curlR(w);
-    var travel = w + Math.PI * R;               // 端から端まで巻き切るまでの長さ
-    var axis = w - travel * p;                  // 巻きの軸（右から左へ動く）
-    var roll = Math.PI * R;
-    var flatEnd = w;                            // 平らな1枚ものの右端
-    for(var i = 0; i < c.strips.length; i++){
-      var s = c.strips[i];
-      var x0 = i * sw, x1 = x0 + sw, xc = x0 + sw / 2;
-      var d = xc - axis;
-      if(d <= 0 || d > roll){
-        if(s.style.display !== 'none') s.style.display = 'none';
-        if(d > 0 && x0 < flatEnd) flatEnd = Math.min(flatEnd, x0);
-        continue;
-      }
-      if(x0 < flatEnd) flatEnd = x0;
-      if(s.style.display === 'none') s.style.display = '';
-      var th = d / R;
-      var nx = axis + R * Math.sin(th);
-      var z = R * (1 - Math.cos(th));
-      var deg = -th * 180 / Math.PI;
-      s.style.transform = 'translate3d(' + (nx - xc).toFixed(2) + 'px,0,' + z.toFixed(2) + 'px) rotateY(' + deg.toFixed(2) + 'deg)';
-      // 陰は短冊ごとに左右でなめらかにつなぐ（段々にならないように）
-      var aL = curlShadeAt((x0 - axis) / R), aR = curlShadeAt((x1 - axis) / R);
-      var col = 'rgba(42,27,12,';
-      s.shades[0].style.opacity = '1';
-      s.shades[1].style.opacity = '1';
-      s.shades[0].style.background = 'linear-gradient(to right,' + col + aL.toFixed(3) + '),' + col + aR.toFixed(3) + '))';
-      s.shades[1].style.background = 'linear-gradient(to right,' + col + aR.toFixed(3) + '),' + col + aL.toFixed(3) + '))';  // 裏は左右が逆
-    }
-    // 平らな部分：丸まりが始まるところまで
-    var fw = Math.max(0, Math.min(w, flatEnd));
-    c.flat.style.width = fw.toFixed(1) + 'px';
-    c.flat.style.display = fw <= 0 ? 'none' : '';
-    // 裏返って寝ている部分：紙の端から、折り返しのつけ根（軸）まで
-    var ex = curlEdgeX(c, p);
-    var lifted = w - axis;
-    if(lifted > roll){
-      var fl = ex, fr = axis + sw * 0.9 + 0.8;   // 丸まりのてっぺんの短冊と少し重ねて、すき間を作らない
+    var w = c.w;
+    var fold = w * (1 - p);                     // 折り目（めくれている部分の右端）
+    var flapW = (w - fold) * curlK(c);          // 裏返った部分の幅
+    var edge = fold - flapW;                    // 裏返った紙の端（いちばん左）
+    // めくれていない部分：折り目まで
+    c.flat.style.width = Math.max(0, fold).toFixed(1) + 'px';
+    c.flat.style.display = fold <= 0.5 ? 'none' : '';
+    // 裏返った部分
+    if(flapW > 0.5){
       c.flap.style.display = '';
-      c.flap.style.left = fl.toFixed(1) + 'px';
-      c.flap.style.width = Math.max(0, fr - fl).toFixed(1) + 'px';
-      c.flap.style.transform = 'translateZ(' + (2 * R).toFixed(2) + 'px)';
+      c.flap.style.left = edge.toFixed(1) + 'px';
+      c.flap.style.width = flapW.toFixed(1) + 'px';
+      // 折り目（右端）から左へ：濃い→中くらい→消える、の2段階
+      var s1 = Math.min(26, flapW * 0.22), s2 = Math.min(110, flapW * 0.75);
+      c.flap.style.backgroundImage =
+        'linear-gradient(to left, rgba(60,38,15,.30) 0px, rgba(60,38,15,.10) ' + s1.toFixed(1) + 'px, rgba(60,38,15,0) ' + s2.toFixed(1) + 'px),' +
+        'repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px)';
     } else {
       c.flap.style.display = 'none';
     }
+    // 下のページに落ちる影（裏返った紙の端の左側）
     if(c.cast){
-      // 裏返った紙の端（いちばん左）から、左へ向かって下のページに落ちる影
-      var sw2 = Math.max(10, Math.min(R * 1.3, lifted * 0.35));
-      var left = Math.max(0, ex - sw2), right = Math.min(w, ex);
+      var sw2 = Math.max(8, Math.min(40, flapW * 0.35));
+      var left = Math.max(0, edge - sw2), right = Math.min(w, edge);
       var vis = right - left;
-      c.cast.style.display = (vis <= 0.5 || lifted <= 1) ? 'none' : '';
+      c.cast.style.display = (vis <= 0.5 || flapW <= 1) ? 'none' : '';
       c.cast.style.left = left.toFixed(1) + 'px';
       c.cast.style.width = Math.max(0, vis).toFixed(1) + 'px';
       c.cast.style.backgroundSize = sw2.toFixed(1) + 'px 100%';
       c.cast.style.backgroundPosition = 'right top';
       c.cast.style.backgroundRepeat = 'no-repeat';
-      c.cast.style.opacity = Math.min(1, lifted / (R * 1.2), Math.max(0, (ex + sw2) / sw2)).toFixed(3);
-      c.cast.style.transform = 'translateZ(1px)';        // 下の紙より上、めくれた紙より下
+      c.cast.style.opacity = Math.min(1, flapW / 30).toFixed(3);
     }
   }
   var curlNow = null, curlRaf = 0, curlTimer = 0;
@@ -5428,31 +5403,13 @@
   }
   // 紙の右端（つまんでいる端）が、画面のどこにあるか
   function curlEdgeX(c, p){
-    var w = c.w, R = Math.max(22, w * 0.085), travel = w + Math.PI * R;
-    var axis = w - travel * p, d = w - axis;
-    if(d <= 0) return w;
-    var th = d / R;
-    if(th <= Math.PI) return axis + R * Math.sin(th);
-    return axis - (d - Math.PI * R);
+    var w = c.w, fold = w * (1 - p);
+    return fold - (w - fold) * curlK(c);
   }
-  // 折り目（丸まりのいちばん右のふくらみ）が、画面のどこにあるか
-  function curlFoldX(c, p){
-    var w = c.w, R = curlR(w), travel = w + Math.PI * R;
-    var axis = w - travel * p, d = w - axis;
-    if(d <= 0) return w;
-    return axis + R * Math.sin(Math.min(d / R, Math.PI / 2));
-  }
-  function curlPForFold(c, x){
-    var lo = 0, hi = 1;
-    for(var i = 0; i < 26; i++){
-      var mid = (lo + hi) / 2;
-      if(curlFoldX(c, mid) > x) lo = mid; else hi = mid;
-    }
-    return (lo + hi) / 2;
-  }
+  function curlFoldX(c, p){ return c.w * (1 - p); }
+  function curlPForFold(c, x){ return Math.max(0, Math.min(1, 1 - x / c.w)); }
   function dragCurlToFold(c, x){
-    var R = curlR(c.w);
-    x = Math.max(-Math.PI * R, Math.min(c.w, x));
+    x = Math.max(0, Math.min(c.w, x));
     var p = curlPForFold(c, x);
     c.pShown = p;
     c.edgeX = curlEdgeX(c, p);
@@ -5468,8 +5425,7 @@
     return (lo + hi) / 2;
   }
   function dragCurlToEdge(c, edgeX){
-    var R = Math.max(22, c.w * 0.085);
-    edgeX = Math.max(-c.w - Math.PI * R, Math.min(c.w, edgeX));
+    edgeX = Math.max(-c.w * curlK(c), Math.min(c.w, edgeX));
     c.edgeX = edgeX;
     var p = curlPForEdge(c, edgeX);
     c.pShown = p;
