@@ -725,7 +725,7 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.36</div>
+      <div style="margin-top:2px;">ver.37</div>
     </div>
   </nav>
 
@@ -1202,7 +1202,7 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.36</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.37</p></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -3031,6 +3031,7 @@
     items[next].scrollIntoView({block:'nearest'});
   }
   function chooseSuggestion(tr, name, byTouch){
+    if(tr && tr.classList && tr.classList.contains('cont-row')){ chooseContentSuggestion(tr, name, byTouch); return; }
     var nameEl = tr.querySelector('.row-name');
     nameEl.value = name;
     hideSuggestions(tr);
@@ -3147,12 +3148,10 @@
   }
   function makeContentRow(){
     var tr = document.createElement('tr');
+    tr.className = 'cont-row';
     tr.innerHTML =
       '<td class="col-name">' +
-        '<div class="ing-pick">' +
-          '<select class="row-pcat-select"><option value="">カテゴリ</option></select>' +
-          '<select class="row-prod-select" disabled><option value="">商品を選択…</option></select>' +
-        '</div>' +
+        '<div class="ing-manual" style="position:relative;"><input class="row-name row-cont-name" autocomplete="off" placeholder="商品名を入力"></div>' +
         '<div class="ing-toggle-row" style="margin-top:6px;">' +
           '<select class="row-mode-select" style="font-size:12px;">' +
             '<option value="packed">個包装のまま入れる</option>' +
@@ -3160,7 +3159,7 @@
           '</select>' +
         '</div>' +
         '<div class="row-missing-notice" hidden style="margin-top:6px;">' +
-          '<span class="unmatched-msg">⚠ 登録済み商品が見つかりません（削除された可能性）</span>' +
+          '<span class="unmatched-msg">⚠ 登録済み商品が見つかりません</span>' +
         '</div>' +
       '</td>' +
       '<td class="col-qty"><input class="row-qty" type="number" inputmode="decimal" min="0" step="any" value="0"></td>' +
@@ -3168,19 +3167,106 @@
       '<td class="col-price row-price">¥0</td>' +
       '<td class="col-amt row-amt amt">¥0</td>' +
       '<td class="col-del"><button class="icon-btn" title="削除">✕</button></td>';
-    var catSel = tr.querySelector('.row-pcat-select');
-    var prodSel = tr.querySelector('.row-prod-select');
-    populateProductCatSelect(catSel);
-    catSel.addEventListener('change', function(){
-      populateProductSelect(prodSel, catSel.value);
-      prodSel.disabled = !catSel.value;
-      setRowProduct(tr, '');
+    var inp = tr.querySelector('.row-cont-name');
+    inp.addEventListener('input', function(){
+      // 打った文字がちょうど商品名（またはグループ名）なら、そのまま選ぶ
+      var hit = contentMatchExact(inp.value.trim());
+      setRowProduct(tr, hit || '');
+      tr.querySelector('.row-missing-notice').hidden = true;
+      showContentSuggestions(tr);
     });
-    prodSel.addEventListener('change', function(){ setRowProduct(tr, prodSel.value); });
+    inp.addEventListener('focus', function(){ showContentSuggestions(tr); });
+    inp.addEventListener('blur', function(){
+      setTimeout(function(){
+        if(acHolding || acTouch) return;
+        if(acOwnerRow === tr) hideSuggestions(tr);
+        // 選ばずに離れたときだけ「見つかりません」を出す
+        var none = inp.value.trim() && !tr.dataset.productId && !tr.dataset.groupId;
+        tr.querySelector('.row-missing-notice').hidden = !none;
+      }, 250);
+    });
+    inp.addEventListener('keydown', function(e){
+      var list = acOverlayEl();
+      var open = list && !list.hidden && acOwnerRow === tr;
+      if(open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
+        e.preventDefault(); moveActive(tr, e.key === 'ArrowDown' ? 1 : -1); return;
+      }
+      if(e.key === 'Escape' && open){ e.preventDefault(); hideSuggestions(tr); return; }
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        var act = open ? list.querySelector('.ac-item.active') : null;
+        if(act) chooseSuggestion(tr, act.dataset.name, false);
+        else hideSuggestions(tr);
+      }
+    });
     tr.querySelector('.row-mode-select').addEventListener('change', function(){ setRowProduct(tr, tr.dataset.groupId ? 'g:' + tr.dataset.groupId : (tr.dataset.productId || '')); });
     tr.querySelector('.row-qty').addEventListener('input', recalc);
     tr.querySelector('.icon-btn').addEventListener('click', function(){ tr.remove(); recalc(); });
     return tr;
+  }
+  // 候補：グループ（★）と、ギフト以外の登録済み商品
+  function contentCandidates(){
+    var out = [];
+    (state.productGroups || []).forEach(function(gr){
+      out.push({val:'g:' + gr.id, label:gr.name || '', sub:'★ グループ ・ ' + groupMembers(gr).length + '種', group:true});
+    });
+    selectableProducts().forEach(function(p){
+      out.push({val:p.id, label:p.name || '', sub:productCatOf(p), group:false});
+    });
+    return out;
+  }
+  function contentMatchExact(text){
+    if(!text) return '';
+    var hit = contentCandidates().find(function(c){ return c.label === text; });
+    return hit ? hit.val : '';
+  }
+  function contentLabelOf(val){
+    var hit = contentCandidates().find(function(c){ return c.val === val; });
+    return hit ? hit.label : '';
+  }
+  function showContentSuggestions(tr){
+    var input = tr.querySelector('.row-cont-name');
+    if(!input) return;
+    var list = acOverlayEl();
+    var q = (input.value || '').trim().toLowerCase();
+    if(!q){ hideSuggestions(tr); return; }            // 何も打っていないときは候補を出さない
+    acOwnerRow = tr;
+    var mode = tr.querySelector('.row-mode-select').value;
+    var hits = contentCandidates().filter(function(c){
+      return c.label.toLowerCase().indexOf(q) >= 0 || (c.sub || '').toLowerCase().indexOf(q) >= 0;
+    });
+    // グループを先に、その次に商品名の並び
+    hits.sort(function(a,b){ return (a.group === b.group) ? a.label.localeCompare(b.label, 'ja') : (a.group ? -1 : 1); });
+    hits = hits.slice(0, 20);
+    if(!hits.length){ hideSuggestions(tr); return; }
+    list.innerHTML = hits.map(function(c, i){
+      var cost = 0;
+      if(c.group){ cost = groupUnitCost(findGroup(c.val.slice(2)), mode); }
+      else {
+        var p = state.products.find(function(x){ return x.id === c.val; });
+        cost = contentUnitCost(p, mode);
+      }
+      return '<div class="ac-item'+(i===0?' active':'')+'" data-name="'+escapeHtml(c.val)+'">' +
+        '<span>'+(c.group ? '★ ' : '')+escapeHtml(c.label)+'</span>' +
+        '<small>'+escapeHtml(c.sub || '')+' ・ ¥'+fmtNum(cost, 2)+(c.group ? '（平均）' : '')+'</small>' +
+        '</div>';
+    }).join('');
+    list.hidden = false;
+    list.scrollTop = 0;
+    placeAcOverlay(input);
+    tr.classList.add('ac-open');
+    acOverlayGen++;
+  }
+  function chooseContentSuggestion(tr, val, byTouch){
+    var inp = tr.querySelector('.row-cont-name');
+    inp.value = contentLabelOf(val);
+    hideSuggestions(tr);
+    tr.querySelector('.row-missing-notice').hidden = true;
+    setRowProduct(tr, val);
+    state.calcDirty = true;
+    saveCalcDraft();
+    if(byTouch){ try{ inp.blur(); }catch(e){} }
+    else if(Date.now() - acTouchAt > 900){ focusSoft(tr.querySelector('.row-qty')); }
   }
   function contentUnitCost(p, mode){
     if(mode === 'bulk') return (p && p.batch && p.batch.costPerYieldUnit) || 0;
@@ -3247,13 +3333,7 @@
     return rows;
   }
   function renderContentRow(){ document.getElementById('cont-body').appendChild(makeContentRow()); }
-  function refreshContentProductOptions(){
-    document.getElementById('cont-body').querySelectorAll('tr').forEach(function(tr){
-      if(tr.dataset.productId || tr.dataset.groupId) return;
-      var catSel = tr.querySelector('.row-pcat-select');
-      if(catSel) populateProductCatSelect(catSel);
-    });
-  }
+  function refreshContentProductOptions(){ /* 候補は入力のたびに作るので、ここでは何もしない */ }
   document.getElementById('btn-add-content').addEventListener('click', renderContentRow);
   function fillContentRows(rows){
     var body = document.getElementById('cont-body');
@@ -3263,28 +3343,18 @@
       body.appendChild(tr);
       tr.querySelector('.row-qty').value = r.qty;
       tr.querySelector('.row-mode-select').value = (r.mode === 'bulk' ? 'bulk' : 'packed');
-      if(r.groupId && findGroup(r.groupId)){
-        var gcs = tr.querySelector('.row-pcat-select');
-        var gps = tr.querySelector('.row-prod-select');
-        populateProductCatSelect(gcs);
-        gcs.value = '__group__';
-        populateProductSelect(gps, '__group__');
-        gps.disabled = false;
-        gps.value = 'g:' + r.groupId;
+      var inp = tr.querySelector('.row-cont-name');
+      var gr = r.groupId ? findGroup(r.groupId) : null;
+      var p = (!r.groupId && r.productId) ? state.products.find(function(x){ return x.id === r.productId; }) : null;
+      if(gr){
+        inp.value = gr.name || '';
         setRowProduct(tr, 'g:' + r.groupId);
-        return;
-      }
-      var p = r.productId ? state.products.find(function(x){ return x.id === r.productId; }) : null;
-      if(p){
-        var catSel = tr.querySelector('.row-pcat-select');
-        var prodSel = tr.querySelector('.row-prod-select');
-        catSel.value = productCatOf(p);
-        populateProductSelect(prodSel, catSel.value);
-        prodSel.disabled = false;
-        prodSel.value = p.id;
+      } else if(p){
+        inp.value = p.name || '';
         setRowProduct(tr, p.id);
       } else {
-        // the referenced product is gone: keep the saved figures and flag it
+        // 選んでいた商品・グループが見つからない：保存していた数字のまま残して知らせる
+        inp.value = r.name || '';
         tr.dataset.productId = r.productId || '';
         tr.dataset.groupId = r.groupId || '';
         tr.dataset.productName = r.name || '';
@@ -3364,19 +3434,14 @@
     document.getElementById('group-modal-backdrop').hidden = true;
     // 表示中の中身の行を最新のグループで更新
     document.getElementById('cont-body').querySelectorAll('tr').forEach(function(tr){
-      var catSel = tr.querySelector('.row-pcat-select');
-      var prodSel = tr.querySelector('.row-prod-select');
       var gid = tr.dataset.groupId;
-      populateProductCatSelect(catSel);
-      if(gid){
-        if(findGroup(gid)){
-          catSel.value = '__group__';
-          populateProductSelect(prodSel, '__group__');
-          prodSel.value = 'g:' + gid;
-          setRowProduct(tr, 'g:' + gid);
-        } else {
-          tr.querySelector('.row-missing-notice').hidden = false;
-        }
+      if(!gid) return;
+      var gr = findGroup(gid);
+      if(gr){
+        tr.querySelector('.row-cont-name').value = gr.name || '';
+        setRowProduct(tr, 'g:' + gid);
+      } else {
+        tr.querySelector('.row-missing-notice').hidden = false;
       }
     });
     recalc();
@@ -3948,7 +4013,8 @@
     var ing = readRows('ing-body');
     if(isGift) ing = [];
     var ingTotal1 = ing.reduce(function(s,r){ return s + r.amount; }, 0);
-    var yieldCount1 = isGift ? 1 : (parseFloat(document.getElementById('f-yield-count').value) || 1);
+    var ycEl = document.getElementById('f-yield-count');
+    var yieldCount1 = isGift ? 1 : (parseFloat(ycEl.value) || parseFloat(ycEl.dataset.prev) || 1);
     var mult = isGift ? 1 : batchMultiplierValue();
     if(mult <= 0) mult = 1;
 
@@ -4107,6 +4173,20 @@
   document.getElementById('f-category').addEventListener('change', function(){
     if(this.value === 'ギフト' && state.sourceType !== 'gift') setSourceType('gift');
   });
+  // 1倍の出来高：タップすると前の数字を消してすぐ打てる。何も入れずに離れたら元の数字に戻す
+  (function(){
+    var yc = document.getElementById('f-yield-count');
+    yc.addEventListener('focus', function(){
+      yc.dataset.prev = yc.value;
+      yc.value = '';
+    });
+    yc.addEventListener('blur', function(){
+      if(yc.value.trim() === ''){
+        yc.value = (yc.dataset.prev != null && yc.dataset.prev !== '') ? yc.dataset.prev : '1';
+        recalc();
+      }
+    });
+  })();
   ['f-name','f-product-code','f-yield-count','f-yield-unit','f-pack-count','f-margin','f-count-unit'].forEach(function(id){
     document.getElementById(id).addEventListener('input', recalc);
   });
