@@ -67,6 +67,7 @@
   .brand{padding:0 8px;}
   .brand .mark{font-size:12px; letter-spacing:.14em; color:var(--accent); font-weight:700;}
   .brand h1{font-size:21px; line-height:1.35; margin-top:4px; color:var(--ink);}
+  .brand .brand-ver{font-size:11.5px; color:var(--ink-faint); margin-top:1px; letter-spacing:.04em;}
   .nav{display:flex; flex-direction:column; gap:2px;}
   .nav button{
     display:flex; align-items:center; gap:10px;
@@ -286,6 +287,11 @@
   .settings-grid .field label span{display:block; font-weight:400; font-size:12px; color:var(--ink-faint); margin-top:1px;}
   .settings-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; max-width:640px;}
   .settings-grid .field input{max-width:150px;}
+  #view-settings > .section-card > h3.set-head{cursor:pointer; display:flex; align-items:center; gap:8px; margin:0 !important; user-select:none; -webkit-user-select:none;}
+  #view-settings > .section-card > h3.set-head::before{content:"▸"; font-size:13px; color:var(--accent); width:12px; transition:transform .15s;}
+  #view-settings > .section-card.set-open > h3.set-head::before{transform:rotate(90deg);}
+  #view-settings > .section-card > .set-body{margin-top:10px;}
+  #view-settings > .section-card:not(.set-open) > .set-body{display:none;}
   .seg-row{display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; width:fit-content;}
   .seg-btn{background:var(--surface); border:none; padding:7px 16px; font-family:inherit; font-size:13px;
     color:var(--ink-soft); cursor:pointer;}
@@ -304,7 +310,7 @@
   table.mat-table tr.mat-selected td:first-child{box-shadow:inset 4px 0 0 var(--accent);}
   @media (hover: hover) and (pointer: fine){ table.mat-table tr.mat-selected:hover td{background:#fbecc4;} }
   /* 値段の更新が古い・入っていないものの目印 */
-  .mat-stale{display:inline-block; background:#c0392b; color:#fff; font-weight:700; font-size:11px; line-height:1.5; padding:1px 7px; border-radius:999px; margin-right:6px; vertical-align:1px;}
+  .mat-stale{display:inline-block; color:#c0392b; font-weight:700; font-size:17px; line-height:1; margin-right:6px; vertical-align:-1px;}
   table.mat-table td.mat-ym{white-space:nowrap;}
   table.mat-table tr.mat-need-update td{background:#fdf0ec;}
   .mat-sortband td{background:#c0392b; color:#fff; font-weight:700; font-size:13px; padding:7px 12px;}
@@ -337,6 +343,10 @@
   .modal-box .field-row{display:flex; gap:10px;}
   .modal-box .field-row > .field{flex:1;}
   .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:6px;}
+  .gift-mode-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:2px 0 8px;}
+  .gift-mode-row .gm-lbl{font-size:13px; font-weight:700; color:var(--ink-soft);}
+  #cont-body .ing-toggle-row{display:none;}
+  #r-gift-note{font-size:13px; line-height:1.7; color:var(--ink-soft); margin-top:6px; text-align:left;}
   .cn-tools{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0 6px;}
   .cn-list{max-height:46vh; overflow:auto; border:1px solid var(--border); border-radius:10px; margin-bottom:12px;}
   .cn-item{display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid var(--border); font-size:15px; cursor:pointer; user-select:none; -webkit-user-select:none;}
@@ -818,6 +828,7 @@
     .brand{padding:0; flex:0 0 auto;}
     .brand .mark{display:none;}
     .brand h1{font-size:16px; white-space:nowrap;}
+    .brand .brand-ver{display:none;}
     .nav{flex-direction:row; gap:4px; flex:0 0 auto;}
     .nav button{padding:8px 10px; white-space:nowrap; font-size:13px;}
     .sidebar-foot{display:none;}
@@ -839,6 +850,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
+      <div class="brand-ver">ver.44</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -855,7 +867,6 @@
         <button type="button" class="btn btn-sm" id="dbx-disconnect-btn" style="display:none;">連携を解除</button>
       </div>
       <div id="mat-count-foot" style="margin-top:4px;"></div>
-      <div style="margin-top:2px;">ver.43</div>
     </div>
   </nav>
 
@@ -977,7 +988,14 @@
             </div>
             </div>
             <div id="src-gift" hidden>
-              <p class="hint">ギフト1点に入れる登録済み商品（ギフト以外）を選びます。<b>個包装のまま</b>は袋・ラベル・袋詰め工賃込みの原価、<b>バラで詰める</b>は仕込みだけの1個あたり原価を使います（どちらも販管費は除き、ギフト側で1回だけ計上）。箱・リボンなどは②に入れてください。</p>
+              <div class="gift-mode-row">
+                <span class="gm-lbl">中身の入れ方</span>
+                <div class="seg-row" id="gift-mode-seg">
+                  <button type="button" class="seg-btn on" data-mode="packed">個包装のまま</button>
+                  <button type="button" class="seg-btn" data-mode="bulk">バラで詰める（缶ギフトなど）</button>
+                </div>
+              </div>
+              <p class="hint" id="gift-mode-hint"></p>
               <div class="table-scroll">
               <table class="ing-table">
                 <thead><tr>
@@ -1022,7 +1040,7 @@
               </tr></thead>
               <tbody id="pkg-body"></tbody>
               <tfoot>
-                <tr class="add-row-tr"><td colspan="6"><button class="btn btn-sm add-row-btn" data-add="pkg">＋資材</button></td></tr>
+                <tr class="add-row-tr"><td colspan="6"><button class="btn btn-sm add-row-btn" data-add="pkg">＋資材</button><button type="button" class="btn btn-sm btn-ghost add-row-btn" id="btn-copy-pkg-names" style="margin-left:8px;">ほかの商品から資材名をコピー</button></td></tr>
                 <tr class="ing-foot">
                   <td class="col-name">資材費合計</td><td class="col-qty"></td><td class="col-unit"></td><td class="col-price"></td>
                   <td class="col-amt amt" id="pkg-total">¥0</td><td class="col-del"></td>
@@ -1107,10 +1125,13 @@
               </span>
             </div>
 
+            <div class="rline" id="gift-markup-line" style="display:none;"><label class="skip-toggle"><input type="checkbox" id="f-gift-markup" checked>資材・工賃にも利益を乗せる（希望原価率で割る）</label></div>
+
             <div class="price-block">
               <div class="main-price amt" id="r-price-in">¥0</div>
               <div class="sub-price">希望原価率 <span id="r-margin-pct">35</span>%（税抜 <b class="amt" id="r-price-ex">¥0</b>）</div>
               <div class="margin-pill good" id="r-margin-pill">利益率 0%</div>
+              <div id="r-gift-note" hidden></div>
             </div>
 
             <div class="receipt-actions">
@@ -1403,7 +1424,8 @@
 
     <!-- ===================== SETTINGS VIEW ===================== -->
     <section class="view" id="view-settings">
-      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。</p><p style="font-size:12px; color:var(--ink-faint); margin-top:2px;">アプリの版：ver.43</p></div></div>
+      <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。見出しをタップすると開いたり閉じたりします。</p></div>
+        <div style="display:flex; gap:8px; flex:none;"><button class="btn btn-primary" id="btn-save-settings">設定を保存</button></div></div>
       <div class="card section-card">
         <h3 style="margin:0 0 4px;">表示名</h3>
         <div class="settings-grid">
@@ -1420,6 +1442,7 @@
       </div>
 
       <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;">工賃・間接費・販管費・税率</h3>
         <div class="settings-grid">
           <div class="field">
             <label>製造工賃単価</label>
@@ -1469,7 +1492,6 @@
             <div class="with-unit"><input id="s-margin" type="number" step="any"><span class="unit-tag">％</span></div>
           </div>
         </div>
-        <button class="btn btn-primary" id="btn-save-settings" style="margin-top:18px;">設定を保存</button>
         <p class="hint" style="margin-top:10px;">工賃単価も間接費単価も、分母は「年間の延べ製造時間」でそろえます。工賃単価は「年間の人件費合計 ÷ 延べ製造時間 ÷ 60分」（自分ひとり分で出したいときは「時給 ÷ 60分」）、間接費単価は「年間の水道光熱費など ÷ 延べ製造時間 ÷ 60分」。販管費は「年間の販管費 ÷ 年間販売点数」です。どちらも分母をそろえてあるので、全商品に配った分の合計が1年分の金額とだいたい一致します。数値はすべて小数点第2位までの表示です。</p>
       </div>
 
@@ -1692,8 +1714,8 @@
 </div>
 <div class="modal-backdrop" id="copyname-modal-backdrop" hidden>
   <div class="modal-box" style="max-width:520px;">
-    <h3 class="serif">ほかの商品から材料名をコピー</h3>
-    <p class="hint" style="margin:0;">材料名だけを写します（使用量は写しません）。チェックした材料が①の下に足されます。すでに①にある材料は足しません。</p>
+    <h3 class="serif" id="cn-title">ほかの商品から材料名をコピー</h3>
+    <p class="hint" style="margin:0;" id="cn-hint"></p>
     <div class="field" style="margin-top:10px;"><label>コピー元の商品</label><select id="cn-src"></select></div>
     <div class="cn-tools"><button type="button" class="btn btn-sm btn-ghost" id="cn-all">すべて選ぶ</button><button type="button" class="btn btn-sm btn-ghost" id="cn-none">すべて外す</button><span class="hint" style="margin:0;">はじめと終わりをタップすると、そのあいだをまとめて選べます</span></div>
     <div id="cn-list" class="cn-list"></div>
@@ -1775,8 +1797,8 @@
   function priceNeedsUpdate(v){ return priceAgeMonths(v) >= 12; }
   function priceAgeMark(v){
     var s = v ? String(v).trim() : '';
-    if(!s) return '<span class="mat-stale" title="更新年月が入っていません">⚠ 要更新</span>';
-    return priceNeedsUpdate(v) ? '<span class="mat-stale" title="値段の更新から1年以上たっています">⚠ 要更新</span>' : '';
+    if(!s) return '<span class="mat-stale" title="更新年月が入っていません（価格の更新が必要）">⚠</span>';
+    return priceNeedsUpdate(v) ? '<span class="mat-stale" title="値段の更新から1年以上たっています（価格の更新が必要）">⚠</span>' : '';
   }
   function fmtYm(v){
     if(!v) return '—';
@@ -1878,6 +1900,29 @@
     showView('stocktake');
     try{ window.scrollTo(0, 0); }catch(e){}
   });
+
+  // 設定画面：カードの見出しで開閉（開いているかどうかはこの端末に覚えておく）
+  (function(){
+    var KEY = 'atelier-settings-open';
+    var openMap = {};
+    try{ openMap = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){}
+    document.querySelectorAll('#view-settings > .section-card').forEach(function(card){
+      var h = card.querySelector(':scope > h3');
+      if(!h) return;
+      var body = document.createElement('div');
+      body.className = 'set-body';
+      while(h.nextSibling) body.appendChild(h.nextSibling);
+      card.appendChild(body);
+      h.classList.add('set-head');
+      var key = h.textContent.replace(/（.*?）/g, '').trim();
+      if(openMap[key]) card.classList.add('set-open');
+      h.addEventListener('click', function(){
+        card.classList.toggle('set-open');
+        openMap[key] = card.classList.contains('set-open');
+        try{ localStorage.setItem(KEY, JSON.stringify(openMap)); }catch(e){}
+      });
+    });
+  })();
 
   // ---------------- 棚卸し ----------------
   var stYear = null, stTab = 'prod', stOpen = {};
@@ -3772,17 +3817,24 @@
   function renderIngRow(){ document.getElementById('ing-body').appendChild(makeRow('ing')); }
   function renderPkgRow(){ document.getElementById('pkg-body').appendChild(makeRow('pkg')); }
   document.querySelector('[data-add="ing"]').addEventListener('click', renderIngRow);
+  document.getElementById('f-gift-markup').addEventListener('change', function(){ state.calcDirty = true; recalc(); try{ saveCalcDraft(); }catch(e){} });
   document.querySelector('[data-add="pkg"]').addEventListener('click', renderPkgRow);
 
-  // ---- ほかの商品から材料名をコピー（使用量は写さない） ----
+  // ---- ほかの商品から材料名・資材名をコピー（使用量は写さない） ----
   (function(){
     var bd = document.getElementById('copyname-modal-backdrop');
     var src = document.getElementById('cn-src');
     var listEl = document.getElementById('cn-list');
     var anchor = -1;
+    var kind = 'ing';      // 'ing'＝①の原材料／'pkg'＝②の資材
+    function bodyId(){ return kind === 'pkg' ? 'pkg-body' : 'ing-body'; }
+    function srcRows(p){
+      var rows = kind === 'pkg' ? (p.pack && p.pack.items) : (p.batch && p.batch.ingredients);
+      return (Array.isArray(rows) ? rows : []).filter(function(r){ return r && r.name; });
+    }
     function currentNames(){
       var s = {};
-      document.querySelectorAll('#ing-body tr').forEach(function(tr){
+      document.querySelectorAll('#' + bodyId() + ' tr').forEach(function(tr){
         var n = ((tr.querySelector('.row-name') || {}).value || '').trim();
         if(n) s[n] = 1;
       });
@@ -3790,8 +3842,7 @@
     }
     function candidates(){
       return sortedProductList(state.products.slice()).filter(function(p){
-        return p.id !== state.editingProductId && p.batch && Array.isArray(p.batch.ingredients) &&
-          p.batch.ingredients.some(function(r){ return r && r.name; });
+        return p.id !== state.editingProductId && srcRows(p).length;
       });
     }
     function renderList(){
@@ -3799,11 +3850,12 @@
       var have = currentNames();
       anchor = -1;
       if(!p){ listEl.innerHTML = '<p class="hint" style="padding:12px;">商品を選んでください。</p>'; return; }
-      listEl.innerHTML = p.batch.ingredients.filter(function(r){ return r && r.name; }).map(function(r, i){
+      var where = kind === 'pkg' ? '②' : '①';
+      listEl.innerHTML = srcRows(p).map(function(r, i){
         var dup = !!have[r.name];
         return '<label class="cn-item'+(dup ? ' dup' : ' on')+'" data-i="'+i+'"><span class="cn-no">'+(i+1)+'</span>' +
           '<input type="checkbox" data-name="'+escapeHtml(r.name)+'"'+(dup ? ' disabled' : ' checked')+'>' +
-          '<span>'+escapeHtml(r.name)+(dup ? '（①にあります）' : '')+'</span></label>';
+          '<span>'+escapeHtml(r.name)+(dup ? '（' + where + 'にあります）' : '')+'</span></label>';
       }).join('');
     }
     function syncOn(){
@@ -3817,7 +3869,7 @@
       if(e.target !== cb){ e.preventDefault(); cb.checked = !cb.checked; }
       var i = Number(it.dataset.i);
       var items = [].slice.call(listEl.querySelectorAll('.cn-item'));
-      // はじめ→終わりの順にタップ：あいだをまとめて同じ状態に
+      // はじめ→終わりの順にタップ：あいだをまとめて選ぶ
       if(anchor >= 0 && anchor !== i && cb.checked){
         var a = Math.min(anchor, i), b = Math.max(anchor, i);
         items.forEach(function(x, k){ var c = x.querySelector('input'); if(k >= a && k <= b && !c.disabled) c.checked = true; });
@@ -3828,37 +3880,43 @@
       items.forEach(function(x, k){ x.classList.toggle('anchor', k === anchor); });
       syncOn();
     });
+    function clearAnchor(){ anchor = -1; listEl.querySelectorAll('.cn-item').forEach(function(x){ x.classList.remove('anchor'); }); }
     document.getElementById('cn-all').addEventListener('click', function(){
-      listEl.querySelectorAll('input').forEach(function(c){ if(!c.disabled) c.checked = true; }); anchor = -1; syncOn();
-      listEl.querySelectorAll('.cn-item').forEach(function(x){ x.classList.remove('anchor'); });
+      listEl.querySelectorAll('input').forEach(function(c){ if(!c.disabled) c.checked = true; }); clearAnchor(); syncOn();
     });
     document.getElementById('cn-none').addEventListener('click', function(){
-      listEl.querySelectorAll('input').forEach(function(c){ c.checked = false; }); anchor = -1; syncOn();
-      listEl.querySelectorAll('.cn-item').forEach(function(x){ x.classList.remove('anchor'); });
+      listEl.querySelectorAll('input').forEach(function(c){ c.checked = false; }); clearAnchor(); syncOn();
     });
     src.addEventListener('change', renderList);
-    document.getElementById('btn-copy-names').addEventListener('click', function(){
+    function open(k){
+      kind = k;
+      var word = kind === 'pkg' ? '資材' : '材料';
+      var where = kind === 'pkg' ? '②' : '①';
+      document.getElementById('cn-title').textContent = 'ほかの商品から' + word + '名をコピー';
+      document.getElementById('cn-hint').textContent = word + '名だけを写します（' + (kind === 'pkg' ? '数' : '使用量') + 'は写しません）。チェックした' + word + 'が' + where + 'の下に足されます。すでに' + where + 'にある' + word + 'は足しません。';
       var cands = candidates();
-      if(!cands.length){ showToast('材料が入っている商品がまだありません'); return; }
+      if(!cands.length){ showToast(word + 'が入っている商品がまだありません'); return; }
       var cats = [];
       cands.forEach(function(p){ var c = p.category || '（カテゴリなし）'; if(cats.indexOf(c) < 0) cats.push(c); });
       src.innerHTML = '<option value="">商品を選ぶ…</option>' + cats.map(function(c){
         return '<optgroup label="'+escapeHtml(c)+'">' + cands.filter(function(p){ return (p.category || '（カテゴリなし）') === c; }).map(function(p){
           var code = (p.planning && p.planning.productCode) || '';
-          return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml((code ? code + '　' : '') + p.name)+'（'+p.batch.ingredients.filter(function(r){ return r && r.name; }).length+'）</option>';
+          return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml((code ? code + '　' : '') + p.name)+'（'+srcRows(p).length+'）</option>';
         }).join('') + '</optgroup>';
       }).join('');
       src.value = '';
       renderList();
       bd.hidden = false;
-    });
+    }
+    document.getElementById('btn-copy-names').addEventListener('click', function(){ open('ing'); });
+    document.getElementById('btn-copy-pkg-names').addEventListener('click', function(){ open('pkg'); });
     function close(){ bd.hidden = true; }
     document.getElementById('cn-cancel').addEventListener('click', close);
     bd.addEventListener('click', function(e){ if(e.target === bd) close(); });
     document.getElementById('cn-ok').addEventListener('click', function(){
       var names = [].slice.call(listEl.querySelectorAll('input:checked')).map(function(c){ return c.dataset.name; });
-      if(!names.length){ showToast('コピーする材料を選んでください'); return; }
-      var body = document.getElementById('ing-body');
+      if(!names.length){ showToast('コピーするものを選んでください'); return; }
+      var body = document.getElementById(bodyId());
       // 何も入っていない行は片づけてから足す
       [].slice.call(body.querySelectorAll('tr')).forEach(function(tr){
         var n = ((tr.querySelector('.row-name') || {}).value || '').trim();
@@ -3868,7 +3926,7 @@
       var have = currentNames(), added = 0;
       names.forEach(function(name){
         if(have[name]) return;
-        var tr = makeRow('ing');
+        var tr = makeRow(kind);
         body.appendChild(tr);
         tr.querySelector('.row-name').value = name;
         setRowMaterial(tr, name);
@@ -3878,7 +3936,7 @@
       close();
       try{ recalc(); }catch(e){}
       try{ saveCalcDraft(); }catch(e){}
-      showToast(added + '件の材料名をコピーしました。使用量を入れてください');
+      showToast(added + '件の' + (kind === 'pkg' ? '資材' : '材料') + '名をコピーしました。' + (kind === 'pkg' ? '数' : '使用量') + 'を入れてください');
     });
   })();
 
@@ -3937,6 +3995,27 @@
       return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>';
     }).join('');
   }
+  var giftMode = 'packed';
+  function setGiftMode(m, quiet){
+    giftMode = (m === 'bulk') ? 'bulk' : 'packed';
+    document.querySelectorAll('#gift-mode-seg .seg-btn').forEach(function(b){ b.classList.toggle('on', b.dataset.mode === giftMode); });
+    var hint = document.getElementById('gift-mode-hint');
+    if(hint) hint.innerHTML = giftMode === 'packed'
+      ? '個包装で売っているものを、そのまま詰めます。<b>値段は「中身の販売価格（税込）× 個数」に、②の資材と仕上げの工賃を足して</b>決めます。原価（利益率を見るため）には、個包装の原価（販管費は除く）を使います。箱・リボンなどは②に入れてください。'
+      : 'バラで詰めます（缶ギフトなど）。中身は仕込みだけの1個あたり原価を使い、<b>原価合計 ÷ 希望原価率</b>で値段を決めます。缶・シールなどは②に入れてください。';
+    document.querySelectorAll('#cont-body tr').forEach(function(tr){
+      var s = tr.querySelector('.row-mode-select');
+      if(s && s.value !== giftMode){
+        s.value = giftMode;
+        setRowProduct(tr, tr.dataset.groupId ? 'g:' + tr.dataset.groupId : (tr.dataset.productId || ''));
+      }
+    });
+    if(!quiet){ recalc(); try{ saveCalcDraft(); }catch(e){} }
+  }
+  document.querySelectorAll('#gift-mode-seg .seg-btn').forEach(function(b){
+    b.addEventListener('click', function(){ state.calcDirty = true; setGiftMode(b.dataset.mode); });
+  });
+  setGiftMode('packed', true);
   function makeContentRow(){
     var tr = document.createElement('tr');
     tr.className = 'cont-row';
@@ -3990,6 +4069,7 @@
         else hideSuggestions(tr);
       }
     });
+    tr.querySelector('.row-mode-select').value = giftMode;
     tr.querySelector('.row-mode-select').addEventListener('change', function(){ setRowProduct(tr, tr.dataset.groupId ? 'g:' + tr.dataset.groupId : (tr.dataset.productId || '')); });
     tr.querySelector('.row-qty').addEventListener('input', recalc);
     tr.querySelector('.icon-btn').addEventListener('click', function(){ tr.remove(); recalc(); });
@@ -4129,6 +4209,8 @@
   function fillContentRows(rows){
     var body = document.getElementById('cont-body');
     body.innerHTML = '';
+    var first = (rows || []).find(function(r){ return r && (r.productId || r.groupId); });
+    setGiftMode(first && first.mode === 'bulk' ? 'bulk' : 'packed', true);
     (rows || []).forEach(function(r){
       var tr = makeContentRow();
       body.appendChild(tr);
@@ -4883,6 +4965,40 @@
     var taxRate = 1 + (state.settings.taxRate/100);
     var priceIn = priceEx * taxRate;
     var profitRate = priceEx > 0 ? (priceEx - totalCost) / priceEx : 0;
+    // 個包装のギフト：中身は販売価格（税込）× 個数、そこに②の資材と仕上げの工賃・間接費を足す
+    var giftRetail = isGift && giftMode === 'packed' && contents.length > 0;
+    var giftRetailIn = 0, giftAddCost = 0, giftAddEx = 0;
+    var giftMarkupEl = document.getElementById('f-gift-markup');
+    var giftMarkup = giftMarkupEl ? giftMarkupEl.checked : true;
+    if(giftRetail){
+      contents.forEach(function(r){
+        var u = 0;
+        if(r.groupId){
+          var ms = groupMembers(findGroup(r.groupId));
+          u = ms.length ? ms.reduce(function(s, m){ return s + priceInTaxOf(m); }, 0) / ms.length : 0;
+        } else {
+          var cp = state.products.find(function(x){ return x.id === r.productId; });
+          u = cp ? priceInTaxOf(cp) : 0;
+        }
+        r.retailIn = u;
+        giftRetailIn += u * r.qty;
+      });
+      giftAddCost = pkgTotal + laborCost + overheadCost;
+      giftAddEx = giftMarkup ? giftAddCost / marginRate : giftAddCost;
+      priceEx = giftRetailIn / taxRate + giftAddEx;
+      priceIn = giftRetailIn + giftAddEx * taxRate;
+      profitRate = priceEx > 0 ? (priceEx - totalCost) / priceEx : 0;
+    }
+    var gmLine = document.getElementById('gift-markup-line');
+    if(gmLine) gmLine.style.display = giftRetail ? '' : 'none';
+    var gNote = document.getElementById('r-gift-note');
+    if(gNote){
+      gNote.hidden = !giftRetail;
+      if(giftRetail) gNote.innerHTML = 'ギフトの値段（税込）＝ 中身の販売価格 <b>' + fmtYen(giftRetailIn) + '</b>（税込）' +
+        ' ＋ 資材・工賃 <b>' + fmtYen(giftAddEx * taxRate) + '</b>（税込）<br>' +
+        '<span style="font-size:12px;">資材・工賃：資材 ' + fmtYen2(pkgTotal) + ' ＋ 仕上げの工賃・間接費 ' + fmtYen2(laborCost + overheadCost) +
+        (giftMarkup ? ' ＝ ' + fmtYen2(giftAddCost) + ' ÷ 希望原価率 ' + fmtNum(marginPct, 1) + '%（利益込み）' : '（利益は乗せない）') + '</span>';
+    }
 
     document.getElementById('r-ing').textContent = fmtYen2(packMaterialCost);
     var packUnits = packCount > 0 && yieldCount > 0 ? (yieldCount / packCount) : 0;
@@ -5004,6 +5120,7 @@
     document.getElementById('f-product-code').value = '';
     document.getElementById('f-category').value = '';
     document.getElementById('f-notes').value = '';
+    document.getElementById('f-gift-markup').checked = true;
     updateContentCardVisibility();
     document.getElementById('f-yield-count').value = 1;
     document.getElementById('f-yield-unit').value = '個';
@@ -5048,6 +5165,7 @@
       pkg: readRows('pkg-body'),
       contents: readContentRows(),
       sourceType: state.sourceType,
+      giftMarkup: document.getElementById('f-gift-markup').checked,
       savedAt: new Date().toISOString()
     };
   }
@@ -5085,6 +5203,7 @@
     fillRows('ing-body', d.ing);
     fillRows('pkg-body', d.pkg);
     fillContentRows(d.contents);
+    document.getElementById('f-gift-markup').checked = d.giftMarkup !== false;
     setSourceType(d.sourceType || 'bake', true);
     state.calcDirty = true;
     if(state.editingProductId){
@@ -5176,6 +5295,7 @@
     fillContentRows(p.pack && p.pack.contents);
     loadPlanningFields(p.planning);
     var hasContents = !!(p.pack && p.pack.contents && p.pack.contents.length);
+    document.getElementById('f-gift-markup').checked = p.giftMarkup !== false;
     setSourceType(p.sourceType || (hasContents || p.category === 'ギフト' ? 'gift' : 'bake'), true);
     state.calcDirty = false;
     recalc();
@@ -5202,6 +5322,7 @@
       category: document.getElementById('f-category').value.trim(),
       notes: document.getElementById('f-notes').value.trim(),
       sourceType: c.sourceType,
+      giftMarkup: document.getElementById('f-gift-markup').checked,
       batch: {
         yieldCount: c.yieldCount,
         baseYieldCount: c.yieldCount1,
