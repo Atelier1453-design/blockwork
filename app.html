@@ -67,7 +67,7 @@
   .brand{padding:0 8px;}
   .brand .mark{font-size:12px; letter-spacing:.14em; color:var(--accent); font-weight:700;}
   .brand h1{font-size:21px; line-height:1.35; margin-top:4px; color:var(--ink);}
-  .brand .brand-ver{font-size:11.5px; color:var(--ink-faint); margin-top:1px; letter-spacing:.04em;}
+  .brand .brand-ver{font-size:13px; font-weight:700; color:var(--ink-soft); margin-top:2px; letter-spacing:.04em; text-align:right;}
   .nav{display:flex; flex-direction:column; gap:2px;}
   .nav button{
     display:flex; align-items:center; gap:10px;
@@ -363,6 +363,10 @@
   .field input#mm-price{width:6.8em;}
   .field input#mm-unitprice-disp{width:11em;}
   .mm-yen{display:flex; align-items:center; gap:6px;}
+  .mm-gb{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .mm-gb select{width:auto;}
+  .mm-gb-cap{display:flex; align-items:center; gap:5px; font-size:14px; color:var(--ink-soft);}
+  .field .mm-gb-cap input{width:4.2em; text-align:right;}
   .mm-yen span{font-size:14px; color:var(--ink-soft); font-weight:700;}
   .mm-ym{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
   .mm-ym-text{font-size:16px; font-weight:700; color:var(--ink);}
@@ -649,6 +653,38 @@
   .pp-choice span{font-size:12.5px; font-weight:400; color:var(--ink-soft);}
   #recipe-print{display:none;}
 
+  /* ギフトの組み合わせ */
+  .gm-line{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:7px 0; border-bottom:1px dashed var(--border);}
+  .gm-line:last-of-type{border-bottom:none;}
+  .gm-k{width:5.5em; flex:none; font-size:13px; font-weight:700; color:var(--ink-soft);}
+  .gm-in{display:inline-flex; align-items:center; gap:5px; font-size:14px; color:var(--ink-soft);}
+  .gm-in input{width:5.5em; border:1px solid var(--border); background:var(--bg); border-radius:8px; padding:6px 8px; font-size:16px; text-align:right; color:var(--ink);}
+  #view-giftmaker select{border:1px solid var(--border); background:var(--bg); border-radius:8px; padding:6px 8px; font-size:15px; color:var(--ink); width:auto; max-width:100%;}
+  #gm-results{display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:16px;}
+  .gm-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;}
+  .gm-card .gm-top{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .gm-card .gm-price{font-size:22px; font-weight:700; color:var(--accent-strong); font-variant-numeric:tabular-nums;}
+  .gm-card .gm-diff{font-size:12.5px; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft);}
+  .gm-card .gm-diff.ok{background:#e3f1e0; color:#2e6b2a;}
+  .gm-card .gm-box{font-size:13px; color:var(--ink-soft);}
+  .gm-card table{width:100%; border-collapse:collapse; font-size:14px;}
+  .gm-card td{padding:4px 2px; border-bottom:1px solid var(--border);}
+  .gm-card td.n{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .gm-card td.q{text-align:right; white-space:nowrap; color:var(--ink-soft);}
+  .gm-card .gm-cat{font-size:11px; color:var(--ink-faint); margin-left:4px;}
+  .gm-card .gm-sum{font-size:12.5px; color:var(--ink-soft); line-height:1.7;}
+  .gm-empty{padding:18px; color:var(--ink-soft);}
+  h3.gm-fold{cursor:pointer; display:flex; align-items:center; gap:8px; user-select:none; -webkit-user-select:none; margin:0 !important;}
+  h3.gm-fold::before{content:"▸"; font-size:13px; color:var(--accent); width:12px; transition:transform .15s;}
+  h3.gm-fold.open::before{transform:rotate(90deg);}
+  .gm-foldbody{margin-top:10px;}
+  .gm-rule, .gm-typerow{display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:8px 0; border-bottom:1px solid var(--border);}
+  .gm-rule input[type=number]{width:4em; border:1px solid var(--border); background:var(--bg); border-radius:8px; padding:5px 6px; font-size:16px; text-align:right;}
+  .gm-typerow input[type=text]{border:1px solid var(--border); background:var(--bg); border-radius:8px; padding:5px 8px; font-size:15px; width:12em;}
+  .gm-typecats{display:flex; flex-wrap:wrap; gap:4px 12px; width:100%;}
+  .gm-prodcat{margin:10px 0 4px; font-weight:700; font-size:13px; color:var(--accent-strong);}
+  .gm-prods{display:flex; flex-wrap:wrap; gap:4px 14px;}
+
   /* 棚卸し */
   .st-controls{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:flex-end; margin-bottom:10px;}
   .st-controls .field{margin:0;}
@@ -851,7 +887,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.45</div>
+      <div class="brand-ver">ver.47</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -989,6 +1025,7 @@
             </div>
             </div>
             <div id="src-gift" hidden>
+              <div style="margin:0 0 10px;"><button type="button" class="btn btn-sm btn-ghost" data-view="giftmaker">🎁 金額や個数から組み合わせを自動で作る</button></div>
               <div class="gift-mode-row">
                 <span class="gm-lbl">中身の入れ方</span>
                 <div class="seg-row" id="gift-mode-seg">
@@ -1150,6 +1187,7 @@
         <div><h2>登録済み商品</h2><p>商品名で検索して、過去の原価計算書を呼び出せます。</p></div>
         <div style="display:flex; gap:8px; flex:none;">
           <button type="button" class="btn btn-ghost" id="btn-import-bw-products">ブロックワークから取り込む</button>
+          <button type="button" class="btn btn-ghost" data-view="giftmaker">🎁 ギフトの組み合わせ</button>
           <button class="btn btn-primary" data-view="calc">＋ 新規原価計算</button>
         </div>
       </div>
@@ -1546,6 +1584,81 @@
       <iframe id="bw-frame" style="display:none;" title="ブロックワーク"></iframe>
     </section>
 
+    <!-- ===================== ギフトの組み合わせ ===================== -->
+    <section class="view" id="view-giftmaker">
+      <div class="page-head">
+        <div style="min-width:0;"><h2>ギフトの組み合わせ</h2><p>金額や個数を決めると、登録済み商品の販売価格から中身の組み合わせを作ります。気に入ったものは、そのまま原価計算のギフトとして登録できます。</p></div>
+        <div style="display:flex; gap:8px; flex:none;"><button type="button" class="btn btn-ghost" data-view="products">← 登録済み商品</button></div>
+      </div>
+      <div class="card section-card gm-form">
+        <div class="gm-line">
+          <span class="gm-k">作り方</span>
+          <div class="seg-row" id="gm-mode"><button type="button" class="seg-btn on" data-v="price">金額で作る</button><button type="button" class="seg-btn" data-v="count">個数で作る</button></div>
+        </div>
+        <div class="gm-line" id="gm-price-line">
+          <span class="gm-k">目標の金額</span>
+          <span class="gm-in"><input id="gm-target" type="number" min="0" step="1" value="2000" inputmode="numeric">円（税込）</span>
+          <span class="gm-in">送料 <input id="gm-ship" type="number" min="0" step="1" value="0" inputmode="numeric">円を引く</span>
+          <div class="seg-row" id="gm-fit"><button type="button" class="seg-btn on" data-v="exact">ぴったりに近く</button><button type="button" class="seg-btn" data-v="under">目標以下で</button></div>
+        </div>
+        <div class="gm-line" id="gm-count-line" hidden>
+          <span class="gm-k">個数</span>
+          <span class="gm-in"><input id="gm-count" type="number" min="1" step="1" value="6" inputmode="numeric">個入り</span>
+        </div>
+        <div class="gm-line">
+          <span class="gm-k">入れ物</span>
+          <div class="seg-row" id="gm-boxmode"><button type="button" class="seg-btn on" data-v="auto">おまかせ</button><button type="button" class="seg-btn" data-v="pick">指定する</button></div>
+          <select id="gm-boxkind"><option value="">箱と袋から</option><option value="box">箱から</option><option value="bag">袋から</option></select>
+          <select id="gm-box" hidden></select>
+        </div>
+        <div class="gm-line">
+          <span class="gm-k">中身</span>
+          <select id="gm-type"></select>
+          <span class="gm-in"><select id="gm-month"></select>月に</span>
+          <label class="skip-toggle"><input type="checkbox" id="gm-season" checked>店頭に並ぶ商品だけ</label>
+        </div>
+        <div class="gm-line">
+          <span class="gm-k">そのほか</span>
+          <label class="skip-toggle"><input type="checkbox" id="gm-userules" checked>決まりを使う（特注のときは外す）</label>
+          <span class="gm-in">詰める手間 <input id="gm-labor" type="number" min="0" step="1" value="0" inputmode="numeric">分</span>
+          <label class="skip-toggle"><input type="checkbox" id="gm-markup" checked>入れ物・手間にも利益を乗せる</label>
+        </div>
+        <p class="hint" id="gm-note" style="margin:6px 0 0;"></p>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="gm-run">組み合わせを作る</button>
+          <button type="button" class="btn" id="gm-again" hidden>ほかの組み合わせ</button>
+        </div>
+      </div>
+      <div id="gm-results"></div>
+      <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;" class="gm-fold" id="gm-fold-rules">決まり</h3>
+        <div class="gm-foldbody" hidden>
+          <p class="hint">いつも守る決まりです。「メレンゲは1つまで」「クッキーは2〜3個」のように、カテゴリかグループごとに数を決めます。特注のときは上の「決まりを使う」を外してください。</p>
+          <div class="gm-line">
+            <span class="gm-in">同じ商品は <input id="gm-maxsame" type="number" min="1" step="1" inputmode="numeric"> 個まで</span>
+            <span class="gm-in"><input id="gm-minkinds" type="number" min="1" step="1" inputmode="numeric"> 種類以上</span>
+          </div>
+          <div id="gm-rules"></div>
+          <button type="button" class="btn btn-sm" id="gm-rule-add">＋ 決まりを足す</button>
+        </div>
+      </div>
+      <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;" class="gm-fold">ギフトの種類</h3>
+        <div class="gm-foldbody" hidden>
+          <p class="hint">種類ごとに、中身に使うカテゴリを選びます。</p>
+          <div id="gm-types"></div>
+          <button type="button" class="btn btn-sm" id="gm-type-add">＋ 種類を足す</button>
+        </div>
+      </div>
+      <div class="card section-card" style="margin-top:16px;">
+        <h3 style="margin:0 0 4px;" class="gm-fold">ギフトに入れない商品</h3>
+        <div class="gm-foldbody" hidden>
+          <p class="hint">チェックを付けた商品は、組み合わせに使いません。</p>
+          <div id="gm-products"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== 棚卸し ===================== -->
     <section class="view" id="view-stocktake">
       <div class="page-head">
@@ -1674,6 +1787,14 @@
         <input id="mm-updated" type="month" hidden>
       </div>
       <span class="hint" style="margin-top:4px;">価格を変えて保存すると「価格を更新しますか？」と聞きます。「はい」で更新日が今月になります。</span>
+    </div>
+    <div class="field" id="mm-giftbox-block">
+      <label>ギフトの入れ物として使う</label>
+      <div class="mm-gb">
+        <select id="mm-gb-type"><option value="">使わない</option><option value="box">箱</option><option value="bag">袋（OPP袋など）</option></select>
+        <span class="mm-gb-cap" id="mm-gb-cap">入る数 <input id="mm-gb-min" type="number" min="0" step="1" inputmode="numeric">〜<input id="mm-gb-max" type="number" min="0" step="1" inputmode="numeric">個くらい</span>
+      </div>
+      <span class="hint" style="margin-top:4px;">「ギフトの組み合わせ」で、この入れ物に入る数をもとに中身を組みます（1つだけなら両方に同じ数）。</span>
     </div>
     <div class="field" id="mm-nutrition-block" style="margin-top:4px;">
       <label>栄養成分（100gあたり・任意）<span style="font-weight:400; color:var(--ink-faint);">— 自動取得はできないため、調べて手入力してください</span></label>
@@ -2013,6 +2134,446 @@
 
   function applyAutoCommitFlag(){ window.__atelierAutoCommit = !(state.settings && state.settings.autoCommitNum === false); }
   applyAutoCommitFlag();
+
+
+  // ---------------- ギフトの組み合わせ ----------------
+  function gmConf(){
+    if(!state.giftMaker || typeof state.giftMaker !== 'object'){
+      var cats = state.productCategories || [];
+      var have = function(c){ return cats.indexOf(c) >= 0 || state.products.some(function(p){ return p.category === c; }); };
+      var rules = [];
+      // よくある決まりを、あるものだけ最初に入れておく（あとで変えられる）
+      var mer = (state.productGroups || []).find(function(gr){ return /メレンゲ/.test(gr.name || ''); });
+      if(mer) rules.push({kind:'grp', key:mer.id, min:0, max:1});
+      else if(have('メレンゲ')) rules.push({kind:'cat', key:'メレンゲ', min:0, max:1});
+      if(have('クッキー')) rules.push({kind:'cat', key:'クッキー', min:2, max:3});
+      state.giftMaker = {
+        types:[{id:'t1', name:'日持ちするギフト', cats:['クッキー', '焼き菓子']},
+               {id:'t2', name:'通常', cats:['クッキー', '焼き菓子', '半生菓子', 'パウンド', 'チョコ']}],
+        rules:rules, maxSame:2, minKinds:3, laborMin:0
+      };
+    }
+    var c = state.giftMaker;
+    c.types = Array.isArray(c.types) ? c.types : [];
+    c.rules = Array.isArray(c.rules) ? c.rules : [];
+    if(!(c.maxSame > 0)) c.maxSame = 2;
+    if(!(c.minKinds > 0)) c.minKinds = 1;
+    return c;
+  }
+  var gmOpt = {mode:'price', fit:'exact', boxMode:'auto', seed:0, last:null};
+  function gmSeg(id, key){
+    document.querySelectorAll('#' + id + ' .seg-btn').forEach(function(b){
+      b.classList.toggle('on', b.dataset.v === gmOpt[key]);
+      b.onclick = function(){ gmOpt[key] = b.dataset.v; gmSeg(id, key); gmSyncForm(); };
+    });
+  }
+  function gmContainers(kind){
+    return state.materials.filter(function(m){
+      return m.giftBox && m.giftBox.type && (!kind || m.giftBox.type === kind);
+    }).sort(function(a, b){ return (a.giftBox.max || 0) - (b.giftBox.max || 0) || (a.name || '').localeCompare(b.name || '', 'ja'); });
+  }
+  function gmBoxLabel(m){
+    var gb = m.giftBox;
+    return (gb.type === 'bag' ? '袋' : '箱') + '　' + m.name + '（' + (gb.min === gb.max ? gb.max : gb.min + '〜' + gb.max) + '個）';
+  }
+  function gmSyncForm(){
+    document.getElementById('gm-price-line').hidden = gmOpt.mode !== 'price';
+    document.getElementById('gm-count-line').hidden = gmOpt.mode !== 'count';
+    document.getElementById('gm-boxkind').hidden = gmOpt.boxMode !== 'auto';
+    document.getElementById('gm-box').hidden = gmOpt.boxMode !== 'pick';
+    var boxes = gmContainers('');
+    var note = [];
+    if(!boxes.length) note.push('入れ物がまだありません。原材料マスタで箱や袋の資材を開き、「ギフトの入れ物として使う」と入る数を入れてください（それまでは入れ物なし・3〜15個で組みます）。');
+    note.push('値段は「中身の販売価格（税込）× 個数」＋ 入れ物と詰める手間' + (document.getElementById('gm-markup').checked ? '（希望原価率 ' + fmtNum(state.settings.margin, 1) + '% で割って利益込み）' : '（原価のまま）') + '。');
+    document.getElementById('gm-note').textContent = note.join(' ');
+  }
+  function gmRenderRules(){
+    var c = gmConf();
+    document.getElementById('gm-maxsame').value = c.maxSame;
+    document.getElementById('gm-minkinds').value = c.minKinds;
+    var cats = gmAllCats();
+    var groups = state.productGroups || [];
+    var opts = function(r){
+      return '<optgroup label="カテゴリ">' + cats.map(function(k){ return '<option value="cat:'+escapeHtml(k)+'"'+(r.kind === 'cat' && r.key === k ? ' selected' : '')+'>'+escapeHtml(k)+'</option>'; }).join('') + '</optgroup>' +
+        (groups.length ? '<optgroup label="グループ">' + groups.map(function(gr){ return '<option value="grp:'+escapeHtml(gr.id)+'"'+(r.kind === 'grp' && r.key === gr.id ? ' selected' : '')+'>★ '+escapeHtml(gr.name)+'</option>'; }).join('') + '</optgroup>' : '');
+    };
+    document.getElementById('gm-rules').innerHTML = c.rules.map(function(r, i){
+      return '<div class="gm-rule" data-i="'+i+'"><select data-f="target">'+opts(r)+'</select>' +
+        '<span class="gm-in"><input type="number" min="0" step="1" data-f="min" value="'+(r.min || 0)+'">〜<input type="number" min="0" step="1" data-f="max" value="'+(r.max != null ? r.max : '')+'">個</span>' +
+        '<button type="button" class="icon-btn" data-f="del" title="消す">✕</button></div>';
+    }).join('') || '<p class="hint" style="margin:6px 0;">まだ決まりはありません。</p>';
+  }
+  function gmAllCats(){
+    var out = [];
+    (state.productCategories || []).forEach(function(k){ if(out.indexOf(k) < 0) out.push(k); });
+    state.products.forEach(function(p){ if(p.category && out.indexOf(p.category) < 0) out.push(p.category); });
+    return out.filter(function(k){ return k !== 'ギフト' && k !== '仕掛品'; });
+  }
+  function gmRenderTypes(){
+    var c = gmConf(), cats = gmAllCats();
+    document.getElementById('gm-types').innerHTML = c.types.map(function(t, i){
+      return '<div class="gm-typerow" data-i="'+i+'"><input type="text" data-f="name" value="'+escapeHtml(t.name || '')+'" data-keep>' +
+        '<button type="button" class="icon-btn" data-f="del" title="消す">✕</button>' +
+        '<div class="gm-typecats">' + cats.map(function(k){
+          return '<label class="skip-toggle"><input type="checkbox" data-f="cat" data-cat="'+escapeHtml(k)+'"'+((t.cats || []).indexOf(k) >= 0 ? ' checked' : '')+'>'+escapeHtml(k)+'</label>';
+        }).join('') + '</div></div>';
+    }).join('');
+    var sel = document.getElementById('gm-type');
+    var firstTime = !sel.options.length;
+    var cur = sel.value;
+    sel.innerHTML = c.types.map(function(t){ return '<option value="'+escapeHtml(t.id)+'">'+escapeHtml(t.name || '（名前なし）')+'</option>'; }).join('') + '<option value="">すべてのカテゴリ</option>';
+    if(!firstTime && [].some.call(sel.options, function(o){ return o.value === cur; })) sel.value = cur;
+    else sel.selectedIndex = 0;
+  }
+  function gmRenderProducts(){
+    var list = sortedProductList(state.products.slice()).filter(function(p){ return p.category !== 'ギフト' && p.category !== '仕掛品' && !isGiftProduct(p); });
+    var cats = [];
+    list.forEach(function(p){ var k = p.category || '（カテゴリなし）'; if(cats.indexOf(k) < 0) cats.push(k); });
+    document.getElementById('gm-products').innerHTML = cats.map(function(k){
+      return '<div class="gm-prodcat">'+escapeHtml(k)+'</div><div class="gm-prods">' + list.filter(function(p){ return (p.category || '（カテゴリなし）') === k; }).map(function(p){
+        return '<label class="skip-toggle"><input type="checkbox" data-pid="'+escapeHtml(p.id)+'"'+(p.noGift ? ' checked' : '')+'>'+escapeHtml(p.name)+'</label>';
+      }).join('') + '</div>';
+    }).join('') || '<p class="hint">商品がありません。</p>';
+  }
+  function renderGiftMaker(){
+    gmConf();
+    var ms = document.getElementById('gm-month');
+    if(!ms.options.length){
+      ms.innerHTML = [1,2,3,4,5,6,7,8,9,10,11,12].map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
+      ms.value = String(new Date().getMonth() + 1);
+      document.getElementById('gm-labor').value = gmConf().laborMin || 0;
+    }
+    var bs = document.getElementById('gm-box');
+    var cur = bs.value;
+    var boxes = gmContainers('');
+    bs.innerHTML = boxes.length ? boxes.map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') : '<option value="">（入れ物がありません）</option>';
+    if(cur && [].some.call(bs.options, function(o){ return o.value === cur; })) bs.value = cur;
+    gmSeg('gm-mode', 'mode'); gmSeg('gm-fit', 'fit'); gmSeg('gm-boxmode', 'boxMode');
+    gmRenderTypes(); gmRenderRules(); gmRenderProducts();
+    gmSyncForm();
+  }
+  // 設定の変更（決まり・種類・入れない商品）
+  document.getElementById('gm-rules').addEventListener('change', function(e){
+    var row = e.target.closest('.gm-rule'); if(!row) return;
+    var r = gmConf().rules[Number(row.dataset.i)]; if(!r) return;
+    var f = e.target.dataset.f;
+    if(f === 'target'){ var v = e.target.value; r.kind = v.slice(0, 3); r.key = v.slice(4); }
+    if(f === 'min') r.min = Math.max(0, parseInt(e.target.value, 10) || 0);
+    if(f === 'max'){ var mx = parseInt(e.target.value, 10); r.max = isNaN(mx) ? null : Math.max(0, mx); }
+    scheduleSave();
+  });
+  document.getElementById('gm-rules').addEventListener('click', function(e){
+    if(e.target.dataset.f !== 'del') return;
+    var row = e.target.closest('.gm-rule');
+    gmConf().rules.splice(Number(row.dataset.i), 1); scheduleSave(); gmRenderRules();
+  });
+  document.getElementById('gm-rule-add').addEventListener('click', function(){
+    var cats = gmAllCats();
+    gmConf().rules.push({kind:'cat', key:cats[0] || '', min:0, max:1}); scheduleSave(); gmRenderRules();
+  });
+  ['gm-maxsame', 'gm-minkinds'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', function(){
+      var v = Math.max(1, parseInt(this.value, 10) || 1);
+      if(id === 'gm-maxsame') gmConf().maxSame = v; else gmConf().minKinds = v;
+      scheduleSave();
+    });
+  });
+  document.getElementById('gm-types').addEventListener('change', function(e){
+    var row = e.target.closest('.gm-typerow'); if(!row) return;
+    var t = gmConf().types[Number(row.dataset.i)]; if(!t) return;
+    if(e.target.dataset.f === 'name'){ t.name = e.target.value.trim(); }
+    if(e.target.dataset.f === 'cat'){
+      var k = e.target.dataset.cat; t.cats = (t.cats || []).filter(function(x){ return x !== k; });
+      if(e.target.checked) t.cats.push(k);
+    }
+    scheduleSave(); gmRenderTypes();
+  });
+  document.getElementById('gm-types').addEventListener('click', function(e){
+    if(e.target.dataset.f !== 'del') return;
+    var row = e.target.closest('.gm-typerow');
+    gmConf().types.splice(Number(row.dataset.i), 1); scheduleSave(); gmRenderTypes();
+  });
+  document.getElementById('gm-type-add').addEventListener('click', function(){
+    gmConf().types.push({id:'t' + Date.now().toString(36), name:'新しい種類', cats:[]}); scheduleSave(); gmRenderTypes();
+  });
+  document.getElementById('gm-products').addEventListener('change', function(e){
+    var pid = e.target.dataset.pid; if(!pid) return;
+    var p = state.products.find(function(x){ return x.id === pid; }); if(!p) return;
+    if(e.target.checked) p.noGift = true; else delete p.noGift;
+    scheduleSave();
+  });
+  document.getElementById('gm-labor').addEventListener('change', function(){ gmConf().laborMin = Math.max(0, parseFloat(this.value) || 0); scheduleSave(); });
+  document.getElementById('gm-markup').addEventListener('change', gmSyncForm);
+  document.getElementById('gm-ship').addEventListener('input', function(){
+    if((parseFloat(this.value) || 0) > 0 && gmOpt.fit !== 'under'){ gmOpt.fit = 'under'; gmSeg('gm-fit', 'fit'); }
+  });
+  document.querySelectorAll('#view-giftmaker h3.gm-fold').forEach(function(h){
+    h.addEventListener('click', function(){
+      var body = h.parentNode.querySelector('.gm-foldbody');
+      body.hidden = !body.hidden; h.classList.toggle('open', !body.hidden);
+    });
+  });
+
+  // ---- 組み合わせを探す ----
+  function gmItems(){
+    var c = gmConf();
+    var tsel = document.getElementById('gm-type').value;
+    var type = c.types.find(function(t){ return t.id === tsel; });
+    var month = Number(document.getElementById('gm-month').value) || (new Date().getMonth() + 1);
+    var seasonOnly = document.getElementById('gm-season').checked;
+    var bw = null;
+    try{ bw = JSON.parse(state.blockworkValue || 'null'); }catch(e){}
+    return state.products.filter(function(p){
+      if(!p || p.noGift || p.category === 'ギフト' || p.category === '仕掛品' || isGiftProduct(p)) return false;
+      if(!(priceInTaxOf(p) > 0)) return false;
+      if(type && (type.cats || []).indexOf(p.category) < 0) return false;
+      if(seasonOnly && bw && Array.isArray(bw.products)){
+        var b = bwProductFor(bw, p);
+        if(b){
+          if(b.active === false) return false;
+          var ms = ((b.season || {}).months || []).map(Number);
+          if(ms.length && ms.indexOf(month) < 0) return false;
+        }
+      }
+      return true;
+    }).map(function(p){
+      var gids = (state.productGroups || []).filter(function(gr){ return (gr.memberIds || []).indexOf(p.id) >= 0; }).map(function(gr){ return gr.id; });
+      return {p:p, price:Math.round(priceInTaxOf(p)), cost:productUnitCost(p), cat:p.category || '', gids:gids};
+    });
+  }
+  function gmRandInt(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
+  // 入れ物ひとつぶんの候補を作る
+  function gmSearch(items, nMin, nMax, addIn, target, fit, rules, maxSame, minKinds, tries){
+    var K = items.length;
+    if(!K || nMax < 1) return [];
+    var ruleIdx = rules.map(function(r){
+      return items.map(function(it, i){ return (r.kind === 'grp' ? it.gids.indexOf(r.key) >= 0 : it.cat === r.key) ? i : -1; }).filter(function(i){ return i >= 0; });
+    });
+    function ruleCount(cnt, ri){ var s = 0; ruleIdx[ri].forEach(function(i){ s += cnt[i]; }); return s; }
+    function total(cnt){ var s = 0; for(var i = 0; i < K; i++) s += cnt[i]; return s; }
+    function kinds(cnt){ var s = 0; for(var i = 0; i < K; i++) if(cnt[i]) s++; return s; }
+    function price(cnt){ var s = 0; for(var i = 0; i < K; i++) s += cnt[i] * items[i].price; return s + addIn; }
+    function canAdd(cnt, i){
+      if(cnt[i] >= maxSame) return false;
+      for(var r = 0; r < rules.length; r++){
+        if(rules[r].max != null && ruleIdx[r].indexOf(i) >= 0 && ruleCount(cnt, r) >= rules[r].max) return false;
+      }
+      return true;
+    }
+    function valid(cnt){
+      var n = total(cnt);
+      if(n < nMin || n > nMax) return false;
+      for(var r = 0; r < rules.length; r++){
+        var rc = ruleCount(cnt, r);
+        if(rc < (rules[r].min || 0)) return false;
+        if(rules[r].max != null && rc > rules[r].max) return false;
+      }
+      return kinds(cnt) >= Math.min(minKinds, n);
+    }
+    function obj(cnt){
+      if(target == null) return 0;
+      var pr = price(cnt);
+      if(fit === 'under') return pr > target ? 1e6 + (pr - target) : target - pr;
+      return Math.abs(target - pr);
+    }
+    function fill(n){
+      var cnt = new Array(K).fill(0);
+      for(var r = 0; r < rules.length; r++){
+        var need = (rules[r].min || 0) - ruleCount(cnt, r), guard = 0;
+        while(need > 0 && guard++ < 50){
+          var pool = ruleIdx[r].filter(function(i){ return canAdd(cnt, i); });
+          if(!pool.length) return null;
+          cnt[pool[Math.floor(Math.random() * pool.length)]]++; need--;
+        }
+      }
+      var guard2 = 0;
+      while(total(cnt) < n && guard2++ < 200){
+        var fresh = [], any = [];
+        for(var i = 0; i < K; i++){ if(canAdd(cnt, i)){ any.push(i); if(!cnt[i]) fresh.push(i); } }
+        if(!any.length) return null;
+        var pick = (fresh.length && Math.random() < 0.75) ? fresh : any;
+        cnt[pick[Math.floor(Math.random() * pick.length)]]++;
+      }
+      return total(cnt) === n ? cnt : null;
+    }
+    function improve(cnt){
+      var best = obj(cnt), changed = true, loops = 0;
+      while(changed && best > 0 && loops++ < 40){
+        changed = false;
+        var order = [];
+        for(var i = 0; i < K; i++) order.push(i);
+        order.sort(function(){ return Math.random() - 0.5; });
+        outer:
+        for(var a = 0; a < K; a++){
+          var i1 = order[a];
+          // 入れ替え（1個を別の商品に）
+          if(cnt[i1] > 0){
+            for(var b = 0; b < K; b++){
+              var j = order[b];
+              if(j === i1) continue;
+              cnt[i1]--;
+              if(canAdd(cnt, j)){
+                cnt[j]++;
+                if(valid(cnt)){ var o = obj(cnt); if(o < best){ best = o; changed = true; break outer; } }
+                cnt[j]--;
+              }
+              cnt[i1]++;
+            }
+            // 1個へらす
+            if(target != null){
+              cnt[i1]--;
+              if(valid(cnt)){ var o2 = obj(cnt); if(o2 < best){ best = o2; changed = true; break outer; } }
+              cnt[i1]++;
+            }
+          }
+          // 1個ふやす
+          if(target != null && canAdd(cnt, i1)){
+            cnt[i1]++;
+            if(valid(cnt)){ var o3 = obj(cnt); if(o3 < best){ best = o3; changed = true; break outer; } }
+            cnt[i1]--;
+          }
+        }
+      }
+      return cnt;
+    }
+    var found = {}, out = [];
+    for(var t = 0; t < tries; t++){
+      var cnt = fill(gmRandInt(nMin, nMax));
+      if(!cnt) continue;
+      cnt = improve(cnt);
+      if(!valid(cnt)) continue;
+      var sig = cnt.join(',');
+      if(found[sig]) continue;
+      found[sig] = 1;
+      out.push({cnt:cnt, obj:obj(cnt), kinds:kinds(cnt), n:total(cnt), price:price(cnt), rnd:Math.random()});
+    }
+    return out;
+  }
+  function gmRun(){
+    var c = gmConf();
+    var items = gmItems();
+    var box = document.getElementById('gm-results');
+    if(!items.length){ box.innerHTML = '<div class="card gm-empty">条件に合う商品がありません。ギフトの種類・月・「ギフトに入れない商品」を見直してください。</div>'; return; }
+    var useRules = document.getElementById('gm-userules').checked;
+    var rules = useRules ? c.rules.filter(function(r){ return r.key; }) : [];
+    var maxSame = useRules ? c.maxSame : 99, minKinds = useRules ? c.minKinds : 1;
+    var tax = 1 + (state.settings.taxRate || 0) / 100;
+    var margin = Math.min(Math.max((state.settings.margin || 35) / 100, 0.01), 0.99);
+    var markup = document.getElementById('gm-markup').checked;
+    var laborMin = Math.max(0, parseFloat(document.getElementById('gm-labor').value) || 0);
+    var laborCost = laborMin * ((state.settings.laborRate || 0) + (state.settings.overheadRate || 0));
+    var target = null, fit = gmOpt.fit;
+    if(gmOpt.mode === 'price'){
+      target = (parseFloat(document.getElementById('gm-target').value) || 0) - (parseFloat(document.getElementById('gm-ship').value) || 0);
+      if(!(target > 0)){ showToast('目標の金額を入れてください'); return; }
+    }
+    var N = Math.max(1, parseInt(document.getElementById('gm-count').value, 10) || 1);
+    // 入れ物ごとに探す
+    var boxes;
+    if(gmOpt.boxMode === 'pick'){
+      var bm = state.materials.find(function(m){ return m.id === document.getElementById('gm-box').value; });
+      boxes = bm ? [bm] : [null];
+    } else {
+      boxes = gmContainers(document.getElementById('gm-boxkind').value);
+      if(gmOpt.mode === 'count') boxes = boxes.filter(function(m){ return m.giftBox.min <= N && N <= m.giftBox.max; });
+      if(!boxes.length) boxes = [null];
+    }
+    var all = [];
+    boxes.forEach(function(m){
+      var boxCost = m ? (Number(m.unitPrice) || 0) : 0;
+      var addCost = boxCost + laborCost;
+      var addIn = (markup ? addCost / margin : addCost) * tax;
+      var nMin, nMax;
+      if(gmOpt.mode === 'count'){ nMin = nMax = N; }
+      else if(m){ nMin = Math.max(1, m.giftBox.min || m.giftBox.max || 1); nMax = Math.max(nMin, m.giftBox.max || nMin); }
+      else { nMin = 3; nMax = 15; }
+      var res = gmSearch(items, nMin, nMax, addIn, target, fit, rules, maxSame, minKinds, gmOpt.mode === 'count' ? 120 : 220);
+      res.forEach(function(r){ r.box = m; r.addIn = addIn; r.addCost = addCost; all.push(r); });
+    });
+    if(!all.length){
+      box.innerHTML = '<div class="card gm-empty">決まりに合う組み合わせが見つかりませんでした。決まり（数の上限・下限）や入れ物の入る数を見直すか、「決まりを使う」を外してみてください。</div>';
+      return;
+    }
+    // よいものから。似すぎているものは省いて、いろいろな組み合わせを見せる
+    all.sort(function(a, b){ return (a.obj - b.obj) || (b.kinds - a.kinds) || (a.rnd - b.rnd); });
+    // 金額で作るときは、いちばん近いものからあまり離れたものは出さない
+    if(target != null){
+      var lim = all[0].obj + Math.max(50, target * 0.03);
+      var close = all.filter(function(r){ return r.obj <= lim; });
+      if(close.length < 3){
+        var lim2 = all[0].obj + target * 0.1;
+        close = all.filter(function(r){ return r.obj <= lim2; });
+      }
+      all = close;
+    }
+    var pick = [];
+    all.forEach(function(r){
+      if(pick.length >= 6) return;
+      var near = pick.some(function(q){
+        if(q.box !== r.box) return false;
+        var d = 0; for(var i = 0; i < r.cnt.length; i++) d += Math.abs(r.cnt[i] - q.cnt[i]);
+        return d < 4;
+      });
+      if(!near) pick.push(r);
+    });
+    gmOpt.last = {items:items, pick:pick, markup:markup, laborMin:laborMin};
+    box.innerHTML = pick.map(function(r, k){
+      var rows = [], cost = 0, retail = 0;
+      r.cnt.forEach(function(q, i){
+        if(!q) return;
+        var it = items[i];
+        cost += it.cost * q; retail += it.price * q;
+        rows.push('<tr><td>'+escapeHtml(it.p.name)+'<span class="gm-cat">'+escapeHtml(it.cat)+'</span></td><td class="q">×'+q+'</td><td class="n">¥'+fmtNum(it.price * q, 0)+'</td></tr>');
+      });
+      var priceIn = Math.round(retail + r.addIn);
+      cost += r.addCost + (state.settings.sga || 0);
+      var priceEx = priceIn / tax;
+      var pr = priceEx > 0 ? (priceEx - cost) / priceEx : 0;
+      var diffTxt = '';
+      if(target != null){
+        var d = priceIn - target;
+        diffTxt = '<span class="gm-diff'+(Math.abs(d) <= 0 ? ' ok' : '')+'">' + (d === 0 ? 'ぴったり' : (d > 0 ? '目標より +' : '目標より ') + fmtNum(d, 0) + '円') + '</span>';
+      }
+      var ship = parseFloat(document.getElementById('gm-ship').value) || 0;
+      return '<div class="gm-card"><div class="gm-top"><span class="gm-price">¥'+fmtNum(priceIn, 0)+'</span>'+diffTxt +
+        (ship > 0 && gmOpt.mode === 'price' ? '<span class="gm-box">＋送料 ¥'+fmtNum(ship, 0)+' ＝ ¥'+fmtNum(priceIn + ship, 0)+'</span>' : '') + '</div>' +
+        '<div class="gm-box">'+(r.box ? '📦 ' + escapeHtml(gmBoxLabel(r.box)) : '入れ物なし')+'　'+r.n+'個・'+r.kinds+'種類</div>' +
+        '<table>'+rows.join('')+'</table>' +
+        '<div class="gm-sum">中身 ¥'+fmtNum(retail, 0)+' ＋ 入れ物・手間 ¥'+fmtNum(Math.round(r.addIn), 0)+'（税込）<br>原価 ¥'+fmtNum(Math.round(cost), 0)+'・利益率 '+fmtNum(pr * 100, 1)+'%</div>' +
+        '<button type="button" class="btn btn-sm btn-primary" data-gm="'+k+'">この内容でギフトを作る</button></div>';
+    }).join('');
+    if(target != null && pick.length < 3){
+      box.insertAdjacentHTML('beforeend', '<div class="card gm-empty">目標に近い組み合わせは、これだけでした。入れ物の入る数や決まりを変えると、ほかの組み合わせが出ることがあります。</div>');
+    }
+    document.getElementById('gm-again').hidden = false;
+  }
+  document.getElementById('gm-run').addEventListener('click', gmRun);
+  document.getElementById('gm-again').addEventListener('click', gmRun);
+  // 選んだ組み合わせを、原価計算のギフトとして開く
+  document.getElementById('gm-results').addEventListener('click', function(e){
+    var b = e.target.closest('[data-gm]'); if(!b || !gmOpt.last) return;
+    var r = gmOpt.last.pick[Number(b.dataset.gm)]; if(!r) return;
+    var items = gmOpt.last.items;
+    clearForm();
+    var priceIn = 0;
+    r.cnt.forEach(function(q, i){ if(q) priceIn += items[i].price * q; });
+    document.getElementById('f-name').value = 'ギフト ' + fmtNum(Math.round(priceIn + r.addIn), 0) + '円';
+    var cs = document.getElementById('f-category');
+    if(![].some.call(cs.options, function(o){ return o.value === 'ギフト'; })){ var op = document.createElement('option'); op.value = op.textContent = 'ギフト'; cs.appendChild(op); }
+    cs.value = 'ギフト';
+    setSourceType('gift', true);
+    var rows = [];
+    r.cnt.forEach(function(q, i){ if(q) rows.push({productId:items[i].p.id, name:items[i].p.name, qty:q, mode:'packed'}); });
+    fillContentRows(rows);
+    fillRows('pkg-body', r.box ? [{name:r.box.name, qty:1, unit:r.box.unit, unitPrice:r.box.unitPrice}] : []);
+    document.getElementById('f-gift-markup').checked = gmOpt.last.markup;
+    state.calcDirty = true;
+    recalc();
+    try{ saveCalcDraft(); }catch(err){}
+    showView('calc');
+    try{ window.scrollTo(0, 0); }catch(err){}
+    showToast('ギフトの原価計算を開きました。名前を決めて「登録する」を押してください' + (gmOpt.last.laborMin ? '（詰める手間は、ブロックワークの工程に入れると原価計算に入ります）' : ''));
+  });
 
   // ---------------- 棚卸し ----------------
   var stYear = null, stTab = 'prod', stOpen = {};
@@ -2569,6 +3130,7 @@
     if(name === 'recipes'){ renderRecipePage(); }
     if(name === 'blockwork') loadBlockworkFrame(bwNeedsReload);
     if(name === 'stocktake') renderStocktake();
+    if(name === 'giftmaker') renderGiftMaker();
     updateReturnBars(name);
   }
   // 入力途中の原価計算があるか（入力して、まだ登録していないとき）
@@ -2912,6 +3474,7 @@
       recipes: state.recipes,
       productGroups: state.productGroups || [],
       stocktakes: state.stocktakes || {},
+      giftMaker: state.giftMaker || null,
       blockworkValue: state.blockworkValue
     };
   }
@@ -3020,6 +3583,7 @@
         if(d.settings) Object.assign(state.settings, d.settings);
         state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
       state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
+      state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
         state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
         state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
         hint.textContent = '保存しています…';
@@ -3081,6 +3645,7 @@
       if(d.settings) Object.assign(state.settings, d.settings);
       state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
       state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
+      state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
       state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
       state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
       state.dbxReady = true;
@@ -5465,7 +6030,7 @@
       if(state.editingProductId){
         doc.id = state.editingProductId;
         var idx = state.products.findIndex(function(p){return p.id===state.editingProductId;});
-        if(idx>=0){ doc.createdAt = state.products[idx].createdAt; state.products[idx] = doc; } else state.products.push(doc);
+        if(idx>=0){ doc.createdAt = state.products[idx].createdAt; if(state.products[idx].noGift) doc.noGift = true; state.products[idx] = doc; } else state.products.push(doc);
         showToast('「' + name + '」を更新しました');
       } else {
         doc.createdAt = doc.updatedAt;
@@ -6470,6 +7035,7 @@
     sel.innerHTML = list.map(function(l){ return '<option value="'+escapeHtml(l)+'">'+escapeHtml(l)+'</option>'; }).join('');
     if(current && list.indexOf(current) >= 0) sel.value = current;
     document.getElementById('mm-nutrition-block').style.display = (mmKind === 'food') ? '' : 'none';
+    document.getElementById('mm-giftbox-block').style.display = (mmKind === 'supply') ? '' : 'none';
     rebuildGroupList();
   }
   function rebuildGroupList(){
@@ -6533,6 +7099,11 @@
     fillPickOrNew(document.getElementById('mm-group-select'), document.getElementById('mm-group'), allGroups(''), 'えらぶ', curGroup);
     fillPickOrNew(document.getElementById('mm-category-select'), document.getElementById('mm-category'), allCategories('', curGroup), 'えらぶ', curCat);
     setModalKind(material ? kindOf(material) : 'food', material ? material.costLabel : null);
+    var gb = (material && material.giftBox) || null;
+    document.getElementById('mm-gb-type').value = gb ? gb.type : '';
+    document.getElementById('mm-gb-min').value = gb && gb.min != null ? gb.min : '';
+    document.getElementById('mm-gb-max').value = gb && gb.max != null ? gb.max : '';
+    document.getElementById('mm-gb-cap').style.visibility = gb ? '' : 'hidden';
     var nutri = (material && material.nutrition) || {};
     document.getElementById('mm-nutri-kcal').value = nutri.kcal != null ? nutri.kcal : '';
     document.getElementById('mm-nutri-protein').value = nutri.protein != null ? nutri.protein : '';
@@ -6544,6 +7115,9 @@
     // 開いた直後にキーボードが出ないよう、ここでは入力欄にフォーカスを当てない
   }
   var mmAskedPrice = false;
+  document.getElementById('mm-gb-type').addEventListener('change', function(){
+    document.getElementById('mm-gb-cap').style.visibility = this.value ? '' : 'hidden';
+  });
   function mmUpdateYmText(){
     var v = document.getElementById('mm-updated').value;
     document.getElementById('mm-updated-text').textContent = v ? fmtYm(v) : '—';
@@ -6615,6 +7189,14 @@
     data.kind = mmKind;
     data.costLabel = document.getElementById('mm-cost-label').value || costLabelsFor(mmKind)[0] || '';
     if(hasNutrition && mmKind === 'food') data.nutrition = nutrition;
+    var gbType = document.getElementById('mm-gb-type').value;
+    if(gbType && mmKind === 'supply'){
+      var gbMin = parseInt(document.getElementById('mm-gb-min').value, 10) || 0;
+      var gbMax = parseInt(document.getElementById('mm-gb-max').value, 10) || gbMin;
+      if(!gbMin) gbMin = gbMax;
+      if(gbMin > gbMax){ var t0 = gbMin; gbMin = gbMax; gbMax = t0; }
+      data.giftBox = {type:gbType, min:gbMin, max:gbMax};
+    } else data.giftBox = null;
     // 小カテゴリがどの大カテゴリに属するかを覚えておく
     var grp = pickOrNewValue(document.getElementById('mm-group-select'), document.getElementById('mm-group'));
     if(category && grp){
