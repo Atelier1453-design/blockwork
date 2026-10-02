@@ -1,0 +1,4 @@
+test/
+*.json
+!package.json
+.DS_Store
