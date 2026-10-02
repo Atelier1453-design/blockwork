@@ -339,6 +339,10 @@
     display:flex; align-items:center; justify-content:center; padding:16px;
   }
   .modal-backdrop[hidden]{display:none;}
+  /* 小窓を開いているあいだは、後ろの画面を動かさない */
+  html.modal-lock, html.modal-lock body{overflow:hidden;}
+  .modal-box{overscroll-behavior:contain;}
+  .modal-backdrop.kb-up{align-items:flex-start;}   /* キーボードが出ているあいだは、小窓を見えている所に寄せる */
   .modal-box{
     background:var(--surface); border:1px solid var(--border); border-radius:16px;
     box-shadow:var(--shadow); width:100%; max-width:440px; max-height:88vh; overflow-y:auto;
@@ -356,10 +360,13 @@
   .sale-diff{margin-top:6px; font-size:13px; color:var(--ink-soft); text-align:left;}
   .sale-diff b{color:#b03a1e;}
   .sale-diff.same b{color:#2e6b2a;}
+  .sale-diff.minus b{color:#1f5fa8;}
   .product-card .psale{display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 10px; margin-top:6px; font-size:13px; color:var(--ink-soft);}
   .product-card .psale b{font-size:17px; color:var(--accent-strong);}
   .pm-diff{font-size:11px; padding:1px 6px; border-radius:999px; background:#fbe3dc; color:#b03a1e; font-weight:700;}
   .pm-diff.same{background:#e3f1e0; color:#2e6b2a;}
+  .pm-diff.minus{background:#dfeaf8; color:#1f5fa8;}
+  .diff-minus{color:#1f5fa8; font-weight:700;}
   .pm-live{color:#c0392b; font-weight:700; margin-left:3px; font-size:14px;}
   #r-gift-note{font-size:13px; line-height:1.7; color:var(--ink-soft); margin-top:6px; text-align:left;}
   .cn-tools{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0 6px;}
@@ -428,6 +435,9 @@
   table.ing-table-multi th.grp-mult{padding-bottom:0;}
   table.ing-table-multi .m-col{background:var(--surface-2);}
   table.ing-table-multi.no-mult-col .m-col{display:none;}
+  /* 倍数のほうの使用量は、実際に量る数字なので一回り大きく濃く */
+  table.ing-table-multi td.row-mqty{font-size:17px; font-weight:800; color:var(--ink);}
+  table.ing-table-multi td.row-munit{color:var(--ink); font-weight:600;}
   .mult-col-btn{
     border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-strong);
     border-radius:7px; cursor:pointer; font-family:inherit; font-size:12.5px; font-weight:700;
@@ -547,7 +557,6 @@
   .curl-flat > .curl-page-copy{left:0;}
   .curl-flap{
     position:absolute; top:0; box-sizing:border-box; background-color:var(--surface-2);
-    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px);
     border-top:1px solid var(--border); border-bottom:1px solid var(--border);
   }
   .curl-drop{
@@ -568,7 +577,6 @@
   .curl-page-copy::after{display:none !important;}
   .curl-slice-back{
     transform:rotateY(180deg); background:var(--surface-2);
-    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px);
     border-top:1px solid var(--border); border-bottom:1px solid var(--border);
   }
   @media print{ .curl-sheet{display:none !important;} }
@@ -849,6 +857,17 @@
   .pd-code{display:inline-block; margin-left:8px; padding:2px 8px; border:1px solid var(--border); border-radius:6px;
     font-family:inherit; font-size:12px; font-weight:600; color:var(--ink-soft); vertical-align:middle;}
   .pd-receipt-wrap{max-width:420px;}
+  /* 詳細画面：原価計算書の横に栄養成分表示 */
+  .pd-top-row{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;}
+  .pd-top-row > .pd-receipt-wrap, .pd-top-row > .pd-nutri-wrap{flex:1 1 300px; max-width:420px; min-width:0;}
+  .pd-nutri{padding:0; overflow:hidden;}
+  .pd-nutri .receipt-body{padding:16px 22px 18px;}
+  .nutri-table{width:100%; border-collapse:collapse; font-size:14px; border:1.5px solid var(--ink);}
+  .nutri-table th, .nutri-table td{padding:6px 10px; border-top:1px solid var(--border); text-align:left; font-weight:400; color:var(--ink);}
+  .nutri-table thead th{border-top:none; border-bottom:1.5px solid var(--ink); font-size:12.5px; font-weight:700; color:var(--ink-soft);}
+  .nutri-table td.v{text-align:right; white-space:nowrap; font-weight:600;}
+  .nutri-note{font-size:12.5px; color:var(--ink-soft); margin:10px 0 0; line-height:1.6;}
+  .nutri-note.warn{color:#9a5a12;}
   .pd-planning-wrap{max-width:420px;}
   .receipt-head #pd-edit-inline{font-family:"Zen Kaku Gothic New",sans-serif; font-size:12px; font-weight:600;}
   .pd-section{margin-top:14px;}
@@ -908,7 +927,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.51</div>
+      <div class="brand-ver">ver.52</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -3273,6 +3292,8 @@
   // 入力途中の原価計算があるか（入力して、まだ登録していないとき）
   function calcInProgressName(){
     if(!state.calcDirty) return '';
+    // 登録してある中身から何も変わっていなければ「入力途中」とは言わない
+    if(calcSameAsBaseline()){ state.calcDirty = false; return ''; }
     var name = (document.getElementById('f-name').value || '').trim();
     if(name) return name;
     var hasRows = Array.prototype.some.call(document.querySelectorAll('#ing-body tr, #pkg-body tr, #cont-body tr'), function(tr){
@@ -3409,11 +3430,89 @@
       else if(r.top < visTop) dy = r.top - visTop;
       if(Math.abs(dy) > 2){
         window.__kbAdjustAt = Date.now();
+        // 小窓（材料の編集など）の中の欄なら、小窓の中だけを動かす（後ろの画面は動かさない）
+        var box = el.closest && el.closest('.modal-backdrop:not([hidden]) .modal-box');
+        if(box){ box.scrollTop += dy; return; }
         window.scrollBy(0, dy);
       }
     }
     document.addEventListener('focusin', function(){ setTimeout(ensure, 350); setTimeout(ensure, 750); });
     vv.addEventListener('resize', function(){ setTimeout(ensure, 60); });
+  })();
+
+  // 小窓（材料の編集など）を開いているあいだは、後ろの画面を上下に動かさない（iPad）
+  // 閉じたときは、開く前の位置に戻す
+  (function(){
+    var lockedY = null;
+    function anyOpen(){
+      var list = document.querySelectorAll('.modal-backdrop');
+      for(var i = 0; i < list.length; i++) if(!list[i].hidden) return true;
+      return false;
+    }
+    // キーボードが出ているあいだは、小窓を見えている高さに収める（下の欄がキーボードに隠れないように）
+    function fitToKeyboard(){
+      var vv = window.visualViewport;
+      document.querySelectorAll('.modal-backdrop').forEach(function(bd){
+        var box = bd.querySelector('.modal-box');
+        var kb = !bd.hidden && vv && (window.innerHeight - vv.height >= 150);
+        if(kb){
+          bd.classList.add('kb-up');
+          bd.style.paddingTop = Math.round((vv.offsetTop || 0) + 12) + 'px';
+          if(box) box.style.maxHeight = Math.max(200, Math.round(vv.height - 24)) + 'px';
+        } else if(bd.classList.contains('kb-up')){
+          bd.classList.remove('kb-up');
+          bd.style.paddingTop = '';
+          if(box) box.style.maxHeight = '';
+        }
+      });
+    }
+    if(window.visualViewport) window.visualViewport.addEventListener('resize', fitToKeyboard);
+    document.addEventListener('focusin', function(){ if(lockedY !== null) setTimeout(fitToKeyboard, 300); });
+    function sync(){
+      fitToKeyboard();
+      if(anyOpen()){
+        if(lockedY === null){
+          lockedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+          document.documentElement.classList.add('modal-lock');
+        }
+      } else if(lockedY !== null){
+        var y = lockedY;
+        lockedY = null;
+        document.documentElement.classList.remove('modal-lock');
+        if(Math.abs((window.pageYOffset || 0) - y) > 1){ try{ window.scrollTo(0, y); }catch(e){} }
+      }
+    }
+    var mo = new MutationObserver(sync);
+    document.querySelectorAll('.modal-backdrop').forEach(function(b){ mo.observe(b, {attributes:true, attributeFilter:['hidden']}); });
+    // 指でなぞったとき：小窓の中がまだ動ける向きなら小窓を動かし、端まで来ていたら後ろへ伝えない
+    var lastX = 0, lastY = 0;
+    document.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    }, {passive:true});
+    document.addEventListener('touchmove', function(e){
+      if(lockedY === null || e.touches.length !== 1) return;
+      var x = e.touches[0].clientX, y = e.touches[0].clientY;
+      var dx = x - lastX, dy = y - lastY;
+      lastX = x; lastY = y;
+      var t = e.target;
+      if(!t || !t.closest) return;
+      if(t.closest('.ac-overlay')) return;   // 材料名の候補リストは、これまでどおり自分で判定する
+      if(Math.abs(dx) > Math.abs(dy)) return;   // 横の動き（表の横スクロールなど）はそのまま
+      if(dy === 0) return;
+      var el = t;
+      while(el && el.nodeType === 1 && el !== document.body){
+        var isBox = el.classList.contains('modal-box');
+        if(isBox || (el.scrollHeight > el.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(el).overflowY))){
+          var canUp = el.scrollTop > 0;
+          var canDown = el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+          if((dy > 0 && canUp) || (dy < 0 && canDown)) return;
+        }
+        if(isBox) break;
+        el = el.parentElement;
+      }
+      if(e.cancelable) e.preventDefault();
+    }, {passive:false});
   })();
 
   // ---------------- Dropbox storage (PKCE OAuth, single JSON file, no backend / no Claude account needed) ----------------
@@ -5858,7 +5957,7 @@
       if(isWip || !(sale > 0)){ sd.hidden = true; return; }
       var d = Math.round(sale) - Math.round(priceIn);
       sd.hidden = false;
-      sd.className = 'sale-diff' + (d === 0 ? ' same' : '');
+      sd.className = 'sale-diff' + (d === 0 ? ' same' : (d < 0 ? ' minus' : ''));
       sd.innerHTML = 'いまの販売価格 ' + fmtYen(sale) + ' と、この計算の値段 ' + fmtYen(priceIn) + ' の差：<b>' + (d === 0 ? '同じ' : (d > 0 ? '+' : '') + fmtNum(d, 0) + '円') + '</b>' +
         (d !== 0 ? (d > 0 ? '（販売価格のほうが高い）' : '（販売価格のほうが安い）') : '');
     })();
@@ -6004,6 +6103,7 @@
     procRoles = {};
     procViewKey = null;
     state.calcDirty = false;
+    calcBaseline = null;
     setSourceType('bake', true);
     renderIngRow(); renderPkgRow();
     clearPlanningFields();
@@ -6039,17 +6139,36 @@
       savedAt: new Date().toISOString()
     };
   }
+  // 登録してある商品を画面に出したとき（と登録した直後）の中身。これと同じなら「編集中」ではない
+  var calcBaseline = null;
+  function formSignature(){
+    var snap = currentFormSnapshot();
+    delete snap.savedAt;
+    return JSON.stringify(snap);
+  }
+  function setCalcBaseline(){ try{ calcBaseline = formSignature(); }catch(e){ calcBaseline = null; } }
+  function calcSameAsBaseline(){
+    if(calcBaseline == null || !state.editingProductId) return false;
+    try{ return formSignature() === calcBaseline; }catch(e){ return false; }
+  }
   function saveCalcDraft(){
     clearTimeout(draftTimer);
     draftTimer = setTimeout(function(){
+      draftTimer = null;
       try{
         var snap = currentFormSnapshot();
         if(!snap.name && !(snap.ing && snap.ing.length)) return;   // 空のフォームは控えない
+        // 登録してある中身と同じなら、控えは要らない（前の控えも消す）
+        if(calcSameAsBaseline()){ clearCalcDraft(); return; }
         localStorage.setItem(CALC_DRAFT_KEY, JSON.stringify(snap));
       }catch(e){}
     }, 500);
   }
-  function clearCalcDraft(){ try{ localStorage.removeItem(CALC_DRAFT_KEY); }catch(e){} }
+  function clearCalcDraft(){
+    // 控える予約が残っていると、登録したあとに古い控えが書き戻されるので、予約も取り消す
+    if(draftTimer){ clearTimeout(draftTimer); draftTimer = null; }
+    try{ localStorage.removeItem(CALC_DRAFT_KEY); }catch(e){}
+  }
   function readCalcDraft(){
     try{ return JSON.parse(localStorage.getItem(CALC_DRAFT_KEY) || 'null'); }catch(e){ return null; }
   }
@@ -6090,6 +6209,11 @@
     var bar = document.getElementById('calc-draft-bar');
     if(!bar) return;
     if(!d || !(d.name || (d.ing && d.ing.length))){ bar.hidden = true; return; }
+    // 控えたあとにその商品を登録していたら、その控えはもう古い
+    if(d.editingId){
+      var reg = (state.products || []).find(function(x){ return x.id === d.editingId; });
+      if(reg && reg.updatedAt && d.savedAt && reg.updatedAt >= d.savedAt){ clearCalcDraft(); bar.hidden = true; return; }
+    }
     document.getElementById('calc-draft-text').textContent =
       '「' + (d.name || '名前未入力') + '」の編集中の内容が残っています（' + (d.savedAt ? d.savedAt.slice(5,16).replace('T',' ') : '') + '）';
     bar.hidden = false;
@@ -6176,7 +6300,9 @@
     document.getElementById('f-sale-price').value = p.salePrice > 0 ? p.salePrice : '';
     setSourceType(p.sourceType || (hasContents || p.category === 'ギフト' ? 'gift' : 'bake'), true);
     state.calcDirty = false;
-    return recalc();
+    var res = recalc();
+    setCalcBaseline();
+    return res;
   }
   // ---- 今の材料の値段・設定・工程で、登録済み商品の値段を計算し直す（一覧の⚠用） ----
   var livePrice = {};
@@ -6303,6 +6429,7 @@
       state.calcDirty = false;
       rebuildCategoryList();
       state.editingProductId = doc.id;
+      setCalcBaseline();
       document.getElementById('calc-edit-banner').style.display = '';
       document.getElementById('calc-heading').textContent = '原価計算を編集';
       btn.disabled = false;
@@ -6517,7 +6644,7 @@
         '<div class="pname">'+escapeHtml(p.name)+'</div>' +
         ((p.category !== '仕掛品' && p.salePrice > 0) ? (function(){
           var d = Math.round(p.salePrice) - Math.round(priceInTaxOf(p));
-          return '<div class="psale">販売価格 <b>'+fmtYen(p.salePrice)+'</b><span class="pm-diff'+(d === 0 ? ' same' : '')+'">'+(d === 0 ? '計算と同じ' : '計算との差 '+(d > 0 ? '+' : '')+fmtNum(d, 0)+'円')+'</span></div>';
+          return '<div class="psale">販売価格 <b>'+fmtYen(p.salePrice)+'</b><span class="pm-diff'+(d === 0 ? ' same' : (d < 0 ? ' minus' : ''))+'">'+(d === 0 ? '計算と同じ' : '計算との差 '+(d > 0 ? '+' : '')+fmtNum(d, 0)+'円')+'</span></div>';
         })() : '') +
         '<div class="pmeta">' +
           (p.category === '仕掛品'
@@ -6639,6 +6766,114 @@
     renderProductList();
   });
 
+  // ---- 栄養成分（原材料マスタの「100gあたり」の値から、1個・1包装あたりを出す） ----
+  var NUTRI_KEYS = ['kcal', 'protein', 'fat', 'carb', 'salt'];
+  var NUTRI_ROWS = [['熱量', 'kcal', 0, 'kcal'], ['たんぱく質', 'protein', 1, 'g'], ['脂質', 'fat', 1, 'g'], ['炭水化物', 'carb', 1, 'g'], ['食塩相当量', 'salt', 2, 'g']];
+  function nutriZero(){ return {kcal:0, protein:0, fat:0, carb:0, salt:0}; }
+  function nutriAdd(a, b, k){ NUTRI_KEYS.forEach(function(key){ a[key] += (Number(b[key]) || 0) * k; }); }
+  // 使用量を g に直す（直せない単位は null）
+  function gramsOf(qty, unit){
+    var u = String(unit || '').trim().replace(/[Ａ-Ｚａ-ｚ]/g, function(ch){ return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0); }).toLowerCase();
+    if(u === 'g' || u === 'グラム') return qty;
+    if(u === 'kg') return qty * 1000;
+    if(u === 'ml' || u === 'cc' || u === 'mℓ') return qty;   // 水・牛乳などは 1ml ≒ 1g とみなす
+    if(u === 'l' || u === 'ℓ') return qty * 1000;
+    return null;
+  }
+  // 戻り値：{piece:焼き上がり1個（1枚など）あたり, pack:1包装あたり, missing:[栄養成分が未入力の材料], noGram:[gに直せない材料], used:数に入れた材料の数}
+  function productNutrition(p, seen){
+    seen = seen || {};
+    var out = {piece:nutriZero(), pack:nutriZero(), missing:[], noGram:[], used:0};
+    if(!p || seen[p.id]) return out;
+    seen[p.id] = 1;
+    function note(list, v){ if(list.indexOf(v) < 0) list.push(v); }
+    function merge(sub){
+      sub.missing.forEach(function(v){ note(out.missing, v); });
+      sub.noGram.forEach(function(v){ note(out.noGram, v); });
+      out.used += sub.used;
+    }
+    function addRows(rows, target){
+      (rows || []).forEach(function(r){
+        var qty = Number(r && r.qty) || 0;
+        if(!r || !r.name || !(qty > 0)) return;
+        var m = state.materialsByName && state.materialsByName[r.name];
+        if(m){
+          if(kindOf(m) !== 'food') return;   // 資材（袋・箱など）は数えない
+          var n = m.nutrition || {};
+          var has = NUTRI_KEYS.filter(function(k){ return n[k] != null && n[k] !== '' && isFinite(n[k]); });
+          if(!has.length){ note(out.missing, r.name); return; }
+          var g = gramsOf(qty, r.unit || m.unit);
+          if(g == null){ note(out.noGram, r.name + '（' + (r.unit || m.unit || '単位なし') + '）'); return; }
+          if(has.length < NUTRI_KEYS.length) note(out.missing, r.name + '（一部の項目）');
+          nutriAdd(target, n, g / 100);
+          out.used++;
+          return;
+        }
+        // 仕掛品（サブレ・土台など）は、その仕掛品の1個あたりの栄養成分を使う
+        var wip = (state.products || []).find(function(x){ return x && x.category === '仕掛品' && x.name === r.name; });
+        if(wip){
+          var sub = productNutrition(wip, seen);
+          nutriAdd(target, sub.piece, qty);
+          merge(sub);
+        }
+      });
+    }
+    var batchSum = nutriZero();
+    addRows(p.batch && p.batch.ingredients, batchSum);
+    var mult = (p.batch && Number(p.batch.multiplier)) || 1;
+    if(!(mult > 0)) mult = 1;
+    var base = (p.batch && p.batch.baseYieldCount != null) ? Number(p.batch.baseYieldCount) : (((p.batch && Number(p.batch.yieldCount)) || 0) / mult);
+    if(base > 0) nutriAdd(out.piece, batchSum, 1 / base);
+    var pieces = (p.pack && Number(p.pack.piecesPerPackage)) || 1;
+    if(!isGiftProduct(p)) nutriAdd(out.pack, out.piece, pieces);
+    addRows(p.pack && p.pack.items, out.pack);   // 仕上げに使う食品（粉糖など）は1包装に入れる
+    // ギフトの中身
+    ((p.pack && p.pack.contents) || []).forEach(function(c){
+      var qty = Number(c && c.qty) || 0;
+      if(!(qty > 0)) return;
+      var members = c.groupId ? groupMembers(findGroup(c.groupId)) : [(state.products || []).find(function(x){ return x.id === c.productId; })].filter(Boolean);
+      if(!members.length) return;
+      var avg = nutriZero();
+      members.forEach(function(mp){
+        var sub = productNutrition(mp, seen);
+        nutriAdd(avg, c.mode === 'bulk' ? sub.piece : sub.pack, 1 / members.length);
+        merge(sub);
+      });
+      nutriAdd(out.pack, avg, qty);
+    });
+    delete seen[p.id];
+    return out;
+  }
+  function nutritionCardHtml(p){
+    var n = productNutrition(p);
+    var yu = (p.batch && p.batch.yieldUnit) || '個';
+    var cu = (p.planning && p.planning.countUnit) || '個';
+    var pieces = (p.pack && Number(p.pack.piecesPerPackage)) || 1;
+    var cols = [];
+    if(p.category === '仕掛品') cols.push({lbl:'1' + yu + 'あたり', v:n.piece});
+    else {
+      cols.push({lbl:'1' + cu + (pieces > 1 && !isGiftProduct(p) ? '（' + fmtNum(pieces) + yu + '入り）' : '') + 'あたり', v:n.pack});
+      if(pieces > 1 && !isGiftProduct(p)) cols.push({lbl:'1' + yu + 'あたり', v:n.piece});
+    }
+    function fixed(v, d){ return (Number(v) || 0).toLocaleString('ja-JP', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+    var body;
+    if(!n.used){
+      body = '<p class="nutri-note">原材料マスタで、材料の栄養成分（100gあたり）を入れると、ここに表示されます。</p>';
+    } else {
+      body = '<table class="nutri-table"><thead><tr><th></th>' +
+        cols.map(function(c){ return '<th style="text-align:right;">' + escapeHtml(c.lbl) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        NUTRI_ROWS.map(function(r){
+          return '<tr><th>' + r[0] + '</th>' + cols.map(function(c){ return '<td class="v">' + fixed(c.v[r[1]], r[2]) + ' ' + r[3] + '</td>'; }).join('') + '</tr>';
+        }).join('') + '</tbody></table>' +
+        '<p class="nutri-note">材料の栄養成分（100gあたり）から計算した目安です（推定値）。</p>';
+    }
+    if(n.missing.length) body += '<p class="nutri-note warn">⚠ 栄養成分が入っていない材料：' + n.missing.map(escapeHtml).join('、') + '（この分は数に入っていません）</p>';
+    if(n.noGram.length) body += '<p class="nutri-note warn">⚠ g に直せない材料：' + n.noGram.map(escapeHtml).join('、') + '（原材料マスタで単位を g にすると数に入ります）</p>';
+    return '<div class="pd-nutri-wrap"><div class="card receipt pd-nutri" style="position:static;">' +
+      '<div class="receipt-head">栄養成分表示</div>' +
+      '<div class="receipt-body">' + body + '</div></div></div>';
+  }
+
   function showProductDetail(id){
     var p = state.products.find(function(x){ return x.id===id; });
     if(!p) return;
@@ -6720,6 +6955,7 @@
 
     // ---- 原価計算書（まずこれだけ出し、行をタップすると内訳が開く） ----
     document.getElementById('pd-body').innerHTML =
+      '<div class="pd-top-row">' +
       '<div class="pd-receipt-wrap">' +
         '<div class="card receipt" style="position:static;">' +
           '<div class="receipt-head">原価計算書<button type="button" class="btn btn-sm" id="pd-edit-inline">編集する</button></div>' +
@@ -6736,12 +6972,17 @@
               ? '<p class="hint" style="margin:6px 0 0;">仕掛品なので販管費と販売価格は出しません。ほかの商品の①で材料として使うと、1'+escapeHtml((p.batch && p.batch.yieldUnit) || '個')+'あたり '+fmtYen2((p.batch && p.batch.costPerYieldUnit) || 0)+' がその商品の原価に入ります。</p>'
               : '<div class="price-block">' +
                 '<div class="main-price amt">'+fmtYen(p.priceInTax)+'/'+escapeHtml(unitLabel)+'</div>' +
-                (p.salePrice > 0 ? '<div class="sub-price">いまの販売価格 <b class="amt">'+fmtYen(p.salePrice)+'</b>（計算との差 '+((Math.round(p.salePrice) - Math.round(p.priceInTax || 0)) > 0 ? '+' : '')+fmtNum(Math.round(p.salePrice) - Math.round(p.priceInTax || 0), 0)+'円）</div>' : '') +
+                (p.salePrice > 0 ? (function(){
+                  var dd = Math.round(p.salePrice) - Math.round(p.priceInTax || 0);
+                  return '<div class="sub-price">いまの販売価格 <b class="amt">'+fmtYen(p.salePrice)+'</b>（<span class="'+(dd < 0 ? 'diff-minus' : '')+'">計算との差 '+(dd > 0 ? '+' : '')+fmtNum(dd, 0)+'円</span>）</div>';
+                })() : '') +
                 '<div class="sub-price">希望原価率 '+fmtNum((p.marginRate||0)*100,1)+'%（税抜 <b class="amt">'+fmtYen(p.priceExTax)+'</b>）</div>' +
                 '<div class="margin-pill '+(p.profitRate>=0.25?'good':'warn')+'">利益率 '+fmtNum((p.profitRate||0)*100,1)+'%</div>' +
               '</div>') +
           '</div>' +
         '</div>' +
+      '</div>' +
+      nutritionCardHtml(p) +
       '</div>' +
       '<div class="card section-card pd-section" id="pd-sec-batch" style="display:none;">'+batchSection+'</div>' +
       (contentList.length ? '<div class="card section-card pd-section" id="pd-sec-cont" style="display:none;">'+contentSection+'</div>' : '') +
@@ -6762,8 +7003,18 @@
       });
     });
 
+    // 一覧で下までスクロールしていても、詳細はいちばん上から見せる（戻ったときは一覧の元の位置へ）
+    var fromList = document.getElementById('view-products').classList.contains('active');
+    if(fromList) productListScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
     showView('product-detail');
+    try{ window.scrollTo(0, 0); }catch(e){}
   }
+  var productListScrollY = 0;
+  document.querySelector('#view-product-detail .detail-back').addEventListener('click', function(){
+    var y = productListScrollY;
+    // 一覧を描き直したあとに位置を戻す
+    setTimeout(function(){ try{ window.scrollTo(0, y); }catch(e){} }, 0);
+  });
   document.getElementById('pd-duplicate').addEventListener('click', function(){
     var p = state.products.find(function(x){ return x.id===state.currentDetailId; });
     if(!p) return;
@@ -8178,8 +8429,7 @@
       // 折り目（右端）から左へ：濃い→中くらい→消える、の2段階
       var s1 = Math.min(26, flapW * 0.22), s2 = Math.min(110, flapW * 0.75);
       c.flap.style.backgroundImage =
-        'linear-gradient(to left, rgba(60,38,15,.30) 0px, rgba(60,38,15,.10) ' + s1.toFixed(1) + 'px, rgba(60,38,15,0) ' + s2.toFixed(1) + 'px),' +
-        'repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(140,120,95,.13) 31px, rgba(140,120,95,.13) 32px)';
+        'linear-gradient(to left, rgba(60,38,15,.30) 0px, rgba(60,38,15,.10) ' + s1.toFixed(1) + 'px, rgba(60,38,15,0) ' + s2.toFixed(1) + 'px)';   // 紙の裏は無地（罫線なし）
     } else {
       c.flap.style.display = 'none';
     }
