@@ -19,7 +19,7 @@
 - 公開先：https://atelier1453-design.github.io/blockwork/ （`app.html`）
 - **1つの HTML ファイル**（`app.html`）に CSS と JS が全部入っている。外部ライブラリなし。主に iPad の Safari で使う。
 - データは本人の **Dropbox**（`/atelier-data.json`）に保存。PKCE の OAuth、サーバーなし、Claude のアカウントも不要。
-  - 保存する中身は `buildDataPayload()` を見る：`materials, products, settings, productCategories, groupMap, costLabels, groupOrder, catOrder, recipes, productGroups, stocktakes, giftMaker, blockworkValue`
+  - 保存する中身は `buildDataPayload()` を見る：`materials, products, settings, productCategories, groupMap, costLabels, groupOrder, catOrder, recipes, productGroups, stocktakes, giftMaker, links, blockworkValue`
   - `blockworkValue` はブロックワークの状態を **JSON 文字列** にしたもの。
   - 読み込みは2か所（初回の接続とバックアップからの復元）。新しいデータを足すときは両方と `buildDataPayload()` に入れる。
 - **ブロックワーク**は別の React アプリ（minify 済み）を `src/blockwork.html` に置いてある。
@@ -36,10 +36,11 @@
 
 1. ブロックワーク（iframe）。在庫タブに「棚卸しモード」ボタン。
 2. 登録済み商品：カード一覧。販売価格（手入力）・計算の税込・税抜・原価。今の計算と違えば⚠（裏で少しずつ計算し直す `startLivePrices`）。
-3. 原材料マスタ：中カテゴリ／小カテゴリで折りたたみ、並べ方（カテゴリ順／要更新を先に／購入業者順）、⚠要更新だけ、型番、「更新しない」、削除、ギフトの入れ物（箱／袋・入る数）、入れ物と一緒に使う資材。
+3. 原材料マスタ：中カテゴリ／小カテゴリで折りたたみ、並べ方（カテゴリ順／要更新を先に／購入業者順）、⚠要更新だけ、「商品で使用中」の要更新だけ、購入業者をまとめて編集、型番、「更新しない」、削除、ギフトの入れ物（箱／袋・入る数）、入れ物と一緒に使う資材。
 4. ギフトの組み合わせ：金額／個数で中身を自動で組む。グループ（クッキー・スノマカ等）はグループのまま使う。決まり（メレンゲは1つまで等）。
 5. レシピ帳：ページカール（平面だけで表現・本人が気に入っている。安易に変えない）、印刷（保存用／仕事用 B6・裏にメモ）、コラム。
-6. 設定：項目ごとに折りたたみ。
+6. リンク帳：よく使うメーカーなどのサイト（`state.links`：名前・URL・分類・メモ）。http(s) だけ。ver.53。
+7. 設定：項目ごとに折りたたみ。
 
 原価計算の画面は 登録済み商品 → ＋新規原価計算／商品の詳細 → 編集する から入る（左メニューにはない）。
 ① 仕込み全体（焼き菓子｜ギフト タブ）→ ② 1包装あたりの資材・仕上げ → 右に原価計算書。

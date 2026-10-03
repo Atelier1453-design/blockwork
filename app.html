@@ -126,6 +126,9 @@
 
   /* ---------- Calc layout ---------- */
   .calc-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:20px; align-items:start;}
+  .calc-side{display:flex; flex-direction:column; gap:20px; min-width:0;}
+  .calc-side .receipt{position:static;}   /* 下に生産計画を置くので、原価計算書は画面に貼りつけない */
+  .calc-side .calc-plan-card{margin-bottom:0;}
   @media (max-width: 980px){ .calc-grid{grid-template-columns:1fr;} }
 
   .section-card{padding:20px 22px; margin-bottom:18px;}
@@ -252,6 +255,24 @@
   .mat-scroll{max-height:62vh; overflow:auto; border:1px solid var(--border); border-radius:12px;}
   .mat-count{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:10px;}
   .mat-count .mc-stale{color:#c0392b; margin-left:12px;}
+  /* リンク帳 */
+  .link-cat-head{font-size:14px; font-weight:700; color:var(--ink-soft); margin:18px 0 8px;}
+  .link-cat-head:first-child{margin-top:4px;}
+  .link-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px;}
+  .link-card{display:flex; align-items:stretch; padding:0; overflow:hidden;}
+  .link-card a{flex:1; min-width:0; display:block; padding:14px 16px; color:var(--ink); text-decoration:none;}
+  .link-card a:active{background:var(--surface-2);}
+  .link-card .lk-name{font-size:16px; font-weight:700; color:var(--accent-strong);}
+  .link-card .lk-url{font-size:12px; color:var(--ink-faint); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .link-card .lk-memo{font-size:13px; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+  .link-card .lk-edit{flex:none; border:0; border-left:1px solid var(--border); background:transparent; color:var(--ink-soft); font-family:inherit; font-size:13px; padding:0 14px; cursor:pointer;}
+  .sup-list{display:flex; flex-direction:column; gap:8px;}
+  .sup-row{display:flex; align-items:center; gap:10px;}
+  .sup-row input{flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--ink); border-radius:8px; padding:8px 10px;}
+  .sup-row .sup-count{flex:none; font-size:12.5px; color:var(--ink-soft); min-width:4em; text-align:right;}
+  .sup-row.changed input{border-color:var(--accent); background:var(--accent-soft);}
+  .mat-count .mc-usedstale{color:#b4500f; margin-left:4px;}
+  .mat-used-mark{display:inline-block; font-size:11.5px; font-weight:700; color:#fff; background:#d9731f; border-radius:999px; padding:1px 8px; line-height:1.5; white-space:nowrap;}
   .ac-overlay{position:fixed; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;}
   .ac-list{position:absolute; z-index:40; left:0; right:0; top:100%; background:var(--paper,#fff); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14); max-height:240px; overflow-y:auto;}
   .ac-list.ac-overlay{max-height:300px;}
@@ -422,11 +443,18 @@
   }
 
   /* ①の表：×1 と ×〇 の2段ヘッダー */
-  table.ing-table-multi .col-name{width:24%;}
-  table.ing-table-multi .col-qty{width:12%;}
-  table.ing-table-multi .col-unit{width:6%; white-space:nowrap;}
+  table.ing-table-multi .col-name{width:31%;}
+  table.ing-table-multi .col-qty{width:10%;}
+  table.ing-table-multi .col-unit{width:5%; white-space:nowrap;}
   table.ing-table-multi .col-price{width:8%; text-align:left;}
-  table.ing-table-multi .col-amt{width:11%; text-align:left;}
+  table.ing-table-multi .col-amt{width:10%; text-align:left;}
+  /* 倍数のほうの使用量は右に寄せて、単位とくっつける（そのぶん材料名を広く） */
+  table.ing-table-multi .col-qty.m-col{width:7%; text-align:right; padding-right:3px;}
+  table.ing-table-multi .col-unit.m-col{width:4%; padding-left:0;}
+  table.ing-table-multi .col-price.m-col{width:7%;}
+  /* 使用量の欄は、どの画面の幅でも数字が切れないように最低限の幅をとる */
+  table.ing-table-multi th.col-qty:not(.m-col), table.ing-table-multi td.col-qty:not(.m-col){min-width:66px;}
+  table.ing-table-multi td.col-name{min-width:110px;}
   table.ing-table-multi td input{padding:6px 4px; font-size:13px;}
   table.ing-table-multi th.grp-head{
     text-align:center; font-size:12px; color:var(--ink-faint); font-weight:700;
@@ -474,6 +502,13 @@
   .grp-yield-edit{display:flex; align-items:center; justify-content:center; gap:4px; color:var(--ink); font-size:12.5px;}
   table.ing-table-multi th .grp-yield-edit input{width:68px !important; flex:0 0 68px; padding:3px 6px; text-align:right; font-weight:700; box-sizing:border-box;}
   .proc-hint{margin:2px 0 6px; line-height:1.55;}
+  /* 原価計算の結果に直接かかわる数字は、大きく・色をつけて目立たせる */
+  .key-line{font-size:14px; font-weight:700; color:var(--ink);}
+  .key-num{font-size:18px; font-weight:800; color:var(--accent-strong);}
+  table.ing-table tfoot .ing-foot td.col-amt{font-size:17px; font-weight:800; color:var(--accent-strong);}
+  table.ing-table tfoot .ing-foot .col-name{font-size:14px !important; font-weight:800; color:var(--ink) !important;}
+  #disp-pack-material-cost{font-size:18px; font-weight:800; color:var(--accent-strong);}
+  #disp-cont-total{font-size:18px; font-weight:800; color:var(--accent-strong);}
   .proc-groups{margin:4px 0 2px; gap:8px;}
   .proc-group{display:flex; gap:10px 16px; align-items:flex-start; flex-wrap:wrap; padding:8px 10px;}
   .proc-group-left{flex:0 0 auto;}
@@ -927,7 +962,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.52</div>
+      <div class="brand-ver">ver.53</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -936,6 +971,7 @@
       <button data-view="materials"><span class="ico">🧺</span><span class="label">原材料マスタ</span></button>
       <button data-view="giftmaker"><span class="ico">🎁</span><span class="label">ギフトの組み合わせ</span></button>
       <button data-view="recipes"><span class="ico">📓</span><span class="label">レシピ帳</span></button>
+      <button data-view="links"><span class="ico">🔗</span><span class="label">リンク帳</span></button>
       <button data-view="settings"><span class="ico">⚙️</span><span class="label">設定</span></button>
     </div>
     <div class="sidebar-foot">
@@ -976,8 +1012,8 @@
             <label>商品名</label>
             <input id="f-name" type="text" placeholder="例：バニラクッキー">
           </div>
-          <div class="field" style="max-width:140px;">
-            <label>商品番号<span style="font-weight:400; color:var(--ink-faint);">（任意）</span></label>
+          <div class="field" style="max-width:160px;">
+            <label style="white-space:nowrap; flex-direction:row; align-items:flex-end;">商品番号<span style="font-weight:400; color:var(--ink-faint);">（任意）</span></label>
             <input id="f-product-code" type="text" placeholder="例：A-012">
           </div>
           <div class="field" style="max-width:220px;">
@@ -1040,7 +1076,7 @@
                 <td class="col-del"></td>
               </tr>
               <tr class="ing-foot-per">
-                <td class="col-name">1<span class="per-unit-lbl">個</span>あたり<small>材料＋製造工賃・間接費</small></td>
+                <td class="col-name">1<span class="per-unit-lbl">個</span>あたり<small>材料費合計 ÷ 焼き上がり数</small></td>
                 <td class="col-qty"></td><td class="col-unit"></td><td class="col-price"></td>
                 <td class="col-amt amt" id="ing-per-base">¥0</td>
                 <td class="col-qty m-col"></td><td class="col-unit m-col"></td><td class="col-price m-col"></td>
@@ -1060,9 +1096,8 @@
               </div>
             </div>
             <div class="proc-area" id="proc-area-batch">
-              <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
+              <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><button type="button" class="btn btn-sm goto-bw-btn">ブロックワークで編集する →</button><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
               <div id="proc-batch-wrap"></div>
-              <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
             </div>
             </div>
             <div id="src-gift" hidden>
@@ -1130,32 +1165,11 @@
             <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
             <div class="proc-area" id="proc-area-finish">
-              <div class="proc-area-head"><h4>工程に関わる費用（仕上げ）</h4></div>
+              <div class="proc-area-head"><h4>工程に関わる費用（仕上げ）</h4><button type="button" class="btn btn-sm goto-bw-btn">ブロックワークで編集する →</button></div>
               <div id="proc-finish-wrap"></div>
-              <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
             </div>
           </div>
 
-          <div class="card section-card">
-            <h3>生産計画 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（ブロックワークで編集）</span></h3>
-            <p class="hint">安全在庫・曜日ごとの見込みは、ブロックワーク側でだけ入力できます。ここでは確認のみできます。変更したいときは下のボタンでブロックワークへ移動してください。</p>
-            <div class="row-inline">
-              <div class="field" style="max-width:140px;">
-                <label>安全在庫</label>
-                <div class="ro-display" id="ro-safety-stock">—</div>
-              </div>
-              <div class="field" style="max-width:160px;">
-                <label>忙しい月の安全在庫</label>
-                <div class="ro-display" id="ro-safety-stock-busy">—</div>
-              </div>
-            </div>
-
-            <div class="field" style="margin-top:12px;">
-              <label>曜日ごとに減る数（販売の見込み）</label>
-              <div class="ro-display" id="ro-weekly-sales" style="gap:10px 14px;">—</div>
-            </div>
-            <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
-          </div>
 
           <div class="card section-card">
             <div class="field">
@@ -1165,6 +1179,7 @@
           </div>
         </div>
 
+        <div class="calc-side">
         <div class="card receipt">
           <div class="receipt-head">原価計算書<span id="receipt-date"></span></div>
           <div class="receipt-body">
@@ -1224,6 +1239,28 @@
             </div>
           </div>
         </div>
+        <!-- 生産計画は原価計算書とは直接関係ないので、原価計算書の下に置く -->
+            <div class="card section-card calc-plan-card">
+              <h3>生産計画</h3>
+              <p class="hint">安全在庫・曜日ごとの見込みは、ブロックワーク側でだけ入力できます。ここでは確認のみできます。変更したいときは下のボタンでブロックワークへ移動してください。</p>
+              <div class="row-inline">
+                <div class="field" style="max-width:140px;">
+                  <label>安全在庫</label>
+                  <div class="ro-display" id="ro-safety-stock">—</div>
+                </div>
+                <div class="field" style="max-width:160px;">
+                  <label>忙しい月の安全在庫</label>
+                  <div class="ro-display" id="ro-safety-stock-busy">—</div>
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:12px;">
+                <label>曜日ごとに減る数（販売の見込み）</label>
+                <div class="ro-display" id="ro-weekly-sales" style="gap:10px 14px;">—</div>
+              </div>
+              <button type="button" class="btn btn-sm goto-bw-btn" style="margin-top:12px;">ブロックワークで編集する →</button>
+            </div>
+        </div>
       </div>
     </section>
 
@@ -1275,6 +1312,7 @@
         <div style="min-width:0;"><h2>原材料マスタ</h2><p>単価の更新や、新しい材料の追加はここで行います。原価計算に即反映されます。</p></div>
         <div style="display:flex; gap:8px; flex:none;">
           <button class="btn btn-ghost" id="btn-import-materials">CSVから取り込み</button>
+          <button class="btn btn-ghost" id="btn-edit-suppliers">購入業者をまとめて編集</button>
           <button class="btn btn-primary" id="btn-add-material">＋ 材料を追加</button>
         </div>
       </div>
@@ -1313,6 +1351,10 @@
         <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#c0392b; font-weight:700; white-space:nowrap;">
           <input type="checkbox" id="material-stale-only" style="width:auto;">
           ⚠ 要更新だけ（1年以上・空欄）
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#b4500f; font-weight:700; white-space:nowrap;">
+          <input type="checkbox" id="material-usedstale-only" style="width:auto;">
+          <span class="mat-used-mark">商品で使用中</span>の要更新だけ
         </label>
       </div>
       <div class="card section-card" id="mat-bulk-bar" hidden style="padding:12px 14px; margin-bottom:10px;">
@@ -1512,6 +1554,17 @@
     </section>
 
     <!-- ===================== SETTINGS VIEW ===================== -->
+    <!-- ===================== LINKS VIEW ===================== -->
+    <section class="view" id="view-links">
+      <div class="page-head">
+        <div><h2>リンク帳</h2><p>よく使う包材メーカー・材料メーカーなどのサイトです。タップするとサイトが開きます。</p></div>
+        <div style="display:flex; gap:8px; flex:none;">
+          <button type="button" class="btn btn-primary" id="btn-add-link">＋ サイトを追加</button>
+        </div>
+      </div>
+      <div id="link-list"></div>
+    </section>
+
     <section class="view" id="view-settings">
       <div class="page-head"><div><h2>設定</h2><p>工賃・間接費のレートなど、店全体で使う数値を設定します。見出しをタップすると開いたり閉じたりします。</p></div>
         <div style="display:flex; gap:8px; flex:none;"><button class="btn btn-primary" id="btn-save-settings">設定を保存</button></div></div>
@@ -1794,7 +1847,8 @@
     </div>
     <div class="field">
       <label>購入業者・サイト（任意）</label>
-      <input id="mm-supplier" type="text" list="dl-suppliers" placeholder="例：日の出乳業、cotta など">
+      <select id="mm-supplier-select"></select>
+      <input id="mm-supplier" type="text" placeholder="新しい購入業者・サイトの名前（例：日の出乳業、cotta）" style="margin-top:6px;" hidden>
       <datalist id="dl-suppliers"></datalist>
     </div>
     <div class="field">
@@ -1869,6 +1923,46 @@
       <button class="btn btn-ghost" id="mm-delete" style="margin-right:auto; color:#b03a1e;" hidden>🗑 削除</button>
       <button class="btn btn-ghost" id="mm-cancel">キャンセル</button>
       <button class="btn btn-primary" id="mm-save">保存する</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="supplier-modal-backdrop" hidden>
+  <div class="modal-box" style="max-width:560px;">
+    <h3 class="serif">購入業者をまとめて編集</h3>
+    <p class="hint" style="margin:0;">名前を書きかえて「まとめて変更」を押すと、その業者の材料がすべて新しい名前になります。ほかの業者と同じ名前にすると、1つにまとまります。空にすると、その材料の購入業者は「なし」になります。</p>
+    <div id="sup-list" class="sup-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="sup-cancel">やめる</button>
+      <button class="btn btn-primary" id="sup-ok">まとめて変更</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="link-modal-backdrop" hidden>
+  <div class="modal-box" style="max-width:480px;">
+    <h3 class="serif" id="link-modal-title">サイトを追加</h3>
+    <div class="field">
+      <label>名前</label>
+      <input id="lk-name" type="text" placeholder="例：cotta、包材のシモジマ">
+    </div>
+    <div class="field">
+      <label>サイトのアドレス（URL）</label>
+      <input id="lk-url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="例：https://www.cotta.jp/">
+    </div>
+    <div class="field">
+      <label>分類</label>
+      <select id="lk-cat-select"></select>
+      <input id="lk-cat" type="text" placeholder="新しい分類の名前" style="margin-top:6px;" hidden>
+    </div>
+    <div class="field">
+      <label>メモ（任意）</label>
+      <input id="lk-memo" type="text" placeholder="例：ログインIDは店のメール、送料無料は1万円から">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="lk-delete" style="margin-right:auto;">削除</button>
+      <button class="btn btn-ghost" id="lk-cancel">やめる</button>
+      <button class="btn btn-primary" id="lk-save">保存する</button>
     </div>
   </div>
 </div>
@@ -2720,6 +2814,103 @@
     showToast('ギフトの原価計算を開きました。名前を決めて「登録する」を押してください' + (gmOpt.last.laborMin ? '（詰める手間は、ブロックワークの工程に入れると原価計算に入ります）' : ''));
   });
 
+  // ---------------- リンク帳 ----------------
+  var LINK_DEFAULT_CATS = ['包材メーカー', '材料メーカー', 'その他'];
+  var linkEditId = null;
+  function linkList(){ if(!Array.isArray(state.links)) state.links = []; return state.links; }
+  function linkCats(){
+    var set = {};
+    LINK_DEFAULT_CATS.forEach(function(c){ set[c] = 1; });
+    linkList().forEach(function(l){ if(l.cat) set[l.cat] = 1; });
+    var extra = Object.keys(set).filter(function(c){ return LINK_DEFAULT_CATS.indexOf(c) < 0; }).sort(function(a, b){ return a.localeCompare(b, 'ja'); });
+    return LINK_DEFAULT_CATS.slice(0, 2).concat(extra, ['その他']);
+  }
+  // http(s) のアドレスだけを使う（「https://」が無ければ付ける）
+  function normalizeUrl(u){
+    u = String(u || '').trim();
+    if(!u) return '';
+    if(!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u.replace(/^\/+/, '');
+    return /^https?:\/\/[^\s]+$/i.test(u) ? u : '';
+  }
+  function renderLinks(){
+    var box = document.getElementById('link-list');
+    if(!box) return;
+    var list = linkList();
+    if(!list.length){
+      box.innerHTML = '<div class="empty-state"><div class="big">🔗</div>まだサイトが登録されていません。「＋ サイトを追加」から、よく使うサイトを登録できます。</div>';
+      return;
+    }
+    var html = '';
+    linkCats().forEach(function(cat){
+      var items = list.filter(function(l){ return (l.cat || 'その他') === cat; })
+        .sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
+      if(!items.length) return;
+      html += '<div class="link-cat-head">' + escapeHtml(cat) + '（' + items.length + '）</div><div class="link-grid">' +
+        items.map(function(l){
+          var url = normalizeUrl(l.url);
+          return '<div class="card link-card">' +
+            (url ? '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' : '<a>') +
+              '<div class="lk-name">' + escapeHtml(l.name || url || '（名前なし）') + '</div>' +
+              '<div class="lk-url">' + escapeHtml(url ? url.replace(/^https?:\/\//, '').replace(/\/$/, '') : 'アドレスが入っていません') + '</div>' +
+              (l.memo ? '<div class="lk-memo">' + escapeHtml(l.memo) + '</div>' : '') +
+            '</a>' +
+            '<button type="button" class="lk-edit" data-id="' + escapeHtml(l.id) + '">編集</button>' +
+          '</div>';
+        }).join('') + '</div>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('.lk-edit').forEach(function(b){
+      b.addEventListener('click', function(){ openLinkModal(b.dataset.id); });
+    });
+  }
+  function openLinkModal(id){
+    var l = id ? linkList().find(function(x){ return x.id === id; }) : null;
+    linkEditId = l ? l.id : null;
+    document.getElementById('link-modal-title').textContent = l ? 'サイトを編集' : 'サイトを追加';
+    document.getElementById('lk-delete').hidden = !l;
+    document.getElementById('lk-name').value = l ? (l.name || '') : '';
+    document.getElementById('lk-url').value = l ? (l.url || '') : '';
+    document.getElementById('lk-memo').value = l ? (l.memo || '') : '';
+    fillPickOrNew(document.getElementById('lk-cat-select'), document.getElementById('lk-cat'), linkCats(), 'えらぶ', l ? (l.cat || 'その他') : '');
+    document.getElementById('link-modal-backdrop').hidden = false;
+  }
+  function closeLinkModal(){ document.getElementById('link-modal-backdrop').hidden = true; linkEditId = null; }
+  wirePickOrNew(document.getElementById('lk-cat-select'), document.getElementById('lk-cat'));
+  document.getElementById('btn-add-link').addEventListener('click', function(){ openLinkModal(null); });
+  document.getElementById('lk-cancel').addEventListener('click', closeLinkModal);
+  document.getElementById('link-modal-backdrop').addEventListener('click', function(e){ if(e.target === this) closeLinkModal(); });
+  document.getElementById('lk-save').addEventListener('click', function(){
+    var name = document.getElementById('lk-name').value.trim();
+    var rawUrl = document.getElementById('lk-url').value.trim();
+    var url = normalizeUrl(rawUrl);
+    if(!name && !url){ showToast('名前かアドレスを入れてください'); return; }
+    if(rawUrl && !url){ showToast('アドレスは「https://〜」の形で入れてください'); return; }
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var cat = pickOrNewValue(document.getElementById('lk-cat-select'), document.getElementById('lk-cat')) || 'その他';
+    var memo = document.getElementById('lk-memo').value.trim();
+    var list = linkList();
+    var l = linkEditId ? list.find(function(x){ return x.id === linkEditId; }) : null;
+    if(!l){ l = {id: 'lk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)}; list.push(l); }
+    l.name = name; l.url = url; l.cat = cat; l.memo = memo;
+    scheduleSave();
+    closeLinkModal();
+    renderLinks();
+    showToast('「' + (name || url) + '」を保存しました');
+  });
+  document.getElementById('lk-delete').addEventListener('click', function(){
+    var l = linkList().find(function(x){ return x.id === linkEditId; });
+    if(!l) return;
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var target = l;
+    closeLinkModal();
+    openConfirmModal('「' + (target.name || target.url) + '」をリンク帳から消しますか？', function(){
+      var i = linkList().indexOf(target);
+      if(i >= 0) linkList().splice(i, 1);
+      scheduleSave();
+      renderLinks();
+    });
+  });
+
   // ---------------- 棚卸し ----------------
   var stYear = null, stTab = 'prod', stOpen = {};
   function stocktakesAll(){
@@ -3287,6 +3478,7 @@
     if(name === 'stocktake') renderStocktake();
     if(name === 'calc'){ procViewKey = null; try{ recalc(); }catch(e){} }
     if(name === 'giftmaker') renderGiftMaker();
+    if(name === 'links') renderLinks();
     updateReturnBars(name);
   }
   // 入力途中の原価計算があるか（入力して、まだ登録していないとき）
@@ -3718,6 +3910,7 @@
       productGroups: state.productGroups || [],
       stocktakes: state.stocktakes || {},
       giftMaker: state.giftMaker || null,
+      links: state.links || [],
       blockworkValue: state.blockworkValue
     };
   }
@@ -3828,6 +4021,7 @@
         state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
       state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
       state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
+      state.links = Array.isArray(d.links) ? d.links : [];
         state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
         state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
         hint.textContent = '保存しています…';
@@ -3890,6 +4084,7 @@
       state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
       state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
       state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
+      state.links = Array.isArray(d.links) ? d.links : [];
       state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
       state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
       state.dbxReady = true;
@@ -3953,6 +4148,12 @@
     dl.innerHTML = state.materials.map(function(m){ return '<option value="'+escapeHtml(m.name)+'">'; }).join('');
   }
 
+  // 登録済みの購入業者・サイト（名前の順）
+  function allSuppliers(){
+    var set = {};
+    state.materials.forEach(function(m){ var v = (m.supplier || '').trim(); if(v) set[v] = 1; });
+    return Object.keys(set).sort(function(a, b){ return a.localeCompare(b, 'ja'); });
+  }
   function rebuildSupplierList(){
     var suppliers = {};
     state.materials.forEach(function(m){ if(m.supplier) suppliers[m.supplier]=1; });
@@ -5588,30 +5789,22 @@
     var unitLabel = document.getElementById('f-yield-unit').value || '個';
     var name = document.getElementById('f-name').value.trim();
     var code = currentFormCode();
+    // ここの「1個あたり」は材料費だけ（材料費合計 ÷ 焼き上がり数）。工程の費用は下の「工程に関わる費用」で出す
     function perUnit(m){
-      var pc = getProcessCosting(name, m, code);
-      var procMin = pc ? pc.batchMinutes : 0;
-      var total = ingTotal1 * m + (pc ? pc.batchLaborCost : 0) + procMin * (state.settings.overheadRate || 0);
       var y = yieldCount1 * m;
-      return {per: y > 0 ? total / y : 0, y: y, procMin: procMin};
+      return {per: y > 0 ? (ingTotal1 * m) / y : 0, y: y};
     }
     var b = perUnit(1);
     setTxt('ing-per-base', fmtYen2(b.per));
     var mc = currentMultCol();
-    var anyProc = b.procMin > 0;
     if(mc){
       var mm = perUnit(mc);
-      if(mm.procMin > 0) anyProc = true;
       setTxt('grp-yield-mult', fmtNum(mm.y) + unitLabel + '分');
       setTxt('ing-per-mult', fmtYen2(mm.per));
     }
     document.querySelectorAll('.per-unit-lbl').forEach(function(el){ el.textContent = unitLabel; });
     var box = document.getElementById('disp-mult-yields');
-    if(box){
-      box.innerHTML = (!anyProc && allowedMultipliers.length > 1)
-        ? '<div class="mult-yield-note">※ 下の「製造」の工程に時間が入っていないため、1' + escapeHtml(unitLabel) + 'あたりは材料費だけで計算しています（倍数を変えても同じになります）。</div>'
-        : '';
-    }
+    if(box) box.innerHTML = '';
   }
 
   var procViewKey = null;   // 直前に描画した内容のキー（同じなら描き直さない）
@@ -5626,6 +5819,7 @@
     var fPack = parseFloat(document.getElementById('f-pack-count').value) || 0;
     var fUnits = (fPack > 0 && fYield > 0) ? (fYield / fPack) : 0;
     var key = name + '|' + code + '|' + multiplier + '|' + state.settings.laborRate + '|' + state.settings.overheadRate + '|' +
+      (document.getElementById('f-yield-unit').value || '') + '|' +
       fYield + '|' + fPack + '|' +
       (info ? info.rows.map(function(r){ return r.id+':'+r.role+':'+r.minutes+':'+r.who; }).join(',') : '-');
     if(key === procViewKey) return info;
@@ -5644,13 +5838,13 @@
           (r.who ? '<br>（'+escapeHtml(r.who)+'さんの時間）' : '') + '</span>' +
         '</button>';
     }
-    // 段取り〇分 ＋ 1倍分〇分 × 伸び率 ＝ 合計〇分（チップの足し算と合うように書く）
+    // 工程の時間の合計（段取りや伸び率のくわしい説明はブロックワーク側で）
     function minutesLine(role){
-      var s = info.setupMinutes[role], p = info.perMinutes[role], t = info.timeMult;
-      var txt = '段取り '+fmtNum(s,1)+'分 ＋ 1倍分 '+fmtNum(p,1)+'分';
-      if(multNow !== 1) txt += ' × '+fmtNum(t,2)+'（×'+fmtNum(multNow)+'倍分の伸び）';
-      return txt + ' ＝ <b>'+fmtNum(roleMinutes(role),1)+'分</b>';
+      return '時間の合計 <b>'+fmtNum(roleMinutes(role),1)+'分</b>';
     }
+    var lr = state.settings.laborRate || 0, orr = state.settings.overheadRate || 0;
+    var unitLbl = escapeHtml(document.getElementById('f-yield-unit').value || '個');
+    var bLabor = info.batchLaborCost, bOver = info.batchMinutes * orr, bTotal = bLabor + bOver;
     function roleMinutes(role){ return role === 'batch' ? info.batchMinutes : (role === 'finish' ? info.finishMinutes : 0); }
     function groupHtml(role, title, note){
       var rows = info.rows.filter(function(r){ return r.role === role; });
@@ -5663,16 +5857,16 @@
         '</div>';
     }
     wrap.innerHTML =
-      '<p class="hint proc-hint">ブロックワークに登録された工程の時間です（編集はブロックワークで）。チップをタップすると ①の「製造」と ②の「仕上げ」が切り替わります。' +
-        (multNow !== 1
-          ? '<br><b>×'+fmtNum(multNow)+'倍で仕込むときの分数で表示しています。</b>段取りは倍数がふえても1回分のまま、1倍分の時間だけが ×'+fmtNum(info.timeMult,2)+' にふえます（設定の「倍数を増やしたときの時間の伸び」）。'
-          : '<br>×1倍で仕込むときの分数で表示しています。') + '</p>' +
+      '<p class="hint proc-hint">ブロックワークに登録された工程の時間です。チップをタップすると ①の「製造」と ②の「仕上げ」が切り替わります。</p>' +
       '<div class="proc-groups">' +
         groupHtml('batch', '製造',
           minutesLine('batch')+'<br>' +
-          '工賃 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen(info.batchLaborCost)+'<br>' +
-          '間接費 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen(info.batchMinutes * (state.settings.overheadRate||0))+'<br>' +
-          '<b>合計 '+fmtYen(info.batchLaborCost + info.batchMinutes * (state.settings.overheadRate||0))+'</b>') +
+          '製造工賃 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(lr,2)+'/分 ＝ '+fmtYen(bLabor)+'<br>' +
+          '製造間接費 '+fmtNum(info.batchMinutes,1)+'分 × ¥'+fmtNum(orr,2)+'/分 ＝ '+fmtYen(bOver)+'<br>' +
+          '<span class="key-line">合計 <b class="key-num">'+fmtYen(bTotal)+'</b></span>' +
+          (fYield > 0
+            ? '<br><span class="key-line">1'+unitLbl+'あたり '+fmtYen(bTotal)+' ÷ '+fmtNum(fYield)+unitLbl+' ＝ <b class="key-num">'+fmtYen2(bTotal / fYield)+'</b></span>'
+            : '')) +
       '</div>';
     wrapF.innerHTML =
       '<div class="proc-groups">' +
@@ -5680,9 +5874,9 @@
           minutesLine('finish')+'（仕込み全体分）<br>' +
           (fUnits > 0
             ? ('1包装分 '+fmtNum(info.finishMinutes,1)+'分 ÷ '+fmtNum(fUnits,0)+'包装 ＝ '+fmtNum(info.finishMinutes/fUnits,2)+'分<br>' +
-               '工賃 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.laborRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.laborRate||0))+'<br>' +
-               '間接費 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(state.settings.overheadRate||0,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*(state.settings.overheadRate||0))+'<br>' +
-               '<b>1包装あたり 合計 '+fmtYen2(Math.round(info.finishMinutes/fUnits*(state.settings.laborRate||0)*100)/100 + Math.round(info.finishMinutes/fUnits*(state.settings.overheadRate||0)*100)/100)+'</b>')
+               '仕上げ工賃 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(lr,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*lr)+'<br>' +
+               '仕上げ間接費 '+fmtNum(info.finishMinutes/fUnits,2)+'分 × ¥'+fmtNum(orr,2)+'/分 ＝ '+fmtYen2(info.finishMinutes/fUnits*orr)+'<br>' +
+               '<span class="key-line">1包装あたり 合計 <b class="key-num">'+fmtYen2(Math.round(info.finishMinutes/fUnits*lr*100)/100 + Math.round(info.finishMinutes/fUnits*orr*100)/100)+'</b></span>')
             : '「1商品に入れる数」を入れると、1包装分の金額が出ます')) +
       '</div>';
     Array.prototype.slice.call(wrap.querySelectorAll('.proc-chip')).concat(Array.prototype.slice.call(wrapF.querySelectorAll('.proc-chip'))).forEach(function(btn){
@@ -7227,6 +7421,11 @@
     var updatedOnly = updatedOnlyEl ? updatedOnlyEl.checked : false;
     var staleOnlyEl = document.getElementById('material-stale-only');
     var staleOnly = staleOnlyEl ? staleOnlyEl.checked : false;
+    var usedStaleEl = document.getElementById('material-usedstale-only');
+    var usedStaleOnly = usedStaleEl ? usedStaleEl.checked : false;
+    // 登録済み商品（①の材料・②の資材）で使っている材料の名前
+    var usedNames = materialNamesInUse();
+    function usedStale(m){ return !!usedNames[m.name] && priceNeedsUpdate(m.priceUpdatedAt, m); }
 
     var kindSel = document.getElementById('material-kind-filter');
     var kindFilter = kindSel ? kindSel.value : '';
@@ -7238,12 +7437,15 @@
       if(catFilter && (m.category || '（カテゴリなし）') !== catFilter) return false;
       if(updatedOnly && !m.priceUpdatedAt) return false;
       if(staleOnly && !priceNeedsUpdate(m.priceUpdatedAt, m)) return false;
+      if(usedStaleOnly && !usedStale(m)) return false;
       if(!q) return true;
       return (m.name||'').toLowerCase().indexOf(q)>=0 || (m.category||'').toLowerCase().indexOf(q)>=0 || (m.supplier||'').toLowerCase().indexOf(q)>=0 || (m.model||'').toLowerCase().indexOf(q)>=0;
     });
     var staleAll = state.materials.filter(function(m){ return priceNeedsUpdate(m.priceUpdatedAt, m); }).length;
+    var usedStaleAll = state.materials.filter(usedStale).length;
     document.getElementById('mat-count').innerHTML = escapeHtml(list.length + ' / ' + state.materials.length + ' 件') +
-      '<span class="mc-stale">⚠ 要更新 残り ' + staleAll + ' 件</span>';
+      '<span class="mc-stale">⚠ 要更新 残り ' + staleAll + ' 件</span>' +
+      '<span class="mc-usedstale">（うち <span class="mat-used-mark">商品で使用中</span> ' + usedStaleAll + ' 件）</span>';
 
     // group by category, categories in kana order, names within a category in kana order
     var groups = {};
@@ -7264,7 +7466,8 @@
         '<td>'+(m.price!=null?fmtYen(m.price):'—')+'</td>' +
         '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
         '<td>'+escapeHtml(m.supplier||'—')+'</td>' +
-        '<td class="mat-ym">'+(m.noUpdate ? '<span class="mat-noup" title="更新しない材料">---</span>' : priceAgeMark(m.priceUpdatedAt, m)+escapeHtml(fmtYm(m.priceUpdatedAt)))+'</td>' +
+        '<td class="mat-ym">'+(m.noUpdate ? '<span class="mat-noup" title="更新しない材料">---</span>' : priceAgeMark(m.priceUpdatedAt, m)+escapeHtml(fmtYm(m.priceUpdatedAt)))+
+          (usedStale(m) ? '<br><span class="mat-used-mark" title="登録済み商品で使っていて、価格の更新が必要です">商品で使用中</span>' : '')+'</td>' +
         '<td><button class="btn btn-sm mat-edit-btn">編集</button></td>' +
         '</tr>';
     }
@@ -7415,6 +7618,7 @@
   document.getElementById('material-updated-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-sort').addEventListener('change', renderMaterialTable);
   document.getElementById('material-stale-only').addEventListener('change', renderMaterialTable);
+  document.getElementById('material-usedstale-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-search').addEventListener('input', debounce(renderMaterialTable, 150));
 
   // ---- CSV import of the materials master ----
@@ -7573,6 +7777,7 @@
   document.querySelectorAll('#mm-kind-seg .seg-btn').forEach(function(b){
     b.addEventListener('click', function(){ setModalKind(b.dataset.kind); });
   });
+  wirePickOrNew(document.getElementById('mm-supplier-select'), document.getElementById('mm-supplier'));
   wirePickOrNew(document.getElementById('mm-group-select'), document.getElementById('mm-group'), function(){
     var grp = pickOrNewValue(document.getElementById('mm-group-select'), document.getElementById('mm-group'));
     fillPickOrNew(document.getElementById('mm-category-select'), document.getElementById('mm-category'), allCategories('', grp), 'えらぶ', '');
@@ -7611,7 +7816,7 @@
     document.getElementById('mm-qty').value = material && material.qty!=null ? material.qty : '';
     document.getElementById('mm-unit').value = material ? (material.unit||'g') : 'g';
     document.getElementById('mm-price').value = material && material.price!=null ? material.price : '';
-    document.getElementById('mm-supplier').value = material ? (material.supplier||'') : '';
+    fillPickOrNew(document.getElementById('mm-supplier-select'), document.getElementById('mm-supplier'), allSuppliers(), 'なし（えらぶ）', material ? (material.supplier || '').trim() : '');
     document.getElementById('mm-category').value = material ? (material.category||'') : (prefillCategory || '');
     var pv = material && material.price != null ? Number(material.price) : null;
     if(pv != null && isFinite(pv)) document.getElementById('mm-price').value = String(Math.round(pv * 100) / 100);
@@ -7650,6 +7855,16 @@
     // 開いた直後にキーボードが出ないよう、ここでは入力欄にフォーカスを当てない
   }
   var mmAskedPrice = false;
+  // 登録済み商品で使っている材料の名前（{名前:1}）
+  function materialNamesInUse(){
+    var used = {};
+    (state.products || []).forEach(function(p){
+      [p.batch && p.batch.ingredients, p.pack && p.pack.items].forEach(function(list){
+        if(Array.isArray(list)) list.forEach(function(r){ if(r && r.name) used[r.name] = 1; });
+      });
+    });
+    return used;
+  }
   // この材料を使っている商品
   function productsUsingMaterial(name){
     return (state.products || []).filter(function(p){
@@ -7756,6 +7971,49 @@
   });
   document.getElementById('btn-add-material').addEventListener('click', function(){ openMaterialModal(null, '', null); });
 
+  // ---- 購入業者の名前をまとめて変える ----
+  function openSupplierModal(){
+    var counts = {};
+    state.materials.forEach(function(m){ var v = (m.supplier || '').trim(); if(v) counts[v] = (counts[v] || 0) + 1; });
+    var names = allSuppliers();
+    var box = document.getElementById('sup-list');
+    if(!names.length){
+      box.innerHTML = '<p class="hint">まだ購入業者が入っている材料がありません。</p>';
+    } else {
+      box.innerHTML = names.map(function(n, i){
+        return '<div class="sup-row" data-i="'+i+'"><input type="text" value="'+escapeHtml(n)+'" data-old="'+escapeHtml(n)+'"><span class="sup-count">'+counts[n]+'件</span></div>';
+      }).join('');
+      box.querySelectorAll('.sup-row input').forEach(function(inp){
+        inp.addEventListener('input', function(){ inp.parentNode.classList.toggle('changed', inp.value.trim() !== inp.dataset.old); });
+      });
+    }
+    document.getElementById('supplier-modal-backdrop').hidden = false;
+    var mb = document.querySelector('#supplier-modal-backdrop .modal-box');
+    if(mb) mb.scrollTop = 0;
+  }
+  function closeSupplierModal(){ document.getElementById('supplier-modal-backdrop').hidden = true; }
+  document.getElementById('btn-edit-suppliers').addEventListener('click', openSupplierModal);
+  document.getElementById('sup-cancel').addEventListener('click', closeSupplierModal);
+  document.getElementById('supplier-modal-backdrop').addEventListener('click', function(e){ if(e.target === this) closeSupplierModal(); });
+  document.getElementById('sup-ok').addEventListener('click', function(){
+    var map = {}, n = 0;
+    document.querySelectorAll('#sup-list .sup-row input').forEach(function(inp){
+      var nv = inp.value.trim();
+      if(nv !== inp.dataset.old) map[inp.dataset.old] = nv;
+    });
+    if(!Object.keys(map).length){ closeSupplierModal(); return; }
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    state.materials.forEach(function(m){
+      var v = (m.supplier || '').trim();
+      if(v && Object.prototype.hasOwnProperty.call(map, v)){ m.supplier = map[v]; n++; }
+    });
+    rebuildSupplierList();
+    renderMaterialTable();
+    scheduleSave();
+    closeSupplierModal();
+    showToast('購入業者を ' + Object.keys(map).length + ' 件変えました（材料 ' + n + ' 件）');
+  });
+
   document.getElementById('mm-save').addEventListener('click', function(){
     var name = document.getElementById('mm-name').value.trim();
     if(!name){ showToast('品名を入力してください'); document.getElementById('mm-name').focus(); return; }
@@ -7763,7 +8021,7 @@
     var qty = parseFloat(document.getElementById('mm-qty').value) || 0;
     var unit = document.getElementById('mm-unit').value.trim() || 'g';
     var price = parseFloat(document.getElementById('mm-price').value) || 0;
-    var supplier = document.getElementById('mm-supplier').value.trim();
+    var supplier = pickOrNewValue(document.getElementById('mm-supplier-select'), document.getElementById('mm-supplier'));
     var category = pickOrNewValue(document.getElementById('mm-category-select'), document.getElementById('mm-category'));
     var priceUpdatedAt = document.getElementById('mm-updated').value || thisMonthISO();
     var unitPrice = qty > 0 ? price / qty : 0;
