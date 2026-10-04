@@ -323,9 +323,9 @@
   .band-btn{background:transparent; border:1px solid var(--border); border-radius:5px; cursor:pointer;
     font-family:inherit; font-size:11px; color:inherit; padding:1px 6px; margin-right:6px;}
   .band-btn:disabled{opacity:.3; cursor:default;}
-  .band-count{font-weight:400; font-size:11px; color:var(--ink-faint); margin-left:6px;}
+  .band-count{font-weight:700; font-size:13px; color:var(--ink); margin-left:6px;}
   .mat-biggroup .band-btn{border-color:var(--accent); color:var(--accent-strong); background:var(--surface);}
-  .mat-biggroup .band-count{color:var(--ink-soft);}
+  .mat-biggroup .band-count, .mat-group td span.band-count{color:var(--ink); font-weight:700; font-size:13px;}
   .mat-group td{border-left:3px solid var(--border);}
   /* 選んでいる行がひと目で分かるように */
   table.mat-table tr[data-need] td{background:#fdf2ee;}
@@ -461,6 +461,10 @@
     border-bottom:1px solid var(--border); padding-bottom:2px;
   }
   table.ing-table-multi th.grp-mult{padding-bottom:0;}
+  /* 「材料名」は、使用量・単位などの見出しと同じ行（下の段）にそろえる */
+  table.ing-table-multi thead th.col-name, table.ing-table-multi thead th.col-del{vertical-align:bottom;}
+  /* 「原価の基準にする倍数」のすぐ下の工程（製造）には、点線の区切りを入れない */
+  #proc-area-batch{border-top:none;}
   table.ing-table-multi .m-col{background:var(--surface-2);}
   table.ing-table-multi.no-mult-col .m-col{display:none;}
   /* 倍数のほうの使用量は、実際に量る数字なので一回り大きく濃く */
@@ -877,8 +881,14 @@
   .proc-group-head{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:baseline;}
   .proc-group-head span{font-weight:400; font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
   .proc-group-empty{font-size:12px; color:var(--ink-faint);}
-  .bw-hide-btn{margin-top:8px; font-size:11px; padding:3px 8px;}
-  .bw-hide-btn.on{background:var(--warn-soft); border-color:var(--warn); color:var(--warn);}
+  .bw-switch{margin-left:auto; display:flex; align-items:center; gap:6px; background:none; border:0; padding:4px 0 4px 8px;
+    font-family:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .bw-sw-lbl{font-size:11px; color:var(--ink-faint);}
+  .bw-switch .sw{position:relative; width:34px; height:20px; border-radius:999px; background:#cfc6b6; transition:background .15s;}
+  .bw-switch .sw::after{content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff;
+    box-shadow:0 1px 2px rgba(0,0,0,.25); transition:left .15s;}
+  .bw-switch .sw.on{background:var(--good);}
+  .bw-switch .sw.on::after{left:16px;}
   .cat-chips{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px;}
   .cat-chip{border:1px solid var(--border); background:var(--surface); border-radius:999px;
     padding:5px 12px; font-family:inherit; font-size:12.5px; cursor:pointer; color:var(--ink-soft);
@@ -962,7 +972,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.53</div>
+      <div class="brand-ver">ver.54</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1344,15 +1354,11 @@
             <option value="supplier">購入業者順</option>
           </select>
         </div>
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-faint); white-space:nowrap;">
-          <input type="checkbox" id="material-updated-only" style="width:auto;">
-          更新日が入っているものだけ
-        </label>
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#c0392b; font-weight:700; white-space:nowrap;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--ink); white-space:nowrap;">
           <input type="checkbox" id="material-stale-only" style="width:auto;">
-          ⚠ 要更新だけ（1年以上・空欄）
+          要更新だけ（1年以上・空欄）
         </label>
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#b4500f; font-weight:700; white-space:nowrap;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--ink); white-space:nowrap;">
           <input type="checkbox" id="material-usedstale-only" style="width:auto;">
           <span class="mat-used-mark">商品で使用中</span>の要更新だけ
         </label>
@@ -6834,6 +6840,9 @@
         '<div class="pcode-line">' +
           (pcode ? '<span class="pcode-tag">'+escapeHtml(pcode)+'</span>' : '') +
           '<span class="pcat-inline"><span class="dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:'+categoryColor(p.category||'')+'; margin-right:5px;"></span>'+escapeHtml(p.category||'カテゴリ未設定')+'</span>' +
+          // ブロックワークに出す・出さないの切り替えスイッチ（緑＝表示）
+          '<button type="button" class="bw-switch" data-id="'+p.id+'" aria-pressed="'+(bwHidden?'false':'true')+'">' +
+            '<span class="bw-sw-lbl">ブロックワーク</span><span class="sw'+(bwHidden?'':' on')+'"></span></button>' +
         '</div>' +
         '<div class="pname">'+escapeHtml(p.name)+'</div>' +
         ((p.category !== '仕掛品' && p.salePrice > 0) ? (function(){
@@ -6857,13 +6866,11 @@
           var miss = missingParts(p);
           return miss.length ? '<div class="miss-chips">'+miss.map(function(m){ return '<span class="miss-chip">'+m+'未入力</span>'; }).join('')+'</div>' : '';
         })() +
-        '<button type="button" class="btn btn-sm bw-hide-btn'+(bwHidden?' on':'')+'" data-id="'+p.id+'">'+
-          (bwHidden ? 'ブロックワーク：非表示' : 'ブロックワークに非表示') + '</button>' +
         '</div>';
     });
     el.innerHTML = html;
     startLivePrices();
-    el.querySelectorAll('.bw-hide-btn').forEach(function(btn){
+    el.querySelectorAll('.bw-switch').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         toggleBlockworkHidden(btn.dataset.id);
@@ -7417,8 +7424,6 @@
     var q = (document.getElementById('material-search').value || '').trim().toLowerCase();
     var catEl = document.getElementById('material-category-filter');
     var catFilter = catEl ? catEl.value : '';
-    var updatedOnlyEl = document.getElementById('material-updated-only');
-    var updatedOnly = updatedOnlyEl ? updatedOnlyEl.checked : false;
     var staleOnlyEl = document.getElementById('material-stale-only');
     var staleOnly = staleOnlyEl ? staleOnlyEl.checked : false;
     var usedStaleEl = document.getElementById('material-usedstale-only');
@@ -7435,7 +7440,6 @@
       if(kindFilter && kindOf(m) !== kindFilter) return false;
       if(groupFilter && groupOf(m.category) !== groupFilter) return false;
       if(catFilter && (m.category || '（カテゴリなし）') !== catFilter) return false;
-      if(updatedOnly && !m.priceUpdatedAt) return false;
       if(staleOnly && !priceNeedsUpdate(m.priceUpdatedAt, m)) return false;
       if(usedStaleOnly && !usedStale(m)) return false;
       if(!q) return true;
@@ -7444,8 +7448,11 @@
     var staleAll = state.materials.filter(function(m){ return priceNeedsUpdate(m.priceUpdatedAt, m); }).length;
     var usedStaleAll = state.materials.filter(usedStale).length;
     document.getElementById('mat-count').innerHTML = escapeHtml(list.length + ' / ' + state.materials.length + ' 件') +
-      '<span class="mc-stale">⚠ 要更新 残り ' + staleAll + ' 件</span>' +
-      '<span class="mc-usedstale">（うち <span class="mat-used-mark">商品で使用中</span> ' + usedStaleAll + ' 件）</span>';
+      // 「要更新だけ」「商品で使用中の要更新だけ」を選んでいるときだけ、残りの件数を出す
+      ((staleOnly || usedStaleOnly)
+        ? '<span class="mc-stale">⚠ 要更新 残り ' + staleAll + ' 件</span>' +
+          '<span class="mc-usedstale">（うち <span class="mat-used-mark">商品で使用中</span> ' + usedStaleAll + ' 件）</span>'
+        : '');
 
     // group by category, categories in kana order, names within a category in kana order
     var groups = {};
@@ -7615,7 +7622,6 @@
     rebuildMaterialCategoryFilter();
     renderMaterialTable();
   });
-  document.getElementById('material-updated-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-sort').addEventListener('change', renderMaterialTable);
   document.getElementById('material-stale-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-usedstale-only').addEventListener('change', renderMaterialTable);
@@ -7966,9 +7972,7 @@
     if(!name){ showToast('先に品名を入力してください'); return; }
     window.open('https://www.google.com/search?q=' + encodeURIComponent(name + ' 栄養成分 100g'), '_blank');
   });
-  document.getElementById('material-modal-backdrop').addEventListener('click', function(e){
-    if(e.target === this) closeMaterialModal();
-  });
+  // 材料の編集画面は、外をタップしても閉じない（入力中にうっかり消えないように）。閉じるのは「キャンセル」で
   document.getElementById('btn-add-material').addEventListener('click', function(){ openMaterialModal(null, '', null); });
 
   // ---- 購入業者の名前をまとめて変える ----
