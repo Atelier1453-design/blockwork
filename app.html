@@ -235,7 +235,6 @@
   .product-card .pname{font-family:"Shippori Mincho",serif; font-size:16px; font-weight:700;}
   .product-card .pcat{font-size:11px; color:var(--ink-faint); margin-top:2px;}
   .product-card .pmeta{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px; margin-top:8px; font-size:11.5px; color:var(--ink-soft);}
-  .product-card .psale + .pmeta{margin-top:4px;}
   .product-card .pmeta > span{white-space:nowrap;}
   .product-card .pmeta .pm-main{color:var(--ink); font-weight:600;}
   .product-card .pmeta .pm-main b{font-size:15.5px; color:var(--accent-strong);}
@@ -382,8 +381,9 @@
   .sale-diff b{color:#b03a1e;}
   .sale-diff.same b{color:#2e6b2a;}
   .sale-diff.minus b{color:#1f5fa8;}
-  .product-card .psale{display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 10px; margin-top:6px; font-size:13px; color:var(--ink-soft);}
-  .product-card .psale b{font-size:17px; color:var(--accent-strong);}
+  .product-card .pdiff-line{margin-top:8px;}
+  .product-card .psale{display:flex; align-items:baseline; justify-content:flex-end; gap:8px; margin-top:6px; font-size:13px; color:var(--ink-soft);}
+  .product-card .psale b{font-size:21px; font-weight:800; color:var(--accent-strong);}
   .pm-diff{font-size:11px; padding:1px 6px; border-radius:999px; background:#fbe3dc; color:#b03a1e; font-weight:700;}
   .pm-diff.same{background:#e3f1e0; color:#2e6b2a;}
   .pm-diff.minus{background:#dfeaf8; color:#1f5fa8;}
@@ -881,13 +881,12 @@
   .proc-group-head{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:baseline;}
   .proc-group-head span{font-weight:400; font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
   .proc-group-empty{font-size:12px; color:var(--ink-faint);}
-  .bw-switch{margin-left:auto; display:flex; align-items:center; gap:6px; background:none; border:0; padding:4px 0 4px 8px;
+  .bw-switch{margin-left:auto; display:flex; align-items:center; background:none; border:0; padding:6px 0 6px 12px;
     font-family:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent;}
-  .bw-sw-lbl{font-size:11px; color:var(--ink-faint);}
   .bw-switch .sw{position:relative; width:34px; height:20px; border-radius:999px; background:#cfc6b6; transition:background .15s;}
   .bw-switch .sw::after{content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff;
     box-shadow:0 1px 2px rgba(0,0,0,.25); transition:left .15s;}
-  .bw-switch .sw.on{background:var(--good);}
+  .bw-switch .sw.on{background:#a2a58c;}   /* 落ち着いた色（目立ちすぎないように） */
   .bw-switch .sw.on::after{left:16px;}
   .cat-chips{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px;}
   .cat-chip{border:1px solid var(--border); background:var(--surface); border-radius:999px;
@@ -895,7 +894,7 @@
     display:flex; align-items:center; gap:6px;}
   .cat-chip .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .cat-chip.on{color:var(--ink); font-weight:700; border-color:var(--ink-soft);}
-  .product-card{border-left:4px solid transparent;}
+  .product-card{border-left:7px solid transparent;}
   .pcode-line{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:3px; min-height:18px;}
   .pcode-tag{font-size:13.5px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em;}
   .pcat-inline{font-size:12.5px; color:var(--ink-soft);}
@@ -972,7 +971,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.54</div>
+      <div class="brand-ver">ver.55</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1277,7 +1276,7 @@
     <!-- ===================== PRODUCTS VIEW ===================== -->
     <section class="view" id="view-products">
       <div class="page-head">
-        <div><h2>登録済み商品</h2><p>商品名で検索して、過去の原価計算書を呼び出せます。</p></div>
+        <div><h2>登録済み商品</h2><p>商品名で検索して、過去の原価計算書を呼び出せます。<br>カード右上のスイッチで、ブロックワークに出すかどうかを切り替えます（右に寄っていれば表示・左なら非表示）。</p></div>
         <div style="display:flex; gap:8px; flex:none;">
           <button type="button" class="btn btn-ghost" id="btn-import-bw-products">ブロックワークから取り込む</button>
           <button class="btn btn-primary" data-view="calc">＋ 新規原価計算</button>
@@ -6837,18 +6836,14 @@
       var bwHidden = !!p.hiddenInBlockwork;
       html += '<div class="card product-card" data-id="'+p.id+'" style="border-left-color:'+categoryColor(p.category||'')+';">' +
         ((productReorderMode && grouped) ? '<div class="reorder-controls"><button type="button" class="icon-btn reorder-up" data-id="'+p.id+'" title="上へ">▲</button><button type="button" class="icon-btn reorder-down" data-id="'+p.id+'" title="下へ">▼</button></div>' : '') +
+        // 上から：商品番号（右端にブロックワークの表示スイッチ）→ 商品名 → 計算の結果 → 計算との差 → 販売価格（税込）
+        // カテゴリはカード左端の色で分かるので、名前は出さない
         '<div class="pcode-line">' +
-          (pcode ? '<span class="pcode-tag">'+escapeHtml(pcode)+'</span>' : '') +
-          '<span class="pcat-inline"><span class="dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:'+categoryColor(p.category||'')+'; margin-right:5px;"></span>'+escapeHtml(p.category||'カテゴリ未設定')+'</span>' +
-          // ブロックワークに出す・出さないの切り替えスイッチ（緑＝表示）
-          '<button type="button" class="bw-switch" data-id="'+p.id+'" aria-pressed="'+(bwHidden?'false':'true')+'">' +
-            '<span class="bw-sw-lbl">ブロックワーク</span><span class="sw'+(bwHidden?'':' on')+'"></span></button>' +
+          '<span class="pcode-tag">'+escapeHtml(pcode)+'</span>' +
+          '<button type="button" class="bw-switch" data-id="'+p.id+'" aria-pressed="'+(bwHidden?'false':'true')+'" aria-label="ブロックワークに表示">' +
+            '<span class="sw'+(bwHidden?'':' on')+'"></span></button>' +
         '</div>' +
         '<div class="pname">'+escapeHtml(p.name)+'</div>' +
-        ((p.category !== '仕掛品' && p.salePrice > 0) ? (function(){
-          var d = Math.round(p.salePrice) - Math.round(priceInTaxOf(p));
-          return '<div class="psale">販売価格 <b>'+fmtYen(p.salePrice)+'</b><span class="pm-diff'+(d === 0 ? ' same' : (d < 0 ? ' minus' : ''))+'">'+(d === 0 ? '計算と同じ' : '計算との差 '+(d > 0 ? '+' : '')+fmtNum(d, 0)+'円')+'</span></div>';
-        })() : '') +
         '<div class="pmeta">' +
           (p.category === '仕掛品'
             ? '<span class="pm-main">1'+escapeHtml((p.batch && p.batch.yieldUnit) || '個')+'あたり原価 <b>'+fmtYen2((p.batch && p.batch.costPerYieldUnit) || 0)+'</b></span>'
@@ -6862,6 +6857,11 @@
                   '<span>原価 <b>'+fmtYen2(p.totalCost)+'</b></span>';
               })()) +
         '</div>' +
+        ((p.category !== '仕掛品' && p.salePrice > 0) ? (function(){
+          var d = Math.round(p.salePrice) - Math.round(priceInTaxOf(p));
+          return '<div class="pdiff-line"><span class="pm-diff'+(d === 0 ? ' same' : (d < 0 ? ' minus' : ''))+'">'+(d === 0 ? '計算と同じ' : '計算との差 '+(d > 0 ? '+' : '')+fmtNum(d, 0)+'円')+'</span></div>' +
+            '<div class="psale">販売価格（税込）<b>'+fmtYen(p.salePrice)+'</b></div>';
+        })() : '') +
         (function(){
           var miss = missingParts(p);
           return miss.length ? '<div class="miss-chips">'+miss.map(function(m){ return '<span class="miss-chip">'+m+'未入力</span>'; }).join('')+'</div>' : '';
