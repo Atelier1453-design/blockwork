@@ -21,7 +21,7 @@
 - データは本人の **Dropbox**（`/atelier-data.json`）に保存。PKCE の OAuth、サーバーなし、Claude のアカウントも不要。
   - 保存する中身は `buildDataPayload()` を見る：`materials, products, settings, productCategories, groupMap, costLabels, groupOrder, catOrder, recipes, productGroups, stocktakes, giftMaker, links, blockworkValue`
   - `blockworkValue` はブロックワークの状態を **JSON 文字列** にしたもの。
-  - 読み込みは2か所（初回の接続とバックアップからの復元）。新しいデータを足すときは両方と `buildDataPayload()` に入れる。
+  - 読み込みは `applyLoadedData()` の1か所（初回の接続とバックアップからの復元の両方で使う）。新しいデータを足すときは、ここと `buildDataPayload()` に入れる。
 - **ブロックワーク**は別の React アプリ（minify 済み）を `src/blockwork.html` に置いてある。
   `app.html` の `BW_APP_HTML_B64` に base64 で埋め込み、`srcdoc` の iframe で表示している。
   - 保存は iframe → 親へ `postMessage({type:'bw-storage', ...})` で橋渡し（親が `state.blockworkValue` を持つ）。

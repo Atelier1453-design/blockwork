@@ -23,24 +23,7 @@
     --font-head:"Shippori Mincho",serif;
     --font-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;
   }
-  /* ダークモードの自動切替はしない仕様のため、prefers-color-scheme による切替は無効化しています（常にライトテーマ） */
-  :root[data-theme="dark"]{
-    --bg:#1E1811;
-    --surface:#282019;
-    --surface-2:#332A20;
-    --border:#4A3C2C;
-    --ink:#F1E8D8;
-    --ink-soft:#C3B196;
-    --ink-faint:#8B7C64;
-    --accent:#E0925A;
-    --accent-strong:#EFAB7C;
-    --accent-soft:#3D2E1D;
-    --good:#8FB07A;
-    --good-soft:#2B3826;
-    --warn:#E0897C;
-    --warn-soft:#3E2622;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px -8px rgba(0,0,0,.5);
-  }
+  /* ダークモードは使わない（いつも明るい配色） */
 
   *{box-sizing:border-box;}
   body{
@@ -174,11 +157,6 @@
   table.ing-table td .row-name{box-sizing:border-box; height:36px;}
   table.ing-table td input.row-qty, table.ing-table td input.row-price{box-sizing:border-box; height:36px;}
   .ing-toggle-row{margin-top:4px;}
-  .link-btn{
-    background:none; border:none; padding:0; margin:0; color:var(--accent);
-    font-size:11px; text-decoration:underline; cursor:pointer; font-family:inherit;
-  }
-  @media (hover: hover) and (pointer: fine){ .link-btn:hover{color:var(--accent-strong);} }
   .row-unmatched-notice{margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .row-unmatched-notice[hidden]{display:none;}
   tr.ac-open .row-unmatched-notice{display:none;}
@@ -236,7 +214,6 @@
   .product-card{padding:14px 16px; cursor:pointer; transition:transform .08s;}
   @media (hover: hover) and (pointer: fine){ .product-card:hover{border-color:var(--accent);} }
   .product-card .pname{font-family:var(--font-head); font-size:16px; font-weight:700;}
-  .product-card .pcat{font-size:11px; color:var(--ink-faint); margin-top:2px;}
   .product-card .pmeta{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px; margin-top:8px; font-size:11.5px; color:var(--ink-soft);}
   .product-card .pmeta > span{white-space:nowrap;}
   .product-card .pmeta .pm-main{color:var(--ink); font-weight:600;}
@@ -304,7 +281,6 @@
   .mat-biggroup td{background:var(--accent-soft); color:var(--accent-strong); font-weight:700; font-size:13.5px;
     padding:8px 10px; letter-spacing:.04em; position:relative; z-index:1;
     border-top:2px solid var(--accent); border-bottom:1px solid var(--accent);}
-  .mat-group select.group-picker{font-size:11px; margin-left:10px; padding:1px 4px; width:auto;}
   .mat-group td{background:var(--surface-2); font-weight:700; font-size:13px; padding:8px 10px; position:relative; z-index:1;}
   .mat-group td span{font-weight:400; color:var(--ink-faint); font-size:12px; margin-left:8px;}
 
@@ -354,7 +330,6 @@
   /* 値段の更新が古い・入っていないものの目印 */
   .mat-stale{display:inline-block; color:#c0392b; font-weight:700; font-size:17px; line-height:1; margin-right:6px; vertical-align:-1px;}
   table.mat-table td.mat-ym{white-space:nowrap;}
-  table.mat-table tr.mat-need-update td{background:#fdf0ec;}
   .mat-sortband td{background:#c0392b; color:#fff; font-weight:700; font-size:13px; padding:7px 12px;}
   .mat-sortband.ok td{background:var(--surface-2); color:var(--ink-soft);}
   .band-moves{float:right; white-space:nowrap;}
@@ -564,10 +539,6 @@
   .grp-cat{width:100%; font-size:11.5px; color:var(--ink-faint); margin-top:4px;}
   .grp-avg{font-size:12.5px; color:var(--ink-soft); margin-top:8px;}
   /* 倍数ごとの焼き上がり */
-  .mult-yields{display:flex; flex-direction:column; gap:3px; padding:6px 0 2px;}
-  .mult-yield-line{font-size:13.5px; color:var(--ink);}
-  .mult-yield-line .mult-yield-per{color:var(--ink-soft); margin-left:10px;}
-  .mult-yield-note{font-size:12.5px; color:var(--ink-soft); line-height:1.6; margin-top:4px;}
   .mult-custom-input{
     border:1px solid var(--border); background:var(--bg); color:var(--ink);
     border-radius:7px; padding:3px 6px; font-size:12.5px; width:62px; font-family:inherit;
@@ -608,9 +579,6 @@
   .curl-sheet{
     position:absolute; transform-style:preserve-3d; pointer-events:none; z-index:6;
   }
-  .curl-slice{
-    position:absolute; top:0; transform-style:preserve-3d; will-change:transform;
-  }
   /* めくれた紙が下のページに落とす影 */
   .curl-flat{position:absolute; left:0; top:0; overflow:hidden;}
   .curl-flat > .curl-page-copy{left:0;}
@@ -622,22 +590,11 @@
     position:absolute; top:0; height:100%; width:0; pointer-events:none;
     background:linear-gradient(to left, rgba(60,38,15,.30), rgba(60,38,15,.12) 35%, rgba(60,38,15,0));
   }
-  .curl-slice-shade{
-    position:absolute; inset:0; background:transparent; pointer-events:none;
-  }
-  .curl-slice-front, .curl-slice-back{
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    box-sizing:border-box; backface-visibility:hidden; overflow:hidden;
-  }
   /* 中身は .recipe-page をそのまま複製して入れるので、見た目は完全に同じになる */
   .curl-page-copy{
     position:absolute; top:0; margin:0 !important; box-shadow:none !important;
   }
   .curl-page-copy::after{display:none !important;}
-  .curl-slice-back{
-    transform:rotateY(180deg); background:var(--surface-2);
-    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-  }
   @media print{ .curl-sheet{display:none !important;} }
   .recipe-page{
     background:var(--surface); border:1px solid var(--border); border-radius:6px;
@@ -872,15 +829,10 @@
   .yield-block .yield-line{border:none; padding-top:6px;}
   .mult-btns{display:inline-flex; flex-direction:column; gap:4px;}
   .mult-row{display:flex; gap:4px;}
-  .per-unit-cost{white-space:nowrap;}
   .mult-btn{border:1px solid var(--border); background:var(--surface); border-radius:7px; cursor:pointer;
     font-family:inherit; font-size:12.5px; padding:4px 9px; color:var(--ink-soft); min-width:34px;}
   .mult-btn.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-strong); font-weight:700;}
-  .per-unit-cost{margin-left:auto; color:var(--ink);}
-  #disp-scale-note{color:var(--ink-soft);}
-  #disp-yield-total{color:var(--ink-soft);}
   .proc-chip-min{color:var(--ink-soft) !important;}
-  .proc-group-head span.proc-total{margin-left:auto; text-align:right; color:var(--ink); font-size:12.5px;}
   .proc-group-empty{font-size:13px;}
 
   /* 計算式のブロック（どの数字が、どこから来ているか） */
@@ -898,8 +850,6 @@
   .proc-group.batch{border-color:var(--accent);}
   .proc-group.finish{border-color:var(--good);}
   .proc-group.off{opacity:.75;}
-  .proc-group-head{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:baseline;}
-  .proc-group-head span{font-weight:400; font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
   .proc-group-empty{font-size:12px; color:var(--ink-faint);}
   .bw-switch{margin-left:auto; display:flex; align-items:center; background:none; border:0; padding:6px 0 6px 12px;
     font-family:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent;}
@@ -930,7 +880,6 @@
   .product-card.edge-dots::before{width:12px; background:radial-gradient(circle, var(--cat) 3.5px, transparent 4px) 50% 0/12px 12px;}
   .pcode-line{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:3px; min-height:18px;}
   .pcode-tag{font-size:13.5px; font-weight:700; color:var(--accent-strong); letter-spacing:.04em;}
-  .pcat-inline{font-size:12.5px; color:var(--ink-soft);}
   .pd-code{display:inline-block; margin-left:8px; padding:2px 8px; border:1px solid var(--border); border-radius:6px;
     font-family:inherit; font-size:12px; font-weight:600; color:var(--ink-soft); vertical-align:middle;}
   .pd-receipt-wrap{max-width:420px;}
@@ -955,15 +904,11 @@
     border:1px solid var(--border); border-radius:8px; padding:6px 10px; background:var(--surface);
     font-family:inherit; font-size:12px; color:var(--ink); text-align:left; min-width:104px;}
   .proc-chip b{font-size:13px;}
-  .proc-chip-role{font-size:11px; font-weight:600;}
   .proc-chip-min{font-size:12px; color:var(--ink-soft);}
   .proc-chip-now{display:block; font-size:12.5px; font-weight:700; color:var(--ink);}
   .proc-chip.batch{border-color:var(--accent); background:var(--accent-soft);}
-  .proc-chip.batch .proc-chip-role{color:var(--accent-strong);}
   .proc-chip.finish{border-color:var(--good); background:var(--good-soft);}
-  .proc-chip.finish .proc-chip-role{color:var(--good);}
   .proc-chip.off{opacity:.55;}
-  .proc-chip.off .proc-chip-role{color:var(--ink-faint);}
 
   /* ---------- iPad landscape: avoid squeezing the receipt column ---------- */
   @media (max-width: 1180px){
@@ -1004,7 +949,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.56</div>
+      <div class="brand-ver">ver.57</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1130,7 +1075,6 @@
             <p class="skip-note">この商品では使いません。（入力した内容はそのまま残ります）</p>
 
             <div class="yield-block">
-              <div class="mult-yields" id="disp-mult-yields"></div>
               <div class="yield-line">
                 <span>原価の基準にする倍数</span>
                 <span class="costbase-btns" id="f-costbase-btns"></span>
@@ -1917,7 +1861,6 @@
       <label>購入業者・サイト（任意）</label>
       <select id="mm-supplier-select"></select>
       <input id="mm-supplier" type="text" placeholder="新しい購入業者・サイトの名前（例：日の出乳業、cotta）" style="margin-top:6px;" hidden>
-      <datalist id="dl-suppliers"></datalist>
     </div>
     <div class="field">
       <label>大カテゴリ<span style="font-weight:400; color:var(--ink-faint);">（食料品＝原材料の計算に使う／資材＝資材・仕上げに使う）</span></label>
@@ -3965,6 +3908,24 @@
   var dbxSaving = false;
   var dbxSaveQueued = false;
 
+  // 保存してあるデータ（Dropbox のファイル・バックアップ）を画面の state に入れる。
+  // 初めの読み込みと、バックアップからの復元の両方で使う。新しいデータを足すときは、ここと buildDataPayload() に入れる
+  function applyLoadedData(d){
+    state.materials = Array.isArray(d.materials) ? d.materials : [];
+    state.products = Array.isArray(d.products) ? d.products : [];
+    state.groupMap = (d.groupMap && typeof d.groupMap === 'object') ? Object.assign({}, d.groupMap) : {};
+    state.costLabels = (d.costLabels && typeof d.costLabels === 'object') ? Object.assign({}, d.costLabels) : null;
+    state.groupOrder = Array.isArray(d.groupOrder) ? d.groupOrder.slice() : null;
+    state.catOrder = (d.catOrder && typeof d.catOrder === 'object') ? Object.assign({}, d.catOrder) : null;
+    state.productCategories = (Array.isArray(d.productCategories) && d.productCategories.length) ? d.productCategories.slice() : DEFAULT_PRODUCT_CATEGORIES.slice();
+    if(d.settings) Object.assign(state.settings, d.settings);
+    state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
+    state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
+    state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
+    state.links = Array.isArray(d.links) ? d.links : [];
+    state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
+    state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
+  }
   function buildDataPayload(){
     return {
       materials: state.materials,
@@ -4123,20 +4084,7 @@
         return;
       }
       openConfirmModal('バックアップを読み込みます。現在Dropboxに保存されているデータは、このファイルの内容で上書きされます。よろしいですか？', function(){
-        state.materials = Array.isArray(d.materials) ? d.materials : [];
-        state.products = Array.isArray(d.products) ? d.products : [];
-        state.groupMap = (d.groupMap && typeof d.groupMap === 'object') ? Object.assign({}, d.groupMap) : {};
-      state.costLabels = (d.costLabels && typeof d.costLabels === 'object') ? Object.assign({}, d.costLabels) : null;
-      state.groupOrder = Array.isArray(d.groupOrder) ? d.groupOrder.slice() : null;
-      state.catOrder = (d.catOrder && typeof d.catOrder === 'object') ? Object.assign({}, d.catOrder) : null;
-        state.productCategories = (Array.isArray(d.productCategories) && d.productCategories.length) ? d.productCategories.slice() : DEFAULT_PRODUCT_CATEGORIES.slice();
-        if(d.settings) Object.assign(state.settings, d.settings);
-        state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
-      state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
-      state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
-      state.links = Array.isArray(d.links) ? d.links : [];
-        state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
-        state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
+        applyLoadedData(d);
         hint.textContent = '保存しています…';
         doSave().then(function(){
           hint.textContent = '読み込みが完了しました。ページを再読み込みします。';
@@ -4219,7 +4167,6 @@
       rebuildMaterialIndex();
       rebuildMaterialCategories();
       rebuildMaterialCategoryFilter();
-      rebuildSupplierList();
       rebuildCategoryList();
       return;
     }
@@ -4228,21 +4175,7 @@
     try{
       var result = await Dbx.downloadJson(DBX_DATA_PATH);
       state.dbxRev = result.rev;
-      var d = result.data || {};
-      state.materials = Array.isArray(d.materials) ? d.materials : [];
-      state.products = Array.isArray(d.products) ? d.products : [];
-      state.groupMap = (d.groupMap && typeof d.groupMap === 'object') ? Object.assign({}, d.groupMap) : {};
-      state.costLabels = (d.costLabels && typeof d.costLabels === 'object') ? Object.assign({}, d.costLabels) : null;
-      state.groupOrder = Array.isArray(d.groupOrder) ? d.groupOrder.slice() : null;
-      state.catOrder = (d.catOrder && typeof d.catOrder === 'object') ? Object.assign({}, d.catOrder) : null;
-      state.productCategories = (Array.isArray(d.productCategories) && d.productCategories.length) ? d.productCategories.slice() : DEFAULT_PRODUCT_CATEGORIES.slice();
-      if(d.settings) Object.assign(state.settings, d.settings);
-      state.recipes = (d.recipes && typeof d.recipes === 'object') ? d.recipes : {};
-      state.stocktakes = (d.stocktakes && typeof d.stocktakes === 'object') ? d.stocktakes : {};
-      state.giftMaker = (d.giftMaker && typeof d.giftMaker === 'object') ? d.giftMaker : null;
-      state.links = Array.isArray(d.links) ? d.links : [];
-      state.productGroups = Array.isArray(d.productGroups) ? d.productGroups : [];
-      state.blockworkValue = (typeof d.blockworkValue === 'string') ? d.blockworkValue : null;
+      applyLoadedData(result.data || {});
       state.dbxReady = true;
       applyNumericKeyboard(document);
       try{ syncGiftsToBlockwork(); }catch(e){ console.error(e); }
@@ -4267,7 +4200,6 @@
     rebuildMaterialIndex();
     rebuildMaterialCategories();
     rebuildMaterialCategoryFilter();
-    rebuildSupplierList();
     document.getElementById('mat-count-foot').textContent = state.materials.length ? ('材料 ' + state.materials.length + ' 件') : '';
     rebuildCategoryList();
   }
@@ -4295,13 +4227,6 @@
   function rebuildMaterialIndex(){
     state.materialsByName = {};
     state.materials.forEach(function(m){ state.materialsByName[m.name] = m; });
-    var dl = document.getElementById('dl-materials');
-    if(!dl){
-      dl = document.createElement('datalist');
-      dl.id = 'dl-materials';
-      document.body.appendChild(dl);
-    }
-    dl.innerHTML = state.materials.map(function(m){ return '<option value="'+escapeHtml(m.name)+'">'; }).join('');
   }
 
   // 登録済みの購入業者・サイト（名前の順）
@@ -4310,16 +4235,6 @@
     state.materials.forEach(function(m){ var v = (m.supplier || '').trim(); if(v) set[v] = 1; });
     return Object.keys(set).sort(function(a, b){ return a.localeCompare(b, 'ja'); });
   }
-  function rebuildSupplierList(){
-    var suppliers = {};
-    state.materials.forEach(function(m){ if(m.supplier) suppliers[m.supplier]=1; });
-    var dl = document.getElementById('dl-suppliers');
-    if(dl){
-      dl.innerHTML = Object.keys(suppliers).sort(function(a,b){return a.localeCompare(b,'ja');})
-        .map(function(s){ return '<option value="'+escapeHtml(s)+'">'; }).join('');
-    }
-  }
-
   var DEFAULT_PRODUCT_CATEGORIES = ['クッキー','焼き菓子','半生菓子','生菓子','デコレーション','仕掛品','ギフト'];
   function rebuildCategoryList(){
     renderCatChips();
@@ -4370,12 +4285,8 @@
 
 
   // ---------------- material category groups (大カテゴリ) ----------------
-  var MATERIAL_GROUPS = ['食品原材料','仕掛品','包装資材','ギフト・季節資材','消耗品','未分類'];
-  var INGREDIENT_GROUPS = ['食品原材料'];
-  var PACKAGING_GROUPS = ['包装資材','ギフト・季節資材','消耗品'];
 
   // ---- 種別（食料品／資材）と、原価の品目ラベル ----
-  var MATERIAL_KINDS = [{id:'food', label:'食料品'}, {id:'supply', label:'資材'}];
   var DEFAULT_COST_LABELS = { food: ['主要材料費','補助材料費'], supply: ['買入部品費','消耗品費'] };
   var FOOD_GROUP_HINT = ['食品原材料','仕掛品'];      // 以前の大カテゴリからの引き継ぎ用
   function kindLabel(kind){ return kind === 'supply' ? '資材' : '食料品'; }
@@ -4458,11 +4369,6 @@
   var matCollapsed = {};
   try{ matCollapsed = JSON.parse(localStorage.getItem('atelier_mat_collapsed') || '{}') || {}; }catch(e){ matCollapsed = {}; }
   function saveCollapsed(){ try{ localStorage.setItem('atelier_mat_collapsed', JSON.stringify(matCollapsed)); }catch(e){} }
-  function categoriesForGroup(kind, grp){
-    return (state.materialCategories || []).filter(function(c){
-      return categoryKind(c) === kind && (!grp || groupOf(c) === grp);
-    }).sort(function(a,b){ return a.localeCompare(b,'ja'); });
-  }
   var DEFAULT_GROUP_MAP = {
     'バター':'食品原材料','生クリーム':'食品原材料','チーズ':'食品原材料','乳製品加工品':'食品原材料',
     '油':'食品原材料','主要砂糖・小麦粉':'食品原材料','砂糖・糖類':'食品原材料','液糖':'食品原材料',
@@ -4495,48 +4401,12 @@
     var m = state.groupMap || {};
     return m[category] || DEFAULT_GROUP_MAP[category] || '未分類';
   }
-  function saveGroupMap(){
-    scheduleSave();
-  }
-  function categoriesForKind(kind){
-    var want = (kind === 'pkg') ? 'supply' : 'food';
-    return (state.materialCategories || []).filter(function(c){ return categoryKind(c) === want; });
-  }
-
-
   // ---------------- material category pickers (used in ingredient rows) ----------------
   function rebuildMaterialCategories(){
     var cats = {};
     state.materials.forEach(function(m){ if(m.category) cats[m.category]=1; });
     state.materialCategories = Object.keys(cats).sort(function(a,b){ return a.localeCompare(b,'ja'); });
     refreshAllRowCategorySelects();
-  }
-  function populateGroupSelect(sel, kind){
-    if(!sel) return;
-    var current = sel.value;
-    kind = kind || sel.dataset.kind || 'ing';
-    sel.dataset.kind = kind;
-    var list = groupsForKind(kind === 'pkg' ? 'supply' : 'food');
-    sel.innerHTML = '<option value="">中カテゴリ</option>' + list.map(function(x){
-      return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>';
-    }).join('');
-    if(current) sel.value = current;
-  }
-  function populateCategorySelect(sel, kind, onlyGroup){
-    var current = sel.value;
-    kind = kind || sel.dataset.kind || 'ing';
-    sel.dataset.kind = kind;
-    var list = categoriesForKind(kind);
-    if(onlyGroup) list = list.filter(function(c){ return groupOf(c) === onlyGroup; });
-    var byGroup = {};
-    list.forEach(function(c){ (byGroup[groupOf(c)] = byGroup[groupOf(c)] || []).push(c); });
-    var groups = Object.keys(byGroup).sort(function(a,b){ return a.localeCompare(b,'ja'); });
-    sel.innerHTML = '<option value="">小カテゴリ</option>' + groups.map(function(g){
-      return '<optgroup label="'+escapeHtml(g)+'">' + byGroup[g].sort(function(a,b){ return a.localeCompare(b,'ja'); }).map(function(c){
-        return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>';
-      }).join('') + '</optgroup>';
-    }).join('');
-    if(current) sel.value = current;
   }
   // 1行で選べる材料セレクト（中カテゴリ ▸ 小カテゴリ でグループ化）
   function populateRowMaterialSelect(sel, kind){
@@ -4874,8 +4744,6 @@
     var matSelect = tr.querySelector('.row-mat-select');
     var nameInput = tr.querySelector('.row-name');
     var qtyInput = tr.querySelector('.row-qty');
-    var manualWrap = tr.querySelector('.ing-manual');
-    var pickWrap = tr.querySelector('.ing-pick');
 
     matSelect.addEventListener('change', function(){ setRowMaterial(tr, matSelect.value); });
     attachRowDrag(tr);
@@ -5324,31 +5192,6 @@
     return (ms[0] && ms[0].batch && ms[0].batch.yieldUnit) || '個';
   }
   function productCatOf(p){ return p.category || '（未分類）'; }
-  function populateProductCatSelect(sel){
-    var current = sel.value;
-    var cats = {};
-    selectableProducts().forEach(function(p){ cats[productCatOf(p)] = 1; });
-    var list = Object.keys(cats).sort(function(a,b){ return a.localeCompare(b,'ja'); });
-    sel.innerHTML = '<option value="">カテゴリ</option>' +
-      ((state.productGroups || []).length ? '<option value="__group__">★ グループ</option>' : '') + list.map(function(c){
-      return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>';
-    }).join('');
-    if(current) sel.value = current;
-  }
-  function populateProductSelect(sel, category){
-    if(category === '__group__'){
-      var gl = (state.productGroups || []).slice().sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','ja'); });
-      sel.innerHTML = '<option value="">グループを選択…（'+gl.length+'件）</option>' + gl.map(function(gr){
-        return '<option value="g:'+escapeHtml(gr.id)+'">'+escapeHtml(gr.name)+'（'+groupMembers(gr).length+'種）</option>';
-      }).join('');
-      return;
-    }
-    var list = selectableProducts().filter(function(p){ return productCatOf(p) === category; })
-      .sort(function(a,b){ return (a.name||'').localeCompare(b.name,'ja'); });
-    sel.innerHTML = '<option value="">商品を選択…（'+list.length+'件）</option>' + list.map(function(p){
-      return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>';
-    }).join('');
-  }
   var giftMode = 'packed';
   function setGiftMode(m, quiet){
     giftMode = (m === 'bulk') ? 'bulk' : 'packed';
@@ -5577,7 +5420,6 @@
     return rows;
   }
   function renderContentRow(){ document.getElementById('cont-body').appendChild(makeContentRow()); }
-  function refreshContentProductOptions(){ /* 候補は入力のたびに作るので、ここでは何もしない */ }
   document.getElementById('btn-add-content').addEventListener('click', renderContentRow);
   function fillContentRows(rows){
     var body = document.getElementById('cont-body');
@@ -5843,7 +5685,6 @@
   }
   // 工程ごとの役割（製造／仕上げ／使わない）。商品ごとに持ち、保存・復元する。
   var procRoles = {};                       // {procId: 'batch' | 'finish' | 'off'}
-  var PROC_ROLE_LABEL = {batch:'製造', finish:'仕上げ'};
   var PROC_ROLE_NEXT  = {batch:'finish', finish:'batch'};
   function procRoleOf(procId){
     var r = procRoles[procId];
@@ -6065,8 +5906,6 @@
       setTxt('ing-per-mult', fmtYen2(mm.per));
     }
     document.querySelectorAll('.per-unit-lbl').forEach(function(el){ el.textContent = unitLabel; });
-    var box = document.getElementById('disp-mult-yields');
-    if(box) box.innerHTML = '';
   }
 
   var procViewKey = null;   // 直前に描画した内容のキー（同じなら描き直さない）
@@ -6348,7 +6187,8 @@
     var sgaCost = isWip ? 0 : state.settings.sga;
 
     var totalCost = packMaterialCost + contentsTotal + pkgTotal + laborCost + overheadCost + sgaCost;
-    var marginPct = parseFloat(document.getElementById('f-margin').value) || 1;
+    // 希望原価率の欄が空のときは、設定の希望原価率を使う（以前は 1% になり、値段が100倍になっていた）
+    var marginPct = parseFloat(document.getElementById('f-margin').value) || Number(state.settings.margin) || 35;
     var marginRate = Math.min(Math.max(marginPct/100, 0.01), 0.99);
     var priceEx = marginRate > 0 ? totalCost / marginRate : totalCost;
     var taxRate = 1 + (state.settings.taxRate/100);
@@ -6480,7 +6320,6 @@
       laborMin:laborMin, laborCost:laborCost, overheadMin:overheadMin, overheadCost:overheadCost,
       sgaCost:sgaCost, totalCost:totalCost, marginRate:marginRate, priceEx:priceEx, priceIn:priceIn, profitRate:profitRate};
   }
-  function updateContentCardVisibility(){ /* ①の「焼き菓子｜ギフト」タブに移った */ }
   // ---------------- ① 焼き菓子 / ギフト タブ ----------------
   state.sourceType = 'bake';
   function setSourceType(t, quiet){
@@ -6503,7 +6342,6 @@
     var rd = document.querySelector('.receipt-details'); if(rd) rd.style.display = gift ? 'none' : '';
     if(gift){
       if(!document.getElementById('cont-body').children.length) renderContentRow();
-      refreshContentProductOptions();
     }
     procViewKey = null;
     if(!quiet) recalc();
@@ -6545,7 +6383,6 @@
     document.getElementById('f-notes').value = '';
     document.getElementById('f-gift-markup').checked = true;
     document.getElementById('f-sale-price').value = '';
-    updateContentCardVisibility();
     document.getElementById('f-yield-count').value = 1;
     document.getElementById('f-yield-unit').value = '個';
     setAllowedMultipliers([1], true);
@@ -6737,7 +6574,6 @@
     document.getElementById('f-name').value = p.name || '';
     document.getElementById('f-category').value = p.category || '';
     document.getElementById('f-notes').value = p.notes || '';
-    updateContentCardVisibility();
     document.getElementById('f-yield-count').value = (p.batch && (p.batch.baseYieldCount != null ? p.batch.baseYieldCount : p.batch.yieldCount)) || 1;
     document.getElementById('f-yield-unit').value = (p.batch && p.batch.yieldUnit) || '個';
     setAllowedMultipliers((p.batch && p.batch.allowedMultipliers) || [(p.batch && p.batch.multiplier) || 1], true);
@@ -8001,7 +7837,6 @@
       rebuildMaterialCategories();
       rebuildMaterialCategoryFilter();
       rebuildCategoryList();
-      rebuildSupplierList();
       renderMaterialTable();
       var foot = document.getElementById('mat-count-foot');
       if(foot) foot.textContent = '材料 ' + state.materials.length + ' 件';
@@ -8030,12 +7865,6 @@
     if(current && list.indexOf(current) >= 0) sel.value = current;
     document.getElementById('mm-nutrition-block').style.display = (mmKind === 'food') ? '' : 'none';
     document.getElementById('mm-giftbox-block').style.display = (mmKind === 'supply') ? '' : 'none';
-    rebuildGroupList();
-  }
-  function rebuildGroupList(){
-    var dl = document.getElementById('dl-groups');
-    if(!dl) return;
-    dl.innerHTML = groupsForKind(mmKind).map(function(x){ return '<option value="'+escapeHtml(x)+'">'; }).join('');
   }
   document.querySelectorAll('#mm-kind-seg .seg-btn').forEach(function(b){
     b.addEventListener('click', function(){ setModalKind(b.dataset.kind); });
@@ -8152,7 +7981,6 @@
       rebuildCategoryList();
       rebuildMaterialCategories();
       rebuildMaterialCategoryFilter();
-      rebuildSupplierList();
       renderMaterialTable();
       scheduleSave();
       closeMaterialModal();
@@ -8268,7 +8096,6 @@
       var v = (m.supplier || '').trim();
       if(v && Object.prototype.hasOwnProperty.call(map, v)){ m.supplier = map[v]; n++; }
     });
-    rebuildSupplierList();
     renderMaterialTable();
     scheduleSave();
     closeSupplierModal();
@@ -8350,7 +8177,6 @@
       rebuildCategoryList();
       rebuildMaterialCategories();
       rebuildMaterialCategoryFilter();
-      rebuildSupplierList();
       renderMaterialTable();
       scheduleSave();
       var cb = materialModalOnSaved;
@@ -8894,9 +8720,7 @@
 
   // ---------------- ページカール（スワイプ用） ----------------
   // 紙を縦の短冊に分けて、短冊ごとに円筒に巻きつける形で動かす
-  var CURL_SLICES = 56;
   var CURL_LEAD = 0.22;             // 指を追い越す割合（指が10動くと紙は12.2動く）
-  var CURL_FULL_MS = 620;          // 端から端までめくり切るのに最低これだけかける
   function buildCurlSheet(pageEl, html, w, h){
     var wrap = document.createElement('div');
     wrap.className = 'curl-sheet';
@@ -8999,7 +8823,6 @@
     var w = c.w, fold = w * (1 - p);
     return fold - (w - fold) * curlK(c);
   }
-  function curlFoldX(c, p){ return c.w * (1 - p); }
   function curlPForFold(c, x){ return Math.max(0, Math.min(1, 1 - x / c.w)); }
   function dragCurlToFold(c, x){
     x = Math.max(0, Math.min(c.w, x));
@@ -9024,7 +8847,6 @@
     c.pShown = p;
     setCurlProgress(c, p);
   }
-  function setCurlTarget(c, p){ c.pTarget = Math.max(0, Math.min(1, p)); }
   function startCurl(dir){
     var list = recipeProducts();
     var target = recipeIndex + dir;
