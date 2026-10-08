@@ -103,10 +103,11 @@
   .field label{font-size:12px; color:var(--ink-soft); font-weight:600;}
   .row-inline .field label{min-height:2.6em; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-end; line-height:1.3;}
   .row-inline .field label > span{font-weight:400;}
-  .field input, .field select{
+  .field input, .field select, .field textarea.like-input{
     border:1px solid var(--border); background:var(--bg); color:var(--ink);
     border-radius:11px; padding:8px 10px; font-size:14px; width:100%;
   }
+  .field textarea.like-input{resize:none; line-height:1.5; overflow:hidden; display:block;}
   .row-inline{display:flex; gap:12px; flex-wrap:wrap;}
   .row-inline > .field{flex:1; min-width:140px;}
 
@@ -311,8 +312,17 @@
     padding:10px 14px; margin-bottom:14px; font-size:14px; color:var(--ink);}
   .backup-remind[hidden]{display:none;}
   .backup-remind .br-btns{display:flex; gap:6px; margin-left:auto;}
-  .mm-gw-row{display:flex; align-items:center; gap:6px 12px; flex-wrap:wrap; padding:3px 0;}
-  .mm-gw-qty{display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--ink-soft);}
+  .mm-gw-row{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:4px 0;}
+  .mm-gw-qty{display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--ink-soft); margin-left:28px;}
+  .mm-gw-fold{border:1px solid var(--border); border-radius:10px; background:var(--bg); margin-top:6px;}
+  .mm-gw-fold > summary{cursor:pointer; padding:8px 12px; font-weight:700; font-size:14px; list-style:none; display:flex; align-items:center; gap:8px;}
+  .mm-gw-fold > summary::-webkit-details-marker{display:none;}
+  .mm-gw-fold > summary::before{content:'▶'; font-size:11px; color:var(--ink-faint);}
+  .mm-gw-fold[open] > summary::before{content:'▼';}
+  .mm-gw-fold .mm-gw-cnt{font-weight:400; font-size:12.5px; color:var(--ink-faint);}
+  .mm-gw-fold .mm-gw-body{padding:0 12px 8px;}
+  .mm-gw-role{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:13.5px;}
+  .mm-gw-role select{width:auto;}
   .mm-gw-qty input{width:5.5em; border:1px solid var(--border); background:var(--bg); border-radius:9px; padding:4px 6px; text-align:right;}
   /* タップで選ぶ一覧（iPad のプルダウンは、指でなぞって離したところが選ばれてしまうため） */
   .picker-btn{display:inline-flex; align-items:center; justify-content:space-between; gap:10px; min-width:160px; max-width:100%;
@@ -719,13 +729,16 @@
   table.rc-ing tfoot td{font-weight:700; border-top:2px solid var(--border);}
   .rc-colmark{letter-spacing:.2em;}
   /* 表紙・はじめに・あとがき */
-  .rc-cover{min-height:70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; padding:24px 8px;}
+  /* 表紙：題・副題・写真は上下のまんなか、名前と年・季節はページの下 */
+  .rc-cover{min-height:70vh; display:grid; grid-template-rows:1fr auto 1fr; justify-items:center; text-align:center; padding:24px 8px;}
+  .rc-cover-main{grid-row:2; display:flex; flex-direction:column; align-items:center; gap:14px; width:100%;}
+  .rc-cover-foot{grid-row:3; align-self:end; display:flex; flex-direction:column; align-items:center; gap:6px; padding-top:18px;}
   .rc-cover .rc-cover-title{font-size:40px; line-height:1.3; margin:0; letter-spacing:.06em;}
   .rc-cover-sub{font-size:18px; color:var(--ink-soft); letter-spacing:.08em;}
   .rc-cover-date{font-size:14px; color:var(--ink-soft); letter-spacing:.2em;}
   .rc-cover-photo img{max-width:100%; max-height:46vh; border-radius:10px; display:block; margin:8px auto;}
   .rc-cover-body{text-align:center; max-width:34em;}
-  .rc-cover-author{margin-top:auto; font-size:16px; letter-spacing:.15em; color:var(--ink);}
+  .rc-cover-author{font-size:16px; letter-spacing:.15em; color:var(--ink);}
   .rc-intro-title{text-align:center; letter-spacing:.2em;}
   #col-kind-seg .seg-btn.on{background:var(--accent-soft); color:var(--accent-strong); font-weight:700;}
   .rc-colphoto{margin:12px 0 8px;}
@@ -810,6 +823,13 @@
   .gm-card .gm-cat{font-size:11px; color:var(--ink-faint); margin-left:4px;}
   .gm-card .gm-subh{font-size:11.5px; font-weight:700; color:var(--ink-faint); margin-top:2px;}
   .gm-card tr.gm-pack td{color:var(--ink-soft); font-size:13px;}
+  /* 資材の役目ごとの色（入れ物・緩衝材・リボン・紙袋・カード） */
+  .gm-card tr.gm-r-box{background:#efe3cc;}
+  .gm-card tr.gm-r-cushion{background:#f4efdf;}
+  .gm-card tr.gm-r-ribbon{background:#f8e1e6;}
+  .gm-card tr.gm-r-carry{background:#e3ecd9;}
+  .gm-card tr.gm-r-card{background:#ececec;}
+  .gm-card tr.gm-r-other{background:#e6eef5;}
   .gm-card .gm-sum{font-size:12.5px; color:var(--ink-soft); line-height:1.7;}
   .gm-empty{padding:18px; color:var(--ink-soft);}
   h3.gm-fold{cursor:pointer; display:flex; align-items:center; gap:8px; user-select:none; -webkit-user-select:none; margin:0 !important;}
@@ -910,7 +930,7 @@
     #recipe-print .rc-head{gap:4mm; margin:0.3em 0;}
     #recipe-print .rc-photo{width:34%;}
     #recipe-print .rc-colphoto img{max-height:70mm;}
-    #recipe-print .rc-cover{min-height:auto; height:100%; justify-content:center;}
+    #recipe-print .rc-cover{min-height:auto; height:100%;}
     #recipe-print .rc-cover .rc-cover-title{font-size:calc(var(--rp-fs, 10.5pt) * 3);}
     #recipe-print .rc-cover-photo img{max-height:90mm;}
     #recipe-print .rc-desc, #recipe-print .rc-source, #recipe-print .rc-method, #recipe-print .rc-oven-line,
@@ -1055,7 +1075,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.60</div>
+      <div class="brand-ver">ver.61</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1631,7 +1651,8 @@
           </div>
           <div class="field" style="margin-top:10px;">
             <label>タイトル</label>
-            <input id="col-title" type="text" placeholder="例：クッキー共通の仕込み方">
+            <textarea id="col-title" rows="1" class="like-input" placeholder="例：クッキー共通の仕込み方"></textarea>
+            <span class="hint" id="col-title-hint" style="margin-top:4px;" hidden>改行するとタイトルを2行以上にできます。</span>
           </div>
           <div id="col-cover-fields" hidden>
             <div class="field" style="margin-top:10px;">
@@ -1919,6 +1940,7 @@
           <select id="gm-boxkind"><option value="">箱と袋から</option><option value="box">箱から</option><option value="bag">袋から</option></select>
           <select id="gm-box" hidden></select>
         </div>
+        <div id="gm-picks"></div>
         <div class="gm-line">
           <span class="gm-k">中身</span>
           <select id="gm-type"></select>
@@ -2126,6 +2148,18 @@
       <div id="mm-gw-block" style="margin-top:10px;">
         <label>この入れ物と一緒に使う（手提げ袋・紙パッキン・リボン・ショップカードなど）</label>
         <div id="mm-gw-list" class="mm-gw-list"></div>
+        <div class="mm-gw-role">
+          <span>ギフトでの役目</span>
+          <select id="mm-gw-role">
+            <option value="">名前から自動で決める</option>
+            <option value="cushion">緩衝材（紙パッキンなど）</option>
+            <option value="ribbon">リボン</option>
+            <option value="carry">手提げの紙袋</option>
+            <option value="card">ショップカード・シール</option>
+            <option value="other">そのほか</option>
+          </select>
+        </div>
+        <span class="hint" style="margin-top:4px;">「リボン」と「手提げの紙袋」は、同じ入れ物に何種類つけても、ギフトの組み合わせでは<b>どれか1つだけ</b>使います（どれを使うかは、ギフトの組み合わせの画面で選びます）。</span>
         <label class="skip-toggle" style="margin-top:6px;"><input type="checkbox" id="mm-gw-noprice">値段には入れない（ショップカードなど）</label>
       </div>
     </div>
@@ -2756,7 +2790,7 @@
     bs.innerHTML = boxes.length ? boxes.map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') : '<option value="">（入れ物がありません）</option>';
     if(cur && [].some.call(bs.options, function(o){ return o.value === cur; })) bs.value = cur;
     gmSeg('gm-mode', 'mode'); gmSeg('gm-fit', 'fit'); gmSeg('gm-boxmode', 'boxMode');
-    gmRenderTypes(); gmRenderRules(); gmRenderProducts();
+    gmRenderTypes(); gmRenderRules(); gmRenderProducts(); gmRenderPicks();
     gmSyncForm();
     var gsum = document.getElementById('gm-groups-summary');
     if(gsum){
@@ -2907,9 +2941,63 @@
     return items;
   }
   // 入れ物と一緒に使う資材（手提げ袋・紙パッキン・リボン・ショップカードなど）
-  function gmAccessories(box){
+  // ギフトでの役目。入れていなければ名前から決める
+  var GIFT_ROLES = {box:'入れ物', cushion:'緩衝材', ribbon:'リボン', carry:'紙袋', card:'カード・シール', other:'そのほか'};
+  var GIFT_ROLE_ORDER = ['box', 'cushion', 'ribbon', 'carry', 'card', 'other'];
+  var GIFT_ONE_ROLES = ['ribbon', 'carry'];   // 何種類つけても、どれか1つだけ使う
+  function giftRoleOf(a){
+    if(!a) return 'other';
+    if(a.giftBox && a.giftBox.type) return 'box';
+    if(a.giftRole && GIFT_ROLES[a.giftRole]) return a.giftRole;
+    var n = a.name || '';
+    if(/リボン|ribbon/i.test(n)) return 'ribbon';
+    if(/パッキン|緩衝|クッション|プチプチ/.test(n)) return 'cushion';
+    if(/紙袋|手提|手さげ|手提げ|ショッパー/.test(n)) return 'carry';
+    if(a.giftNoPrice || /カード|シール|ステッカー/.test(n)) return 'card';
+    return 'other';
+  }
+  // その入れ物と一緒に使う資材（ぜんぶ）
+  function gmAccessoriesAll(box){
     if(!box) return [];
     return state.materials.filter(function(m){ return Array.isArray(m.giftWith) && m.giftWith.indexOf(box.id) >= 0; });
+  }
+  // 実際に使う資材。リボン・紙袋は1つだけ（選んだもの。なければいちばん安いもの）
+  function gmAccessories(box){
+    var all = gmAccessoriesAll(box), picks = gmConf().picks || {};
+    var out = [], done = {};
+    all.forEach(function(a){
+      var role = giftRoleOf(a);
+      if(GIFT_ONE_ROLES.indexOf(role) < 0){ out.push(a); return; }
+      if(done[role]) return;
+      done[role] = 1;
+      var same = all.filter(function(x){ return giftRoleOf(x) === role; });
+      var chosen = same.find(function(x){ return x.id === picks[role]; }) ||
+        same.slice().sort(function(x, y){ return matUnitPrice(x) * gmAccQty(x, box) - matUnitPrice(y) * gmAccQty(y, box); })[0];
+      out.push(chosen);
+    });
+    return out.sort(function(x, y){ return GIFT_ROLE_ORDER.indexOf(giftRoleOf(x)) - GIFT_ROLE_ORDER.indexOf(giftRoleOf(y)); });
+  }
+  // リボン・紙袋が2種類以上あれば、どれを使うかを選ぶ欄を出す
+  function gmRenderPicks(){
+    var wrap = document.getElementById('gm-picks'); if(!wrap) return;
+    var c = gmConf(); c.picks = c.picks || {};
+    var used = state.materials.filter(function(m){ return Array.isArray(m.giftWith) && m.giftWith.length; });
+    var html = GIFT_ONE_ROLES.map(function(role){
+      var list = used.filter(function(m){ return giftRoleOf(m) === role; }).sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
+      if(list.length < 2) return '';
+      return '<div class="gm-line"><span class="gm-k">' + GIFT_ROLES[role] + '</span>' +
+        '<select data-pick="' + role + '"><option value="">おまかせ（いちばん安いもの）</option>' +
+        list.map(function(m){ return '<option value="' + escapeHtml(m.id) + '"' + (c.picks[role] === m.id ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>'; }).join('') +
+        '</select></div>';
+    }).join('');
+    if(wrap.__html === html) return;   // 同じなら作り直さない（一覧のボタンを増やさない）
+    wrap.__html = html;
+    wrap.innerHTML = html;
+    [].forEach.call(wrap.querySelectorAll('select[data-pick]'), function(sel){
+      attachTapPicker(sel, GIFT_ROLES[sel.dataset.pick] + 'をえらぶ');
+      if(sel.__pickerSync) sel.__pickerSync();
+      sel.addEventListener('change', function(){ gmConf().picks[sel.dataset.pick] = sel.value || null; scheduleSave(); });
+    });
   }
   // その入れ物に使う量（入れていなければ1つ）
   function gmAccQty(a, box){
@@ -3109,10 +3197,10 @@
       });
       // 入れ物と、一緒に使う資材（原価）
       var packRows = [];
-      if(r.box) packRows.push('<tr class="gm-pack"><td>'+(r.box.giftBox && r.box.giftBox.type === 'bag' ? '🛍️ ' : '📦 ')+escapeHtml(r.box.name)+'</td><td class="q">×1</td><td class="n">¥'+fmtNum(matUnitPrice(r.box), 0)+'</td></tr>');
+      if(r.box) packRows.push('<tr class="gm-pack gm-r-box"><td>'+escapeHtml(r.box.name)+'<span class="gm-cat">'+(r.box.giftBox && r.box.giftBox.type === 'bag' ? '袋' : '箱')+'</span></td><td class="q">×1</td><td class="n">¥'+fmtNum(matUnitPrice(r.box), 0)+'</td></tr>');
       (r.acc || []).forEach(function(a){
-        var aq = gmAccQty(a, r.box);
-        packRows.push('<tr class="gm-pack"><td>'+escapeHtml(a.name)+(a.giftNoPrice ? '<span class="gm-cat">値段に入れない</span>' : '')+'</td><td class="q">'+(aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(a.giftNoPrice ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
+        var aq = gmAccQty(a, r.box), role = giftRoleOf(a);
+        packRows.push('<tr class="gm-pack gm-r-'+role+'"><td>'+escapeHtml(a.name)+'<span class="gm-cat">'+GIFT_ROLES[role]+(a.giftNoPrice ? '・値段に入れない' : '')+'</span></td><td class="q">'+(aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(a.giftNoPrice ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
       });
       if(r.laborCost > 0) packRows.push('<tr class="gm-pack"><td>詰める手間</td><td class="q"></td><td class="n">¥'+fmtNum(r.laborCost, 0)+'</td></tr>');
       var priceIn = Math.round(retail + r.addIn);
@@ -3308,8 +3396,10 @@
         unit: wip ? ((p.batch && p.batch.yieldUnit) || '個') : ((p.planning && p.planning.countUnit) || '個'),
         cost: wip ? ((p.batch && p.batch.costPerYieldUnit) || 0) : productUnitCost(p), pid:p.id});
     });
-    var byGroup = {};
+    var byGroup = {}, stc = stCur();
     state.materials.forEach(function(m){
+      // 仕掛品から作った材料は「仕掛品」の欄で数える（前にこちらで数えていた年は残す）
+      if(m.wipOf && !(stc.counts && stc.counts['m:' + m.id])) return;
       var k = kindOf(m);
       var lab = m.costLabel || costLabelsFor(k)[0] || '（品目なし）';
       var cat = m.category || '（カテゴリなし）';
@@ -4629,7 +4719,7 @@
   // 計算に使う材料の単価。設定で「原材料を税抜で計算する」がオンなら、税込の価格から税を抜く（食料品8%・資材10%）
   function matUnitPrice(m){
     var up = Number(m && m.unitPrice) || 0;
-    if(!m || m.wip || !(state.settings && state.settings.matExTax)) return up;
+    if(!m || m.wip || m.wipOf || !(state.settings && state.settings.matExTax)) return up;
     var rate = kindOf(m) === 'supply' ? state.settings.matTaxSupply : state.settings.matTaxFood;
     rate = Number(rate);
     if(!isFinite(rate) || rate < 0) rate = kindOf(m) === 'supply' ? 10 : 8;
@@ -5381,7 +5471,9 @@
     if(!q){ hideSuggestions(tr); return; }            // 何も打っていないときは候補を出さない
     var want = (kind === 'pkg') ? 'supply' : 'food';
     var qKey = searchKey(q);
+    var selfId = state.editingProductId;
     var matches = q ? state.materials.concat(wipMaterials()).filter(function(m){
+      if(selfId && m.wipOf === selfId) return false;   // 編集中の仕掛品そのものは出さない
       return materialMatches(m, qKey);   // 部分一致（ひらがな・カタカナ・よみがなでも）
     }) : state.materials.slice();   // 何も打っていないときは登録ずみを上から出す
     var hits = matches.filter(function(m){ return kindOf(m) === want; });
@@ -6052,7 +6144,8 @@
           var accW = {};
           ((gp.batch && gp.batch.ingredients) || []).forEach(function(r){
             if(!r || !r.name) return;
-            if(state.materialsByName && state.materialsByName[r.name]) return;
+            var rm = state.materialsByName && state.materialsByName[r.name];
+            if(rm && !rm.wipOf) return;   // 仕掛品から作った材料（wipOf）は仕掛品として扱う
             var wp = state.products.find(function(x){ return x && x.category === '仕掛品' && x.name === r.name; });
             if(!wp) return;
             var wb = bwProductFor(bw, wp);
@@ -7239,6 +7332,13 @@
   // 仕掛品はほかの商品の①で「材料」として使われるので、登録したときのままだと、その商品の原価もずれる。
   // 入力の途中（calcDirty）のときは画面を使えないので、あとで（一覧を開いたときなど）やり直す
   function refreshWipCosts(){
+    var synced = syncWipMaterials();
+    if(synced && state.dbxReady) scheduleSave();
+    var r = refreshWipCostsInner();
+    if(r && syncWipMaterials() && state.dbxReady) scheduleSave();
+    return r;
+  }
+  function refreshWipCostsInner(){
     if(state.calcDirty || liveJob) return false;
     var wips = (state.products || []).filter(function(p){ return p && p.category === '仕掛品'; });
     if(!wips.length) return false;
@@ -7325,6 +7425,7 @@
         state.products.push(doc);
         showToast('「' + name + '」を登録しました');
       }
+      syncWipMaterials();   // 仕掛品なら原材料マスタにも登録（値段もそろえる）
       scheduleSave();
       clearCalcDraft();
       pushPlanningCodeUnitToBlockwork(doc);
@@ -7724,6 +7825,7 @@
         var qty = Number(r && r.qty) || 0;
         if(!r || !r.name || !(qty > 0)) return;
         var m = state.materialsByName && state.materialsByName[r.name];
+        if(m && m.wipOf) m = null;   // 仕掛品は下で中身から計算する
         if(m){
           if(kindOf(m) !== 'food') return;   // 資材（袋・箱など）は数えない
           var n = m.nutrition || {};
@@ -7987,6 +8089,7 @@
     openConfirmModal(msg, function(){
       state.products = state.products.filter(function(x){ return x.id !== state.currentDetailId; });
       var removed = alsoInBw ? removeFromBlockwork(p) : false;
+      syncWipMaterials();
       scheduleSave();
       showToast(removed ? '原価計算とブロックワークの両方から削除しました' : '削除しました');
       showView('products');
@@ -8166,7 +8269,8 @@
     var groupSel = document.getElementById('material-group-filter');
     var groupFilter = groupSel ? groupSel.value : '';
     // 原価計算の仕掛品も「仕掛品」として一緒に出す（単価はいつも最新の原価。編集は原価計算で）
-    var list = state.materials.concat(wipMaterialRows()).filter(function(m){
+    if(syncWipMaterials() && state.dbxReady) scheduleSave();
+    var list = state.materials.filter(function(m){
       if(kindFilter && kindOf(m) !== kindFilter) return false;
       if(groupFilter && groupOf(m.category) !== groupFilter) return false;
       if(catFilter && (m.category || '（カテゴリなし）') !== catFilter) return false;
@@ -8194,11 +8298,11 @@
     var catNames = Object.keys(groups).sort(function(a,b){ return a.localeCompare(b,'ja'); });
 
     function matRow(m){
-      if(m.wip){
-        return '<tr data-id="'+m.id+'" data-wip="'+escapeHtml(m.productId)+'" class="mat-wip">' +
+      if(m.wipOf){
+        return '<tr data-id="'+m.id+'" data-wip="'+escapeHtml(m.wipOf)+'" class="mat-wip">' +
           '<td></td>' +
           '<td>'+escapeHtml(m.name)+'<span class="mat-kind-tag">仕掛品（原価計算）</span></td>' +
-          '<td><span class="mat-cat-tag">仕掛品</span></td>' +
+          '<td><span class="mat-cat-tag">'+escapeHtml(m.category||'仕掛品')+'</span></td>' +
           '<td>1 '+escapeHtml(m.unit||'')+'</td>' +
           '<td>'+fmtYen2(m.unitPrice)+'</td>' +
           '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
@@ -8602,6 +8706,48 @@
   }
   var mmAskedPrice = false;
   // 原材料マスタに出す仕掛品の行（原価計算の「仕掛品」カテゴリの商品。マスタに同じ名前の材料があるものは出さない）
+  // 仕掛品（登録済み商品のカテゴリ「仕掛品」）を、原材料マスタにも本当の材料として登録しておく。
+  // wipOf で商品とつなぎ、単価はいつも商品の「1個あたりの仕込み原価」に合わせる（手で直す値段ではない）。
+  // 同じ名前の材料が前からあれば、それをつなぐ（二重にしない）。戻り値：変わったら true
+  function syncWipMaterials(){
+    if(!Array.isArray(state.materials)) return false;
+    var changed = false, now = new Date().toISOString(), ids = {};
+    (state.products || []).forEach(function(p){
+      if(!p || p.category !== '仕掛品' || !p.name) return;
+      ids[p.id] = 1;
+      var per = Math.round(((p.batch && Number(p.batch.costPerYieldUnit)) || 0) * 100) / 100;
+      var unit = (p.batch && p.batch.yieldUnit) || '個';
+      var m = state.materials.find(function(x){ return x && x.wipOf === p.id; }) ||
+              state.materials.find(function(x){ return x && !x.wipOf && x.name === p.name; });
+      if(!m){
+        state.materials.push({id:'m_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8),
+          name:p.name, category:'仕掛品', kind:'food', supplier:'自家製', noUpdate:true, wipOf:p.id, wipAuto:true,
+          qty:1, unit:unit, price:per, unitPrice:per, priceUpdatedAt:now});
+        changed = true; return;
+      }
+      if(m.wipOf !== p.id){ m.wipOf = p.id; changed = true; }
+      if(m.name !== p.name){ m.name = p.name; changed = true; }
+      if(m.unit !== unit){ m.unit = unit; changed = true; }
+      if(Number(m.qty) !== 1){ m.qty = 1; changed = true; }
+      if(Math.abs((Number(m.unitPrice) || 0) - per) >= 0.005 || Math.abs((Number(m.price) || 0) - per) >= 0.005){
+        m.unitPrice = per; m.price = per; m.priceUpdatedAt = now; changed = true;
+      }
+      if(!m.noUpdate){ m.noUpdate = true; changed = true; }
+      if(m.kind !== 'food'){ m.kind = 'food'; changed = true; }
+      if(!m.supplier){ m.supplier = '自家製'; changed = true; }
+    });
+    // 商品が消えた・仕掛品でなくなった：自動で作ったもので、どこにも使っていなければ消す。そうでなければ、つなぎだけ外す
+    var used = materialNamesInUse();
+    state.materials = state.materials.filter(function(m){
+      if(!m || !m.wipOf || ids[m.wipOf]) return true;
+      changed = true;
+      if(m.wipAuto && !used[m.name]) return false;
+      delete m.wipOf; delete m.wipAuto; m.noUpdate = false;
+      return true;
+    });
+    if(changed){ rebuildMaterialIndex(); if(typeof rebuildMaterialCategories === 'function') rebuildMaterialCategories(); }
+    return changed;
+  }
   function wipMaterialRows(){
     var real = state.materialsByName || {};
     return (state.products || []).filter(function(p){ return p && p.category === '仕掛品' && p.name && !real[p.name]; }).map(function(p){
@@ -8660,14 +8806,33 @@
     var sel = (material && Array.isArray(material.giftWith)) ? material.giftWith : [];
     var qtys = (material && material.giftWithQty) || {};
     var unit = escapeHtml(document.getElementById('mm-unit').value || (material && material.unit) || '');
-    document.getElementById('mm-gw-list').innerHTML = boxes.length ? boxes.map(function(m){
+    function one(m){
       var q = qtys[m.id] != null ? qtys[m.id] : 1;
-      return '<div class="mm-gw-row"><label class="skip-toggle"><input type="checkbox" data-box="'+escapeHtml(m.id)+'"'+(sel.indexOf(m.id) >= 0 ? ' checked' : '')+'>'+(m.giftBox.type === 'bag' ? '🛍️ 袋' : '📦 箱')+'　'+escapeHtml(m.name)+'</label>' +
+      return '<div class="mm-gw-row"><label class="skip-toggle"><input type="checkbox" data-box="'+escapeHtml(m.id)+'"'+(sel.indexOf(m.id) >= 0 ? ' checked' : '')+'>'+escapeHtml(m.name)+'</label>' +
         '<span class="mm-gw-qty">使う量 <input type="number" min="0" step="any" inputmode="decimal" data-qty="'+escapeHtml(m.id)+'" value="'+q+'"> <span class="mm-gw-unit">'+unit+'</span></span></div>';
-    }).join('') : '<span class="hint">ギフトの入れ物（箱・袋）がまだありません。先に箱や袋の資材で「ギフトの入れ物として使う」を設定してください。</span>';
+    }
+    // 箱と袋は分けて、それぞれ折りたたむ（閉じていても、いくつ選んでいるかは見える）
+    function fold(type, title){
+      var list = boxes.filter(function(m){ return (m.giftBox.type === 'bag' ? 'bag' : 'box') === type; })
+        .sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
+      if(!list.length) return '';
+      var n = list.filter(function(m){ return sel.indexOf(m.id) >= 0; }).length;
+      return '<details class="mm-gw-fold" data-type="'+type+'"><summary>'+title+' <span class="mm-gw-cnt">'+list.length+'種類'+(n ? '・' + n + 'つで使う' : '')+'</span></summary>' +
+        '<div class="mm-gw-body">' + list.map(one).join('') + '</div></details>';
+    }
+    document.getElementById('mm-gw-list').innerHTML = boxes.length ? fold('box', '箱') + fold('bag', '袋') : '<span class="hint">ギフトの入れ物（箱・袋）がまだありません。先に箱や袋の資材で「ギフトの入れ物として使う」を設定してください。</span>';
     document.getElementById('mm-gw-noprice').checked = !!(material && material.giftNoPrice);
+    document.getElementById('mm-gw-role').value = (material && material.giftRole) || '';
     document.getElementById('mm-gw-block').hidden = !!(material && material.giftBox && material.giftBox.type);
   }
+  document.getElementById('mm-gw-list').addEventListener('change', function(e){
+    var d = e.target.closest('.mm-gw-fold'); if(!d || !e.target.dataset.box) return;
+    var all = d.querySelectorAll('input[data-box]'), n = d.querySelectorAll('input[data-box]:checked').length;
+    d.querySelector('.mm-gw-cnt').textContent = all.length + '種類' + (n ? '・' + n + 'つで使う' : '');
+  });
+  document.getElementById('mm-gw-role').addEventListener('change', function(){
+    if(this.value === 'card') document.getElementById('mm-gw-noprice').checked = true;
+  });
   function mmUpdateYmText(){
     var v = document.getElementById('mm-updated').value;
     document.getElementById('mm-updated-text').textContent = v ? fmtYm(v) : '—';
@@ -8808,8 +8973,9 @@
         data.giftWithQty[id] = (isFinite(v) && v >= 0) ? v : 1;
       });
       data.giftNoPrice = !!document.getElementById('mm-gw-noprice').checked;
+      data.giftRole = document.getElementById('mm-gw-role').value || null;
       if(!data.giftWith.length){ data.giftWith = null; data.giftWithQty = null; data.giftNoPrice = false; }
-    } else { data.giftWith = null; data.giftWithQty = null; data.giftNoPrice = false; }
+    } else { data.giftWith = null; data.giftWithQty = null; data.giftNoPrice = false; data.giftRole = null; }
     // 小カテゴリがどの大カテゴリに属するかを覚えておく
     var grp = pickOrNewValue(document.getElementById('mm-group-select'), document.getElementById('mm-group'));
     if(category && grp){
@@ -8939,7 +9105,7 @@
       if(special[c.kind]){ special[c.kind].push(c); return; }
       (byAfter[c.afterId || ''] = byAfter[c.afterId || ''] || []).push(c);
     });
-    var mk = function(c, cat){ return {id:c.id, isColumn:true, name:c.title || COL_KIND_LABEL[c.kind || 'column'] || '（無題のコラム）', category:cat, col:c}; };
+    var mk = function(c, cat){ return {id:c.id, isColumn:true, name:(c.title || '').replace(/\s*\n\s*/g, ' ') || COL_KIND_LABEL[c.kind || 'column'] || '（無題のコラム）', category:cat, col:c}; };
     var out = [], seen = {'':1};
     var firstCat = prods.length ? prods[0].category : '';
     special.cover.forEach(function(c){ out.push(mk(c, firstCat)); });
@@ -9393,6 +9559,14 @@
     return buildRecipeHtmlFor(list[recipeIndex], null);
   }
   // opts が null なら画面用（すべての項目と、未入力の案内）。印刷用は opts で項目を選ぶ
+  // タイトル欄（改行できる）を中身の行数に合わせて伸ばす
+  function colTitleGrow(){
+    var t = document.getElementById('col-title'); if(!t) return;
+    t.style.height = 'auto';
+    if(t.scrollHeight) t.style.height = (t.scrollHeight + 2) + 'px';
+  }
+  document.getElementById('col-title').addEventListener('input', colTitleGrow);
+  document.getElementById('col-title').addEventListener('focus', colTitleGrow);
   function buildColumnHtml(p, opts){
     var c = p.col || {};
     var screen = !opts;
@@ -9402,23 +9576,26 @@
     var kind = c.kind || 'column';
     if(kind === 'cover'){
       // 表紙：まんなかに大きくタイトル。「コラム」の文字は出さない
-      return '<div class="rc-cover">' +
-        (c.date ? '<div class="rc-cover-date">'+escapeHtml(c.date)+'</div>' : '') +
-        '<h1 class="rc-title rc-cover-title">'+escapeHtml(c.title || (screen ? '（タイトル）' : ''))+'</h1>' +
+      return '<div class="rc-cover"><div class="rc-cover-main">' +
+        '<h1 class="rc-title rc-cover-title">'+escapeHtml(c.title || (screen ? '（タイトル）' : '')).replace(/\n/g, '<br>')+'</h1>' +
         (c.subtitle ? '<div class="rc-cover-sub">'+escapeHtml(c.subtitle)+'</div>' : '') +
         (showPhoto ? '<div class="rc-cover-photo"><img src="'+c.photo+'" alt=""></div>' : '') +
         (hasBody ? '<div class="rc-method rc-colbody rc-cover-body">'+body+'</div>' : '') +
-        (c.author ? '<div class="rc-cover-author">'+escapeHtml(c.author)+'</div>' : '') +
+        '</div>' +
+        ((c.author || c.date) ? '<div class="rc-cover-foot">' +
+          (c.author ? '<div class="rc-cover-author">'+escapeHtml(c.author)+'</div>' : '') +
+          (c.date ? '<div class="rc-cover-date">'+escapeHtml(c.date)+'</div>' : '') +
+        '</div>' : '') +
         '</div>';
     }
     if(kind === 'intro' || kind === 'afterword'){
-      return '<h1 class="rc-title rc-intro-title">'+escapeHtml(c.title || COL_KIND_LABEL[kind])+'</h1>' +
+      return '<h1 class="rc-title rc-intro-title">'+escapeHtml(c.title || COL_KIND_LABEL[kind]).replace(/\n/g, '<br>')+'</h1>' +
         (showPhoto ? '<div class="rc-colphoto"><img src="'+c.photo+'" alt=""></div>' : '') +
         (hasBody ? '<div class="rc-method rc-colbody">'+body+'</div>'
                  : (screen ? '<p class="rc-empty">（「このページを編集」から書けます）</p>' : ''));
     }
     return '<div class="rc-code rc-colmark">コラム</div>' +
-      '<h1 class="rc-title">'+escapeHtml(c.title || (screen ? '（無題のコラム）' : ''))+'</h1>' +
+      '<h1 class="rc-title">'+escapeHtml(c.title || (screen ? '（無題のコラム）' : '')).replace(/\n/g, '<br>')+'</h1>' +
       (showPhoto ? '<div class="rc-colphoto"><img src="'+c.photo+'" alt=""></div>' : '') +
       (hasBody ? '<div class="rc-method rc-colbody">'+body+'</div>'
                : (screen ? '<p class="rc-empty">（「このページを編集」から書けます）</p>' : ''));
@@ -9675,6 +9852,7 @@
     colEditKind = COL_KIND_LABEL[kind] ? kind : 'column';
     document.querySelectorAll('#col-kind-seg .seg-btn').forEach(function(b){ b.classList.toggle('on', b.dataset.kind === colEditKind); });
     document.getElementById('col-cover-fields').hidden = colEditKind !== 'cover';
+    document.getElementById('col-title-hint').hidden = colEditKind !== 'cover';
     document.getElementById('col-after-field').hidden = colEditKind !== 'column';
     document.getElementById('col-title').placeholder = {cover:'例：アトリエエヌのレシピ帳', intro:'はじめに', afterword:'あとがき', column:'例：クッキー共通の仕込み方'}[colEditKind];
     document.getElementById('col-delete').textContent = 'この' + (colEditKind === 'column' ? 'コラム' : COL_KIND_LABEL[colEditKind]) + 'を削除';
@@ -9688,6 +9866,7 @@
     document.getElementById('col-author').value = c.author || '';
     document.getElementById('col-date').value = c.date || '';
     document.getElementById('col-title').value = c.title || '';
+    colTitleGrow();
     var sel = document.getElementById('col-after');
     var prods = sortedProductList(state.products.slice());
     var cats = [];
@@ -9712,7 +9891,7 @@
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
     var c = cur.col;
     var newAfter = document.getElementById('col-after').value;
-    c.title = document.getElementById('col-title').value.trim();
+    c.title = document.getElementById('col-title').value.replace(/\r/g, '').split('\n').map(function(x){ return x.trim(); }).filter(function(x, i, a){ return x || (i > 0 && i < a.length - 1); }).join('\n').trim();
     c.kind = colEditKind;
     c.subtitle = document.getElementById('col-subtitle').value.trim();
     c.author = document.getElementById('col-author').value.trim();
@@ -9733,7 +9912,7 @@
     var idx = recipeProducts().findIndex(function(p){ return p.id === c.id; });
     if(idx >= 0) recipeIndex = idx;
     renderRecipePage();
-    showToast((c.kind && c.kind !== 'column' ? COL_KIND_LABEL[c.kind] : 'コラム') + '「'+(c.title || COL_KIND_LABEL[c.kind || 'column'] || '無題')+'」を保存しました');
+    showToast((c.kind && c.kind !== 'column' ? COL_KIND_LABEL[c.kind] : 'コラム') + '「'+((c.title || '').replace(/\n/g, ' ') || COL_KIND_LABEL[c.kind || 'column'] || '無題')+'」を保存しました');
   }
   function loadRecipeIntoForm(){
     var list = recipeProducts();
