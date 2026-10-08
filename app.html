@@ -1075,7 +1075,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.61</div>
+      <div class="brand-ver">ver.62</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -8307,7 +8307,7 @@
           '<td>'+fmtYen2(m.unitPrice)+'</td>' +
           '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
           '<td>自家製</td>' +
-          '<td class="mat-ym"><span class="mat-noup" title="原価計算から自動で計算されます">自動</span></td>' +
+          '<td class="mat-ym" title="仕掛品の原価計算を保存した年月。単価は原価計算から自動で入ります">'+escapeHtml(fmtYm(m.priceUpdatedAt))+'</td>' +
           '<td><button class="btn btn-sm mat-edit-btn">開く</button></td>' +
           '</tr>';
       }
@@ -8717,12 +8717,13 @@
       ids[p.id] = 1;
       var per = Math.round(((p.batch && Number(p.batch.costPerYieldUnit)) || 0) * 100) / 100;
       var unit = (p.batch && p.batch.yieldUnit) || '個';
+      var ed = p.updatedAt || p.createdAt || now;   // 更新年月は、仕掛品を編集して保存した日
       var m = state.materials.find(function(x){ return x && x.wipOf === p.id; }) ||
               state.materials.find(function(x){ return x && !x.wipOf && x.name === p.name; });
       if(!m){
         state.materials.push({id:'m_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8),
           name:p.name, category:'仕掛品', kind:'food', supplier:'自家製', noUpdate:true, wipOf:p.id, wipAuto:true,
-          qty:1, unit:unit, price:per, unitPrice:per, priceUpdatedAt:now});
+          qty:1, unit:unit, price:per, unitPrice:per, priceUpdatedAt:ed});
         changed = true; return;
       }
       if(m.wipOf !== p.id){ m.wipOf = p.id; changed = true; }
@@ -8730,8 +8731,9 @@
       if(m.unit !== unit){ m.unit = unit; changed = true; }
       if(Number(m.qty) !== 1){ m.qty = 1; changed = true; }
       if(Math.abs((Number(m.unitPrice) || 0) - per) >= 0.005 || Math.abs((Number(m.price) || 0) - per) >= 0.005){
-        m.unitPrice = per; m.price = per; m.priceUpdatedAt = now; changed = true;
+        m.unitPrice = per; m.price = per; changed = true;
       }
+      if(m.priceUpdatedAt !== ed){ m.priceUpdatedAt = ed; changed = true; }
       if(!m.noUpdate){ m.noUpdate = true; changed = true; }
       if(m.kind !== 'food'){ m.kind = 'food'; changed = true; }
       if(!m.supplier){ m.supplier = '自家製'; changed = true; }
@@ -8829,6 +8831,13 @@
     var d = e.target.closest('.mm-gw-fold'); if(!d || !e.target.dataset.box) return;
     var all = d.querySelectorAll('input[data-box]'), n = d.querySelectorAll('input[data-box]:checked').length;
     d.querySelector('.mm-gw-cnt').textContent = all.length + '種類' + (n ? '・' + n + 'つで使う' : '');
+  });
+  // 単位を変えたら「使う量」の単位も変える
+  ['input', 'change'].forEach(function(ev){
+    document.getElementById('mm-unit').addEventListener(ev, function(){
+      var u = this.value.trim();
+      [].forEach.call(document.querySelectorAll('#mm-gw-list .mm-gw-unit'), function(sp){ sp.textContent = u; });
+    });
   });
   document.getElementById('mm-gw-role').addEventListener('change', function(){
     if(this.value === 'card') document.getElementById('mm-gw-noprice').checked = true;
@@ -9562,8 +9571,9 @@
   // タイトル欄（改行できる）を中身の行数に合わせて伸ばす
   function colTitleGrow(){
     var t = document.getElementById('col-title'); if(!t) return;
+    t.rows = Math.max(1, String(t.value || '').split('\n').length);
     t.style.height = 'auto';
-    if(t.scrollHeight) t.style.height = (t.scrollHeight + 2) + 'px';
+    if(t.scrollHeight > t.clientHeight + 1) t.style.height = (t.scrollHeight + 2) + 'px';
   }
   document.getElementById('col-title').addEventListener('input', colTitleGrow);
   document.getElementById('col-title').addEventListener('focus', colTitleGrow);
