@@ -343,6 +343,8 @@
   .gs-checks{display:flex; flex-wrap:wrap; gap:4px 16px;}
   .gs-empty{font-size:12.5px; color:var(--ink-faint);}
   .gs-used{font-size:13px; color:var(--ink-soft); margin-bottom:6px;}
+  /* チェックボックス・ラジオボタンの色（青ではなく、アプリの色に） */
+  input[type="checkbox"], input[type="radio"]{accent-color:var(--accent);}
   /* タップで選ぶタグ（役目・行事） */
   .tag-chips{display:flex; flex-wrap:wrap; gap:6px 6px; align-items:center;}
   .tag-chip{border:1.5px solid var(--border); background:var(--surface); color:var(--ink-soft); border-radius:999px;
@@ -375,6 +377,12 @@
   .picker-box{max-width:460px;}
   .picker-list{display:flex; flex-direction:column; gap:4px; overflow-y:auto; -webkit-overflow-scrolling:touch; max-height:60vh; overscroll-behavior:contain;}
   .picker-list .pk-group{font-size:12px; font-weight:700; color:var(--ink-soft); margin:8px 4px 2px;}
+  .picker-list .pk-fold-h{display:flex; align-items:center; gap:8px; width:100%; text-align:left; border:none; background:var(--bg); border-radius:10px;
+    padding:10px 12px; font-size:15px; font-weight:700; color:var(--ink); font-family:inherit; cursor:pointer; margin-top:4px;}
+  .picker-list .pk-fold-h .pk-n{font-weight:400; font-size:12.5px; color:var(--ink-faint);}
+  .picker-list .pk-fold-h::before{content:'▶'; font-size:10px; color:var(--ink-faint);}
+  .picker-list .pk-fold-h.open::before{content:'▼';}
+  .picker-list .pk-fold{display:flex; flex-direction:column; gap:4px; padding-left:10px;}
   .picker-list .pk-item{display:flex; align-items:center; gap:8px; text-align:left; border:1px solid var(--border); background:var(--surface);
     border-radius:12px; padding:12px 14px; font-family:inherit; font-size:16px; color:var(--ink); cursor:pointer;}
   .picker-list .pk-item.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); font-weight:700;}
@@ -863,7 +871,10 @@
   .gm-card td.q{text-align:right; white-space:nowrap; color:var(--ink-soft);}
   .gm-card .gm-cat{font-size:11px; color:var(--ink-faint); margin-left:4px;}
   .gm-card .gm-subh{font-size:11.5px; font-weight:700; color:var(--ink-faint); margin-top:2px;}
-  .gm-card tr.gm-pack td{color:var(--ink-soft); font-size:13px;}
+  .gm-card tr.gm-pack td{color:var(--ink);}
+  .gm-card tr.gm-pack td.q, .gm-card tr.gm-pack td.n{color:var(--ink-soft);}
+  .gm-warn{color:#b0552f !important; font-size:13px; margin:-2px 0 6px 0 !important; line-height:1.55;}
+  .gm-card .gm-role{font-weight:700; color:var(--accent-strong); font-size:13px; letter-spacing:.02em;}
   /* 資材の役目ごとの色（入れ物・緩衝材・リボン・紙袋・カード） */
   .gm-card tr.gm-r-box{background:#efe3cc;}
   .gm-card tr.gm-r-cushion{background:#f4efdf;}
@@ -1117,7 +1128,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.66</div>
+      <div class="brand-ver">ver.67</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1982,6 +1993,7 @@
           <select id="gm-boxkind"><option value="">ぜんぶから</option><option value="box">箱から</option><option value="bag">袋から</option><option value="case">缶・瓶などから</option></select>
           <select id="gm-box" hidden></select>
         </div>
+        <p class="hint gm-warn" id="gm-box-warn" data-keep-hint hidden></p>
         <div id="gm-picks"></div>
         <div class="gm-line">
           <span class="gm-k">中身</span>
@@ -2113,7 +2125,7 @@
       <label>品名</label>
       <input id="mm-name" type="text" placeholder="例：北海道よつ葉バター食塩不使用">
       <input id="mm-model" type="text" placeholder="型番（任意）　例：25CB 18-1" style="margin-top:6px;">
-      <input id="mm-yomi" type="text" placeholder="よみがな（任意）　例：ごま　※ひらがなで探せるようになります" style="margin-top:6px;">
+      <input id="mm-yomi" type="text" placeholder="キーワード（任意・カンマで区切る）　例：ごま, セサミ, 胡麻" style="margin-top:6px;">
     </div>
     <div class="mm-nums">
       <div class="field">
@@ -2186,21 +2198,14 @@
     <div class="field" id="mm-giftbox-block">
       <label>ギフトでの役目</label>
       <div id="mm-role-chips" class="tag-chips"></div>
-      <span class="hint" style="margin-top:4px;">タップで1つ選びます（もう一度タップで外す）。選ばないときは名前から自動で決めます（点線の枠）。「器」はお菓子を直接詰める箱・袋・缶など。手提げの紙袋は「手提げ」です。</span>
-      <select id="mm-gw-role" hidden>
-        <option value="">名前から自動で決める</option>
-        <option value="cushion">緩衝材</option>
-        <option value="fastener">留め具</option>
-        <option value="deco">飾り</option>
-        <option value="insert">添えもの</option>
-        <option value="carry">手提げ</option>
-        <option value="other">そのほか</option>
-      </select>
+      <span class="hint" style="margin-top:4px;">タップで1つ選びます（もう一度タップで外す）。選ばないときは名前から自動で決めます（点線の枠）。器＝お菓子を直接詰める箱・袋・缶など／緩衝材＝パッキン・仕切り／留め具＝リボン・タイ／飾り＝シール・水引・掛け紙など／添えもの＝ショップカード・チラシ・説明書き／手提げ＝手提げの紙袋。</span>
+      <input type="hidden" id="mm-gw-role">
       <div id="mm-gb-sub" class="mm-gb-sub" hidden>
         <div class="mm-gb">
           <span class="mm-gb-k">種類</span>
           <div id="mm-gb-types" class="tag-chips"></div>
-          <select id="mm-gb-type" hidden><option value="">使わない</option><option value="box">箱</option><option value="bag">袋（OPP袋など）</option><option value="case">缶・瓶・カップなど</option></select>
+          <select id="mm-gb-type" hidden><option value="">使わない</option><option value="box">箱</option><option value="bag">袋</option><option value="case">缶など</option></select>
+          <input type="hidden" id="mm-gb-kind">
         </div>
         <div class="mm-gb">
           <span class="mm-gb-k">入る数</span>
@@ -2705,8 +2710,17 @@
     pickerSel = sel;
     document.getElementById('picker-title').textContent = title || 'えらぶ';
     var html = '';
+    var fold = sel.dataset.pickFold === '1';   // 見出しごとに折りたたむ（件数つき）
     Array.prototype.forEach.call(sel.children, function(ch){
       if(ch.tagName === 'OPTGROUP'){
+        if(fold){
+          var has = [].some.call(ch.children, function(o){ return o.value === sel.value; });
+          html += '<button type="button" class="pk-fold-h' + (has ? ' open' : '') + '">' + escapeHtml(ch.label) + ' <span class="pk-n">' + ch.children.length + '件</span></button>' +
+            '<div class="pk-fold"' + (has ? '' : ' hidden') + '>';
+          Array.prototype.forEach.call(ch.children, function(o){ html += pickerItem(o); });
+          html += '</div>';
+          return;
+        }
         html += '<div class="pk-group">' + escapeHtml(ch.label) + '</div>';
         Array.prototype.forEach.call(ch.children, function(o){ html += pickerItem(o); });
       } else html += pickerItem(ch);
@@ -2724,6 +2738,8 @@
   function closeTapPicker(){ document.getElementById('picker-backdrop').hidden = true; pickerSel = null; }
   // タップ（指を動かさずに離したとき）だけ選ぶ。スクロールしたときは選ばない（iPad は動かしたときに click を出さない）
   document.getElementById('picker-list').addEventListener('click', function(e){
+    var fh = e.target.closest('.pk-fold-h');
+    if(fh){ var body = fh.nextElementSibling; body.hidden = !body.hidden; fh.classList.toggle('open', !body.hidden); return; }
     var b = e.target.closest('.pk-item');
     if(!b || !pickerSel || b.disabled) return;
     var sel = pickerSel;
@@ -2770,15 +2786,17 @@
   }
   function gmContainers(kind, ev){
     return state.materials.filter(function(m){
-      return m.giftBox && m.giftBox.type && (!kind || m.giftBox.type === kind) && (ev === undefined || giftUsableIn(m, ev));
+      return m.giftBox && m.giftBox.type && (!kind || giftBoxKindOf(m) === kind) && (ev === undefined || giftUsableIn(m, ev));
     }).sort(function(a, b){ return (a.giftBox.max || 0) - (b.giftBox.max || 0) || (a.name || '').localeCompare(b.name || '', 'ja'); });
   }
   function giftBoxTypeLabel(t){ return t === 'bag' ? '袋' : t === 'case' ? '缶・瓶など' : '箱'; }
   function gmBoxLabel(m){
     var gb = m.giftBox;
-    return giftBoxTypeLabel(gb.type) + '　' + m.name + '（' + (gb.min === gb.max ? gb.max : gb.min + '〜' + gb.max) + '個）';
+    return m.name + '（' + (gb.min === gb.max ? gb.max : gb.min + '〜' + gb.max) + '個）';
   }
+  document.getElementById('gm-box').addEventListener('change', function(){ gmBoxWarn(); });
   function gmSyncForm(){
+    setTimeout(gmBoxWarn, 0);
     document.getElementById('gm-price-line').hidden = gmOpt.mode !== 'price';
     document.getElementById('gm-count-line').hidden = gmOpt.mode !== 'count';
     document.getElementById('gm-boxkind').hidden = gmOpt.boxMode !== 'auto';
@@ -2849,11 +2867,19 @@
     var bs = document.getElementById('gm-box');
     var cur = bs.value;
     var boxes = gmContainers('');
-    bs.innerHTML = boxes.length ? boxes.map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') : '<option value="">（器がありません）</option>';
+    var kinds = giftBoxKindList().filter(function(k){ return boxes.some(function(m){ return giftBoxKindOf(m) === k; }); });
+    bs.innerHTML = boxes.length ? kinds.map(function(k){
+      return '<optgroup label="'+escapeHtml(k)+'">' + boxes.filter(function(m){ return giftBoxKindOf(m) === k; }).map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') + '</optgroup>';
+    }).join('') : '<option value="">（器がありません）</option>';
+    bs.dataset.pickFold = '1';
+    var bk = document.getElementById('gm-boxkind'), bkCur = bk.value;
+    bk.innerHTML = '<option value="">ぜんぶから</option>' + kinds.map(function(k){ return '<option value="'+escapeHtml(k)+'">'+escapeHtml(k)+'から</option>'; }).join('');
+    bk.value = kinds.indexOf(bkCur) >= 0 ? bkCur : '';
     if(cur && [].some.call(bs.options, function(o){ return o.value === cur; })) bs.value = cur;
     gmSeg('gm-mode', 'mode'); gmSeg('gm-fit', 'fit'); gmSeg('gm-boxmode', 'boxMode');
     gmRenderTypes(); gmRenderRules(); gmRenderProducts(); gmRenderPicks();
     gmSyncForm();
+    gmBoxWarn();
     var gsum = document.getElementById('gm-groups-summary');
     if(gsum){
       var gl = state.productGroups || [];
@@ -3008,7 +3034,29 @@
   var GIFT_ROLE_HINT = {box:'箱・袋・缶など', cushion:'パッキン・仕切り', fastener:'リボン・タイ・輪ゴム', deco:'シール・水引・掛け紙など', insert:'ショップカード・説明書・乾燥剤', carry:'手提げの紙袋', other:''};
   var GIFT_ROLE_ORDER = ['box', 'cushion', 'fastener', 'deco', 'insert', 'carry', 'other'];
   var GIFT_ONE_ROLES = ['cushion', 'fastener', 'carry'];   // 1つだけ使う
-  var GIFT_SLOTS = ['cushion', 'fastener', 'deco', 'insert', 'carry'];   // 入れ物の「ギフトのセット」の欄   // 何種類つけても、どれか1つだけ使う
+  var GIFT_SLOTS = ['cushion', 'fastener', 'deco', 'insert', 'carry'];
+  // 自分で足した役目（giftMaker.roles：[{id:'u_…', name}]）。ギフトのセットでは「いくつでも」の欄になる
+  function giftCustomRoles(){ var c = gmConf(); if(!Array.isArray(c.roles)) c.roles = []; return c.roles; }
+  function giftRoleName(k){
+    if(GIFT_ROLES[k]) return GIFT_ROLES[k];
+    var r = giftCustomRoles().find(function(x){ return x.id === k; });
+    return r ? r.name : 'そのほか';
+  }
+  function giftSlots(){ return GIFT_SLOTS.concat(giftCustomRoles().map(function(r){ return r.id; })); }
+  function giftRoleCss(k){ return GIFT_ROLES[k] ? k : 'other'; }
+  // 器の種類
+  var GIFT_BOX_KINDS = ['貼り箱', '化粧箱', '紙箱', 'ペーパーバッグ', '缶・バケツ', 'OPP', '紙袋'];
+  var GIFT_BOX_KIND_TYPE = {'貼り箱':'box', '化粧箱':'box', '紙箱':'box', 'ペーパーバッグ':'bag', '缶・バケツ':'case', 'OPP':'bag', '紙袋':'bag'};
+  function giftBoxKindOf(m){
+    var gb = m && m.giftBox; if(!gb || !gb.type) return '';
+    return gb.kind || ({box:'箱', bag:'袋', case:'缶・瓶など'}[gb.type] || '箱');
+  }
+  function giftBoxKindList(){
+    var c = gmConf(), list = GIFT_BOX_KINDS.slice();
+    (c.boxKinds || []).forEach(function(k){ if(list.indexOf(k) < 0) list.push(k); });
+    state.materials.forEach(function(m){ var k = giftBoxKindOf(m); if(k && list.indexOf(k) < 0) list.push(k); });
+    return list;
+  }   // 入れ物の「ギフトのセット」の欄   // 何種類つけても、どれか1つだけ使う
   var GIFT_EVENTS_DEFAULT = ['年賀', '成人の日', '節分', 'バレンタイン', 'ひな祭り', 'ホワイトデー', '卒業・卒園', 'お花見', '入学・入園',
     'こどもの日', '母の日', '梅雨', '父の日', '七夕', 'お中元', '暑中見舞い', 'お盆', '残暑見舞い', '敬老の日', 'お月見', 'スポーツの日',
     'ハロウィン', '七五三', 'お歳暮', 'クリスマス', '年末', '春', '夏', '秋', '冬'];
@@ -3020,6 +3068,7 @@
     if(r === 'ribbon') r = 'fastener';                       // ver.61 の名前
     if(r === 'card') r = /シール|ステッカー|水引/.test(a.name || '') ? 'deco' : 'insert';
     if(r && GIFT_ROLES[r]) return r;
+    if(r && /^u_/.test(r) && giftCustomRoles().some(function(x){ return x.id === r; })) return r;
     var n = a.name || '';
     if(/リボン|ribbon|タイ|輪ゴム|ゴム|紐|ひも/i.test(n)) return 'fastener';
     if(/パッキン|緩衝|クッション|プチプチ|仕切/.test(n)) return 'cushion';
@@ -3072,11 +3121,11 @@
   function giftSetOf(box){
     if(!box || !box.giftBox) return null;
     if(box.giftSet && typeof box.giftSet === 'object'){
-      GIFT_SLOTS.forEach(function(k){ if(!Array.isArray(box.giftSet[k])) box.giftSet[k] = []; });
+      giftSlots().forEach(function(k){ if(!Array.isArray(box.giftSet[k])) box.giftSet[k] = []; });
       return box.giftSet;
     }
     var set = {}, picks = gmConf().picks || {};
-    GIFT_SLOTS.forEach(function(k){ set[k] = []; });
+    giftSlots().forEach(function(k){ set[k] = []; });
     state.materials.forEach(function(m){
       if(!Array.isArray(m.giftWith) || m.giftWith.indexOf(box.id) < 0) return;
       var k = giftRoleOf(m); if(!set[k]) k = 'deco';
@@ -3094,19 +3143,19 @@
     return set;
   }
   // 実際に使う資材（資材をもとにした小さな入れもの。_qty は使う量）
-  // 1つだけの欄：選んだもの → 行事のもの → ふだん使うもの。いくつでもの欄：ふだん使うもの＋行事のもの
+  // 1つだけの欄：行事のもの → ふだん使うもの。いくつでもの欄：ふだん使うもの＋行事のもの
   function gmAccessories(box){
     var set = giftSetOf(box); if(!set) return [];
-    var ev = gmEvent(), picks = gmConf().picks || {}, out = [];
+    var ev = gmEvent(), out = [];
     function wrap(r, k){
       if(r.id === 'set') return {id:'set', name:'セットのもの', unit:'', qty:1, unitPrice:0, price:0, kind:'supply', giftRole:k, _set:true, _qty:1};
       var w = Object.create(giftMatById(r.id)); w._qty = Number(r.qty) || 0; return w;
     }
     function isEv(r){ var m = r.id !== 'set' && giftMatById(r.id); return !!(ev && m && giftEventsOf(m).indexOf(ev) >= 0); }
-    GIFT_SLOTS.forEach(function(k){
+    giftSlots().forEach(function(k){
       var rows = (set[k] || []).filter(function(r){ if(r.id === 'set') return true; var m = giftMatById(r.id); return m && giftUsableIn(m, ev); });
       if(GIFT_ONE_ROLES.indexOf(k) >= 0){
-        var chosen = rows.find(function(r){ return r.id === picks[k]; }) || rows.find(isEv) || rows.find(function(r){ return r.on; });
+        var chosen = rows.find(isEv) || rows.find(function(r){ return r.on; });
         if(chosen) out.push(wrap(chosen, k));
       } else {
         rows.forEach(function(r){ if(r.on || isEv(r)) out.push(wrap(r, k)); });
@@ -3118,45 +3167,39 @@
   function giftBoxesUsing(id){
     return state.materials.filter(function(b){
       var set = b.giftBox && b.giftBox.type ? giftSetOf(b) : null;
-      return set && GIFT_SLOTS.some(function(k){ return set[k].some(function(r){ return r.id === id; }); });
+      return set && giftSlots().some(function(k){ return (set[k] || []).some(function(r){ return r.id === id; }); });
     });
   }
   // リボン・紙袋が2種類以上あれば、どれを使うかを選ぶ欄を出す
   function gmRenderPicks(){
     var wrap = document.getElementById('gm-picks'); if(!wrap) return;
-    var c = gmConf(); c.picks = c.picks || {};
-    if(c.picks.ribbon && !c.picks.fastener){ c.picks.fastener = c.picks.ribbon; delete c.picks.ribbon; }   // ver.61 の名前
     var ev = gmEvent();
-    var inSet = {};
-    state.materials.forEach(function(b){
-      var set = b.giftBox && b.giftBox.type ? giftSetOf(b) : null;
-      if(set) GIFT_SLOTS.forEach(function(k){ set[k].forEach(function(r){ inSet[r.id] = 1; }); });
-    });
-    var used = state.materials.filter(function(m){ return inSet[m.id] && giftUsableIn(m, ev); });
     var evs = giftEventList();
     var html = '<div class="gm-line"><span class="gm-k">行事</span><select data-pick="__event"><option value="">通年（行事なし）</option>' +
       evs.map(function(e){ return '<option value="' + escapeHtml(e) + '"' + (ev === e ? ' selected' : '') + '>' + escapeHtml(e) + '</option>'; }).join('') +
-      '</select></div>' +
-      GIFT_ONE_ROLES.map(function(role){
-      var list = used.filter(function(m){ return giftRoleOf(m) === role; }).sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
-      if(list.length < 2) return '';
-      return '<div class="gm-line"><span class="gm-k">' + GIFT_ROLES[role] + '</span>' +
-        '<select data-pick="' + role + '"><option value="">おまかせ' + (ev ? '（' + escapeHtml(ev) + 'のもの → 安いもの）' : '（いちばん安いもの）') + '</option>' +
-        list.map(function(m){ return '<option value="' + escapeHtml(m.id) + '"' + (c.picks[role] === m.id ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>'; }).join('') +
-        '</select></div>';
-    }).join('');
+      '</select></div>';
     if(wrap.__html === html) return;   // 同じなら作り直さない（一覧のボタンを増やさない）
     wrap.__html = html;
     wrap.innerHTML = html;
     [].forEach.call(wrap.querySelectorAll('select[data-pick]'), function(sel){
-      var key = sel.dataset.pick;
-      attachTapPicker(sel, key === '__event' ? '行事をえらぶ' : GIFT_ROLES[key] + 'をえらぶ');
+      attachTapPicker(sel, '行事をえらぶ');
       if(sel.__pickerSync) sel.__pickerSync();
-      sel.addEventListener('change', function(){
-        if(key === '__event'){ gmConf().event = sel.value || ''; scheduleSave(); gmRenderPicks(); return; }
-        gmConf().picks[key] = sel.value || null; scheduleSave();
-      });
+      sel.addEventListener('change', function(){ gmConf().event = sel.value || ''; scheduleSave(); gmRenderPicks(); gmBoxWarn(); });
     });
+  }
+  // 器を指定したとき、その器のギフトのセットに留め具・手提げが決まっていなければ知らせる
+  function gmBoxWarn(){
+    var el = document.getElementById('gm-box-warn'); if(!el) return;
+    var msg = '';
+    if(gmOpt.boxMode === 'pick'){
+      var bm = giftMatById(document.getElementById('gm-box').value);
+      var set = bm ? giftSetOf(bm) : null;
+      if(set){
+        var miss = ['fastener', 'carry'].filter(function(k){ return !(set[k] || []).some(function(r){ return r.on; }) && !(set._none && set._none[k]); });
+        if(miss.length) msg = '「' + bm.name + '」の' + miss.map(giftRoleName).join('・') + 'が決まっていません。原材料マスタで「' + bm.name + '」を開いて、「ギフトのセット」で指定してください（使わないときは「使わない」を選びます）。';
+      }
+    }
+    el.textContent = msg; el.hidden = !msg;
   }
   // その入れ物に使う量（入れていなければ1つ）
   function gmAccQty(a, box){
@@ -3360,12 +3403,15 @@
       });
       // 入れ物と、一緒に使う資材（原価）
       var packRows = [];
-      if(r.box) packRows.push('<tr class="gm-pack gm-r-box"><td>'+escapeHtml(r.box.name)+'<span class="gm-cat">'+giftBoxTypeLabel(r.box.giftBox && r.box.giftBox.type)+'</span></td><td class="q">×1</td><td class="n">¥'+fmtNum(matUnitPrice(r.box), 0)+'</td></tr>');
+      if(r.box) packRows.push('<tr class="gm-pack gm-r-box"><td><span class="gm-role">器</span>：'+escapeHtml(r.box.name)+'<span class="gm-cat">'+escapeHtml(giftBoxKindOf(r.box))+'</span></td><td class="q">×1</td><td class="n">¥'+fmtNum(matUnitPrice(r.box), 0)+'</td></tr>');
       (r.acc || []).forEach(function(a){
         var aq = gmAccQty(a, r.box), role = giftRoleOf(a), cev = gmEvent();
-        packRows.push('<tr class="gm-pack gm-r-'+role+'"><td>'+escapeHtml(a.name)+'<span class="gm-cat">'+GIFT_ROLES[role]+(cev && giftEventsOf(a).indexOf(cev) >= 0 ? '・'+escapeHtml(cev) : '')+(a._set ? '・器に付いている' : giftNoPriceOf(a) ? '・値段に入れない' : '')+'</span></td><td class="q">'+(a._set ? '' : aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(giftNoPriceOf(a) ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
+        var tags = [];
+        if(cev && giftEventsOf(a).indexOf(cev) >= 0) tags.push(escapeHtml(cev));
+        if(!a._set && giftNoPriceOf(a)) tags.push('値段に入れない');
+        packRows.push('<tr class="gm-pack gm-r-'+giftRoleCss(role)+'"><td><span class="gm-role">'+escapeHtml(giftRoleName(role))+'</span>：'+escapeHtml(a.name)+(tags.length ? '<span class="gm-cat">'+tags.join('・')+'</span>' : '')+'</td><td class="q">'+(a._set ? '' : aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(giftNoPriceOf(a) ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
       });
-      if(r.laborCost > 0) packRows.push('<tr class="gm-pack"><td>詰める手間</td><td class="q"></td><td class="n">¥'+fmtNum(r.laborCost, 0)+'</td></tr>');
+      if(r.laborCost > 0) packRows.push('<tr class="gm-pack"><td><span class="gm-role">詰める手間</span></td><td class="q"></td><td class="n">¥'+fmtNum(r.laborCost, 0)+'</td></tr>');
       var priceIn = Math.round(retail + r.addIn);
       cost += r.addCost + (state.settings.sga || 0);
       var priceEx = priceIn / tax;
@@ -8908,6 +8954,7 @@
     document.getElementById('mm-noupdate').checked = !!(material && material.noUpdate);
     var gb = (material && material.giftBox) || null;
     document.getElementById('mm-gb-type').value = gb ? gb.type : '';
+    document.getElementById('mm-gb-kind').value = gb && gb.type ? giftBoxKindOf(material) : '';
     document.getElementById('mm-gb-min').value = gb && gb.min != null ? gb.min : '';
     document.getElementById('mm-gb-max').value = gb && gb.max != null ? gb.max : '';
     document.getElementById('mm-gb-cap').style.display = gb ? '' : 'none';
@@ -9031,22 +9078,44 @@
     var gbType = document.getElementById('mm-gb-type').value;
     var role = gbType ? 'box' : document.getElementById('mm-gw-role').value;
     var auto = !role ? giftRoleOf({name:document.getElementById('mm-name').value || ''}) : null;
-    document.getElementById('mm-role-chips').innerHTML = GIFT_ROLE_ORDER.map(function(k){
-      var cls = 'tag-chip' + (role === k ? ' on' : (auto === k && k !== 'other' ? ' auto' : ''));
-      return '<button type="button" class="'+cls+'" data-role="'+k+'">'+GIFT_ROLES[k]+(GIFT_ROLE_HINT[k] ? '<small>'+GIFT_ROLE_HINT[k]+'</small>' : '')+'</button>';
-    }).join('');
-    document.getElementById('mm-gb-types').innerHTML = MM_GB_TYPES.map(function(t){
-      return '<button type="button" class="tag-chip'+(gbType === t[0] ? ' on' : '')+'" data-gbtype="'+t[0]+'">'+t[1]+'</button>';
-    }).join('');
+    var keys = ['box', 'cushion', 'fastener', 'deco', 'insert', 'carry'].concat(giftCustomRoles().map(function(r){ return r.id; }));
+    document.getElementById('mm-role-chips').innerHTML = keys.map(function(k){
+      var cls = 'tag-chip' + (role === k ? ' on' : (auto === k ? ' auto' : ''));
+      return '<button type="button" class="'+cls+'" data-role="'+escapeHtml(k)+'">'+escapeHtml(giftRoleName(k))+'</button>';
+    }).join('') + '<span class="mm-ev-add"><button type="button" class="tag-chip" id="mm-role-plus">＋ 役目</button>' +
+      '<span id="mm-role-new-wrap" hidden><input type="text" id="mm-role-new" placeholder="新しい役目" data-keep> <button type="button" class="btn btn-sm" id="mm-role-add">足す</button></span></span>';
+    var kind = document.getElementById('mm-gb-kind').value;
+    document.getElementById('mm-gb-types').innerHTML = giftBoxKindList().map(function(k){
+      return '<button type="button" class="tag-chip'+(gbType && kind === k ? ' on' : '')+'" data-gbkind="'+escapeHtml(k)+'">'+escapeHtml(k)+'</button>';
+    }).join('') + '<span class="mm-ev-add"><button type="button" class="tag-chip" id="mm-kind-plus">＋ 種類</button>' +
+      '<span id="mm-kind-new-wrap" hidden><input type="text" id="mm-kind-new" placeholder="新しい種類" data-keep> <button type="button" class="btn btn-sm" id="mm-kind-add">足す</button></span></span>';
     document.getElementById('mm-gb-sub').hidden = !gbType;
   }
   document.getElementById('mm-role-chips').addEventListener('click', function(e){
+    if(e.target.id === 'mm-role-plus'){ document.getElementById('mm-role-new-wrap').hidden = false; e.target.hidden = true; document.getElementById('mm-role-new').focus(); return; }
+    if(e.target.id === 'mm-role-add'){
+      var nm = (document.getElementById('mm-role-new').value || '').trim(); if(!nm) return;
+      var all = ['box', 'cushion', 'fastener', 'deco', 'insert', 'carry'];
+      var hit = all.find(function(k){ return GIFT_ROLES[k] === nm; }) || (giftCustomRoles().find(function(r){ return r.name === nm; }) || {}).id;
+      if(!hit){ hit = 'u_' + Date.now().toString(36); giftCustomRoles().push({id:hit, name:nm}); scheduleSave(); }
+      var gb0 = document.getElementById('mm-gb-type'), rs0 = document.getElementById('mm-gw-role');
+      if(hit === 'box'){ gb0.value = gb0.dataset.last || 'box'; rs0.value = ''; }
+      else { if(gb0.value) gb0.dataset.last = gb0.value; gb0.value = ''; rs0.value = hit; rs0.dispatchEvent(new Event('change')); }
+      gb0.dispatchEvent(new Event('change'));
+      mmRenderRoleChips();
+      return;
+    }
     var b = e.target.closest('[data-role]'); if(!b) return;
     var k = b.dataset.role, gb = document.getElementById('mm-gb-type'), rs = document.getElementById('mm-gw-role');
     var cur = gb.value ? 'box' : rs.value;
     if(k === 'box'){
       if(cur === 'box'){ gb.dataset.last = gb.value; gb.value = ''; }
-      else { gb.value = gb.dataset.last || 'box'; rs.value = ''; }
+      else {
+        var kd = document.getElementById('mm-gb-kind');
+        if(!kd.value) kd.value = GIFT_BOX_KINDS[0];
+        gb.value = GIFT_BOX_KIND_TYPE[kd.value] || gb.dataset.last || 'box'; rs.value = '';
+        rs.dispatchEvent(new Event('change'));
+      }
     } else {
       if(gb.value) gb.dataset.last = gb.value;
       gb.value = '';
@@ -9057,9 +9126,20 @@
     mmRenderRoleChips();
   });
   document.getElementById('mm-gb-types').addEventListener('click', function(e){
-    var b = e.target.closest('[data-gbtype]'); if(!b) return;
-    var gb = document.getElementById('mm-gb-type');
-    gb.value = b.dataset.gbtype; gb.dataset.last = gb.value;
+    var gb = document.getElementById('mm-gb-type'), kd = document.getElementById('mm-gb-kind');
+    if(e.target.id === 'mm-kind-plus'){ document.getElementById('mm-kind-new-wrap').hidden = false; e.target.hidden = true; document.getElementById('mm-kind-new').focus(); return; }
+    var k = null;
+    if(e.target.id === 'mm-kind-add'){
+      k = (document.getElementById('mm-kind-new').value || '').trim(); if(!k) return;
+      var c = gmConf(); c.boxKinds = c.boxKinds || [];
+      if(giftBoxKindList().indexOf(k) < 0){ c.boxKinds.push(k); scheduleSave(); }
+    } else {
+      var b = e.target.closest('[data-gbkind]'); if(!b) return;
+      k = b.dataset.gbkind;
+    }
+    kd.value = k;
+    gb.value = GIFT_BOX_KIND_TYPE[k] || ({'箱':'box', '袋':'bag', '缶・瓶など':'case'}[k]) || (/袋|バッグ|OPP/i.test(k) ? 'bag' : /缶|瓶|バケツ|カップ/.test(k) ? 'case' : 'box');
+    gb.dataset.last = gb.value;
     mmRenderRoleChips();
   });
   document.getElementById('mm-name').addEventListener('input', function(){
@@ -9068,15 +9148,17 @@
   });
   // ---- 器の「ギフトのセット」（緩衝材・留め具・飾り・添えもの・手提げ） ----
   var mmGiftSet = null;
-  var GIFT_SLOT_TITLE = {cushion:'緩衝材', fastener:'留め具', deco:'飾り', insert:'添えもの', carry:'手提げ'};
+
   function giftSlotCandidates(k, editId){
     return state.materials.filter(function(m){
       return m && m.id !== editId && !(m.giftBox && m.giftBox.type) && kindOf(m) === 'supply' && giftRoleOf(m) === k;
     }).sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
   }
   function mmRenderGiftSet(){
-    if(!mmGiftSet){ mmGiftSet = {}; GIFT_SLOTS.forEach(function(k){ mmGiftSet[k] = []; }); }
-    var html = GIFT_SLOTS.map(function(k){
+    if(!mmGiftSet){ mmGiftSet = {}; }
+    giftSlots().forEach(function(k){ if(!Array.isArray(mmGiftSet[k])) mmGiftSet[k] = []; });
+    mmGiftSet._none = mmGiftSet._none || {};
+    var html = giftSlots().map(function(k){
       var one = GIFT_ONE_ROLES.indexOf(k) >= 0;
       var cands = giftSlotCandidates(k, materialModalEditId);
       var rows = mmGiftSet[k];
@@ -9093,11 +9175,11 @@
         var list = cands.slice();
         var curM = cur && cur !== 'set' ? giftMatById(cur) : null;
         if(curM && list.indexOf(curM) < 0) list.unshift(curM);
-        return '<option value="set"'+(cur === 'set' ? ' selected' : '')+'>セットのもの（器に付いている）</option>' +
+        return '<option value="set"'+(cur === 'set' ? ' selected' : '')+'>セットのもの</option>' +
           list.map(function(m){ return '<option value="'+escapeHtml(m.id)+'"'+(m.id === cur ? ' selected' : '')+'>'+escapeHtml(m.name)+(giftEventsOf(m).length ? '（'+giftEventsOf(m).join('・')+'）' : '')+'</option>'; }).join('');
       };
       var anyOn = rows.some(function(r){ return r.on; });
-      return '<div class="gs-slot" data-slot="'+k+'"><div class="gs-head">'+GIFT_SLOT_TITLE[k]+'<span class="gs-sub">'+(one ? '1つだけ使う（◉がふだん）' : 'いくつでも（☑がふだん）')+'</span></div>' +
+      return '<div class="gs-slot" data-slot="'+k+'"><div class="gs-head">'+escapeHtml(giftRoleName(k))+'<span class="gs-sub">'+(one ? '1つだけ使う（◉がふだん）' : 'いくつでも（☑がふだん）')+'</span></div>' +
         rows.map(function(r, i){
           var m = r.id !== 'set' ? giftMatById(r.id) : null;
           return '<div class="gs-row" data-i="'+i+'">' +
@@ -9107,9 +9189,9 @@
             '<button type="button" class="icon-btn gs-del" title="消す">✕</button></div>';
         }).join('') +
         '<div class="gs-foot">' +
-          (one ? '<label class="skip-toggle"><input type="radio" class="gs-none" name="gs-on-'+k+'"'+(anyOn ? '' : ' checked')+' style="width:auto;">使わない</label>' : '') +
-          '<button type="button" class="btn btn-sm gs-add">＋ '+GIFT_SLOT_TITLE[k]+'</button>' +
-          (cands.length ? '' : '<span class="gs-empty">（役目が「'+GIFT_SLOT_TITLE[k]+'」の資材がまだありません）</span>') +
+          (one ? '<label class="skip-toggle"><input type="radio" class="gs-none" name="gs-on-'+k+'"'+(!anyOn && mmGiftSet._none[k] ? ' checked' : '')+' style="width:auto;">使わない</label>' + (!anyOn && !mmGiftSet._none[k] ? '<span class="gs-empty">まだ決まっていません</span>' : '') : '') +
+          '<button type="button" class="btn btn-sm gs-add">＋ '+escapeHtml(giftRoleName(k))+'</button>' +
+          (cands.length ? '' : '<span class="gs-empty">（役目が「'+escapeHtml(giftRoleName(k))+'」の資材がまだありません）</span>') +
         '</div></div>';
     }).join('');
     document.getElementById('mm-gs-list').innerHTML = html;
@@ -9123,11 +9205,11 @@
       if(e.target.checked) mmGiftSet.insert.push({id:id, qty:1, on:true});
       return;
     }
-    if(e.target.classList.contains('gs-none')){ rows.forEach(function(r){ r.on = false; }); return; }
+    if(e.target.classList.contains('gs-none')){ rows.forEach(function(r){ r.on = false; }); mmGiftSet._none[k] = true; mmRenderGiftSet(); return; }
     var rowEl = e.target.closest('.gs-row'); if(!rowEl) return;
     var r = rows[Number(rowEl.dataset.i)]; if(!r) return;
     if(e.target.classList.contains('gs-on')){
-      if(GIFT_ONE_ROLES.indexOf(k) >= 0) rows.forEach(function(x){ x.on = false; });
+      if(GIFT_ONE_ROLES.indexOf(k) >= 0){ rows.forEach(function(x){ x.on = false; }); mmGiftSet._none[k] = false; }
       r.on = e.target.checked;
     } else if(e.target.classList.contains('gs-item')){
       r.id = e.target.value; mmRenderGiftSet();
@@ -9197,7 +9279,7 @@
     });
   });
   document.getElementById('mm-gw-role').addEventListener('change', function(){
-    if(this.value === 'insert') document.getElementById('mm-gw-noprice').checked = true;
+    document.getElementById('mm-gw-noprice').checked = (this.value === 'insert');
   });
   function mmUpdateYmText(){
     var v = document.getElementById('mm-updated').value;
@@ -9327,16 +9409,18 @@
       var gbMax = parseInt(document.getElementById('mm-gb-max').value, 10) || gbMin;
       if(!gbMin) gbMin = gbMax;
       if(gbMin > gbMax){ var t0 = gbMin; gbMin = gbMax; gbMax = t0; }
-      data.giftBox = {type:gbType, min:gbMin, max:gbMax};
+      data.giftBox = {type:gbType, kind:document.getElementById('mm-gb-kind').value || giftBoxKindOf({giftBox:{type:gbType}}), min:gbMin, max:gbMax};
       // ギフトのセット（空の行・同じものの重なりは省く）
       var gs = {};
-      GIFT_SLOTS.forEach(function(k){
+      giftSlots().forEach(function(k){
         var seen = {};
         gs[k] = ((mmGiftSet && mmGiftSet[k]) || []).filter(function(r){
           if(!r || !r.id || seen[r.id]) return false;
           seen[r.id] = 1; return true;
         }).map(function(r){ return {id:r.id, qty:Number(r.qty) || 0, on:!!r.on}; });
       });
+      gs._none = {};
+      GIFT_ONE_ROLES.forEach(function(k){ if(mmGiftSet && mmGiftSet._none && mmGiftSet._none[k] && !gs[k].some(function(r){ return r.on; })) gs._none[k] = true; });
       data.giftSet = gs;
     } else data.giftBox = null;
     if(mmKind === 'supply'){
