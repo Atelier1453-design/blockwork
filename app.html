@@ -362,6 +362,32 @@
   .mm-catrow > .field{margin-bottom:0;}
   .mm-gw-role{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:13.5px;}
   .mm-gw-role select{width:auto;}
+  .ce-group{border:1px solid var(--border); border-radius:12px; background:var(--bg); padding:8px 10px; margin-bottom:8px;}
+  .ce-row{display:flex; align-items:center; gap:6px; padding:3px 0;}
+  .ce-row input[type="text"]{flex:1; min-width:0; border:1px solid var(--border); background:var(--surface); border-radius:9px; padding:6px 8px;}
+  .ce-row.ce-g input[type="text"]{font-weight:700;}
+  .ce-row.ce-c{padding-left:18px;}
+  .ce-n{font-size:12px; color:var(--ink-faint); white-space:nowrap; min-width:3.5em; text-align:right;}
+  .ce-row .band-btn{min-width:30px;}
+  .ce-add{display:flex; gap:6px; align-items:center; margin-top:6px;}
+  .ce-add input{flex:1; min-width:0; border:1px solid var(--border); background:var(--surface); border-radius:9px; padding:6px 8px;}
+  .ce-group .ce-add{padding-left:18px; margin-top:4px;}
+  .names-list{display:flex; flex-direction:column; gap:6px;}
+  .names-row{display:grid; grid-template-columns:2fr 1fr 1.3fr 1.2fr; gap:6px; align-items:center;}
+  .names-row input{border:1px solid var(--border); background:var(--surface); border-radius:9px; padding:6px 8px; min-width:0;}
+  .names-head{font-size:11.5px; color:var(--ink-faint); font-weight:700;}
+  @media (max-width:700px){ .names-row{grid-template-columns:1fr 1fr;} }
+  .mat-role{display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; border:1.5px solid transparent; white-space:nowrap;}
+  .mat-role.r-box{background:#efe3cc; color:#7a5320;}
+  .mat-role.r-cushion{background:#f4efdf; color:#6d6040;}
+  .mat-role.r-fastener{background:#f8e1e6; color:#9a3d55;}
+  .mat-role.r-deco{background:#efe4f5; color:#6e4a85;}
+  .mat-role.r-insert{background:#ececec; color:#555;}
+  .mat-role.r-carry{background:#e3ecd9; color:#4b6a35;}
+  .mat-role.r-other{background:#e6eef5; color:#3f5f7a;}
+  .mat-role.auto{background:transparent; border-style:dashed; border-color:currentColor; font-weight:400;}
+  .mat-role.none{background:#f2f2f2; color:#999; font-weight:400;}
+  .mat-role.unset{background:transparent; color:#c0392b; border:1.5px dashed #e3a39a;}
   .mat-ev{font-size:11px; color:#a0566a; margin-top:1px;}
   .mm-ev-list{display:flex; flex-wrap:wrap; gap:4px 14px; align-items:center;}
   .mm-ev-list .mm-ev-add{display:inline-flex; gap:6px; align-items:center;}
@@ -1128,7 +1154,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.67</div>
+      <div class="brand-ver">ver.68</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1490,6 +1516,7 @@
         <div style="display:flex; gap:8px; flex:none;">
           <button class="btn btn-ghost" id="btn-open-stocktake">📋 棚卸し</button>
           <button class="btn btn-ghost" id="btn-import-materials">CSVから取り込み</button>
+          <button class="btn btn-ghost" id="btn-edit-cats">カテゴリを編集</button>
           <button class="btn btn-ghost" id="btn-edit-suppliers">購入業者をまとめて編集</button>
           <button class="btn btn-primary" id="btn-add-material">＋ 材料を追加</button>
         </div>
@@ -1521,6 +1548,10 @@
             <option value="stale">要更新を先に（古い順）</option>
             <option value="supplier">購入業者順</option>
           </select>
+        </div>
+        <div class="field" style="max-width:220px;">
+          <label style="font-size:11px;">購入業者</label>
+          <select id="material-supplier-filter"><option value="">すべての購入業者</option></select>
         </div>
         <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--ink); white-space:nowrap;">
           <input type="checkbox" id="material-stale-only" style="width:auto;">
@@ -1555,10 +1586,40 @@
             <select id="mat-bulk-category-select"></select>
             <input id="mat-bulk-category" type="text" placeholder="新しい小カテゴリ名" style="margin-top:6px;" hidden>
           </div>
+        </div>
+        <div class="row-inline" style="align-items:flex-end; margin-top:8px;">
+          <div class="field" style="max-width:190px;">
+            <label>購入業者</label>
+            <select id="mat-bulk-supplier-select"></select>
+            <input id="mat-bulk-supplier" type="text" placeholder="新しい購入業者の名前" style="margin-top:6px;" hidden>
+          </div>
+          <div class="field" style="max-width:170px;">
+            <label>勘定科目</label>
+            <select id="mat-bulk-costlabel"></select>
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label>ギフトでの役目</label>
+            <select id="mat-bulk-role"></select>
+          </div>
+          <div class="field" style="max-width:150px;">
+            <label>行事を足す</label>
+            <select id="mat-bulk-event"></select>
+          </div>
+          <div class="field" style="max-width:150px;">
+            <label>価格の更新</label>
+            <select id="mat-bulk-noupdate"><option value="">変更しない</option><option value="1">更新しない</option><option value="0">更新する</option></select>
+          </div>
+        </div>
+        <div class="row-inline" style="align-items:flex-end; margin-top:8px;">
+          <div class="field" style="max-width:330px;">
+            <label>品名の言葉を置きかえる</label>
+            <div style="display:flex; gap:6px; align-items:center;"><input id="mat-bulk-find" type="text" placeholder="この言葉を" data-keep> → <input id="mat-bulk-repl" type="text" placeholder="この言葉に（空なら消す）" data-keep></div>
+          </div>
           <div class="field" style="flex:0 0 auto; max-width:none;">
             <label>&nbsp;</label>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button type="button" class="btn btn-sm btn-primary" id="mat-bulk-apply">まとめて変更</button>
+              <button type="button" class="btn btn-sm" id="mat-bulk-names">品名などを一覧で直す</button>
               <button type="button" class="btn btn-sm btn-ghost" id="mat-bulk-clear">選択を解除</button>
             </div>
           </div>
@@ -1569,7 +1630,7 @@
         <table class="mat-table">
           <thead><tr>
             <th style="width:3%;"><input type="checkbox" id="mat-select-all" style="width:auto;" title="表示中をすべて選択"></th>
-            <th style="width:20%;">品名</th><th style="width:9%;">カテゴリ</th><th style="width:9%;">容量</th>
+            <th style="width:20%;">品名</th><th style="width:9%;">役目</th><th style="width:9%;">容量</th>
             <th style="width:8%;">価格</th><th style="width:12%;">単価</th>
             <th style="width:15%;">購入業者・サイト</th><th style="width:17%; white-space:nowrap;">更新年月</th><th style="width:7%;"></th>
           </tr></thead>
@@ -2198,7 +2259,7 @@
     <div class="field" id="mm-giftbox-block">
       <label>ギフトでの役目</label>
       <div id="mm-role-chips" class="tag-chips"></div>
-      <span class="hint" style="margin-top:4px;">タップで1つ選びます（もう一度タップで外す）。選ばないときは名前から自動で決めます（点線の枠）。器＝お菓子を直接詰める箱・袋・缶など／緩衝材＝パッキン・仕切り／留め具＝リボン・タイ／飾り＝シール・水引・掛け紙など／添えもの＝ショップカード・チラシ・説明書き／手提げ＝手提げの紙袋。</span>
+      <span class="hint" style="margin-top:4px;">タップで1つ選びます（もう一度タップで外す＝役目なし）。何も決めていないときは名前から自動で決めます（点線の枠。タップで外せます）。器＝お菓子を直接詰める箱・袋・缶など／緩衝材＝パッキン・仕切り／留め具＝リボン・タイ／飾り＝シール・水引・掛け紙など／添えもの＝ショップカード・チラシ・説明書き／手提げ＝手提げの紙袋。</span>
       <input type="hidden" id="mm-gw-role">
       <div id="mm-gb-sub" class="mm-gb-sub" hidden>
         <div class="mm-gb">
@@ -2247,6 +2308,23 @@
       <button class="btn btn-ghost" id="mm-cancel">キャンセル</button>
       <button class="btn btn-primary" id="mm-save">保存する</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="cat-modal-backdrop" hidden>
+  <div class="modal-box" style="max-width:640px;">
+    <div class="grp-topbar"><h3 class="serif">カテゴリを編集</h3><span style="flex:1;"></span><button type="button" class="btn btn-primary" id="cat-close">閉じる</button></div>
+    <p class="hint" style="margin:0 0 8px;">名前を書きかえると、その場で変わります（材料のカテゴリもいっしょに変わります）。▲▼ で並び順を入れかえます。✕ で消すと、中の材料は「カテゴリなし」になります。</p>
+    <div id="cat-edit-list"></div>
+    <div class="ce-add"><input type="text" id="cat-new-group" placeholder="新しい中カテゴリの名前" data-keep><button type="button" class="btn btn-sm" id="cat-add-group">＋ 中カテゴリ</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="names-modal-backdrop" hidden>
+  <div class="modal-box" style="max-width:720px;">
+    <div class="grp-topbar"><h3 class="serif">品名などを一覧で直す</h3><span style="flex:1;"></span><button type="button" class="btn btn-ghost" id="names-cancel">やめる</button><button type="button" class="btn btn-primary" id="names-ok">保存</button></div>
+    <p class="hint" style="margin:0 0 8px;">選んだ材料の品名・型番・キーワード・購入業者を、まとめて書きかえられます。品名を変えると、登録済み商品の材料名もいっしょに変わります。</p>
+    <div id="names-list" class="names-list"></div>
   </div>
 </div>
 
@@ -3065,6 +3143,7 @@
     if(!a) return 'other';
     if(a.giftBox && a.giftBox.type) return 'box';
     var r = a.giftRole;
+    if(r === 'none') return 'other';   // 役目なし（自分で外した）
     if(r === 'ribbon') r = 'fastener';                       // ver.61 の名前
     if(r === 'card') r = /シール|ステッカー|水引/.test(a.name || '') ? 'deco' : 'insert';
     if(r && GIFT_ROLES[r]) return r;
@@ -8388,12 +8467,17 @@
       if(onChange) onChange();
     });
   }
+  // 材料のない中カテゴリ・小カテゴリも、カテゴリの編集で足したものは出す
+  // （小カテゴリ → state.groupMap、中カテゴリ → state.settings.matExtraGroups）
+  function extraGroups(){ var g = state.settings && state.settings.matExtraGroups; return Array.isArray(g) ? g : []; }
   function allGroups(kind){
     var set = {};
     state.materials.forEach(function(m){
       if(kind && kindOf(m) !== kind) return;
       if(m.category) set[groupOf(m.category)] = 1;
     });
+    Object.keys(state.groupMap || {}).forEach(function(c){ if(!kind || categoryKind(c) === kind) set[groupOf(c)] = 1; });
+    if(!kind) extraGroups().forEach(function(g){ set[g] = 1; });
     return orderedGroups(Object.keys(set));
   }
   function allCategories(kind, grp){
@@ -8403,6 +8487,11 @@
       if(!m.category) return;
       if(grp && groupOf(m.category) !== grp) return;
       set[m.category] = 1;
+    });
+    Object.keys(state.groupMap || {}).forEach(function(c){
+      if(grp && groupOf(c) !== grp) return;
+      if(kind && categoryKind(c) !== kind) return;
+      set[c] = 1;
     });
     return orderedCategories(grp, Object.keys(set));
   }
@@ -8414,6 +8503,20 @@
     var curC = pickOrNewValue(cs, document.getElementById('mat-bulk-category'));
     fillPickOrNew(gs, document.getElementById('mat-bulk-group'), allGroups(''), '変更しない', curG);
     fillPickOrNew(cs, document.getElementById('mat-bulk-category'), allCategories('', curG), '変更しない', curC);
+    var ss = document.getElementById('mat-bulk-supplier-select');
+    var curS = pickOrNewValue(ss, document.getElementById('mat-bulk-supplier'));
+    fillPickOrNew(ss, document.getElementById('mat-bulk-supplier'), allSuppliers(), '変更しない', curS);
+    var cl = document.getElementById('mat-bulk-costlabel'), clCur = cl.value;
+    var labels = costLabelsFor('food').concat(costLabelsFor('supply')).filter(function(x, i, a){ return a.indexOf(x) === i; });
+    cl.innerHTML = '<option value="">変更しない</option>' + labels.map(function(x){ return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>'; }).join('');
+    cl.value = clCur;
+    var rl = document.getElementById('mat-bulk-role'), rlCur = rl.value;
+    rl.innerHTML = '<option value="">変更しない</option>' + ['cushion', 'fastener', 'deco', 'insert', 'carry'].concat(giftCustomRoles().map(function(r){ return r.id; })).map(function(k){ return '<option value="'+escapeHtml(k)+'">'+escapeHtml(giftRoleName(k))+'</option>'; }).join('') +
+      '<option value="none">役目なし</option><option value="__auto__">名前から自動にもどす</option>';
+    rl.value = rlCur;
+    var ev = document.getElementById('mat-bulk-event'), evCur = ev.value;
+    ev.innerHTML = '<option value="">変更しない</option>' + ['通年'].concat(giftEventList()).map(function(x){ return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>'; }).join('') + '<option value="__clear__">行事をすべて外す</option>';
+    ev.value = evCur;
   }
   function updateBulkBar(){
     var ids = bulkSelectedIds();
@@ -8429,7 +8532,13 @@
     var kind = document.getElementById('mat-bulk-kind').value;
     var grp = pickOrNewValue(document.getElementById('mat-bulk-group-select'), document.getElementById('mat-bulk-group'));
     var cat = pickOrNewValue(document.getElementById('mat-bulk-category-select'), document.getElementById('mat-bulk-category'));
-    if(!kind && !grp && !cat){ showToast('変更する項目を選んでください'); return; }
+    var sup = pickOrNewValue(document.getElementById('mat-bulk-supplier-select'), document.getElementById('mat-bulk-supplier'));
+    var costLabel = document.getElementById('mat-bulk-costlabel').value;
+    var role = document.getElementById('mat-bulk-role').value;
+    var evAdd = document.getElementById('mat-bulk-event').value;
+    var noUp = document.getElementById('mat-bulk-noupdate').value;
+    var find = document.getElementById('mat-bulk-find').value, repl = document.getElementById('mat-bulk-repl').value;
+    if(!kind && !grp && !cat && !sup && !costLabel && !role && !evAdd && !noUp && !find){ showToast('変更する項目を選んでください'); return; }
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
     var touchedCats = {};
     ids.forEach(function(id){
@@ -8443,6 +8552,18 @@
         if(kind === 'supply') delete m.nutrition;
       }
       if(cat) m.category = cat;
+      if(sup) m.supplier = sup;
+      if(costLabel) m.costLabel = costLabel;
+      if(role && kindOf(m) === 'supply' && !(m.giftBox && m.giftBox.type)) m.giftRole = role === '__auto__' ? null : role;
+      if(evAdd && kindOf(m) === 'supply'){
+        if(evAdd === '__clear__') m.giftEvents = null;
+        else { var es = giftEventsOf(m).slice(); if(es.indexOf(evAdd) < 0) es.push(evAdd); m.giftEvents = es; }
+      }
+      if(noUp) m.noUpdate = noUp === '1';
+      if(find && m.name && m.name.indexOf(find) >= 0){
+        var nn = m.name.split(find).join(repl).trim();
+        if(nn && nn !== m.name){ renameMaterialEverywhere(m.name, nn); m.name = nn; }
+      }
       touchedCats[m.category || ''] = 1;
     });
     if(grp){
@@ -8457,6 +8578,9 @@
     document.getElementById('mat-bulk-category-select').value = '';
     document.getElementById('mat-bulk-category').value = '';
     document.getElementById('mat-bulk-category').hidden = true;
+    ['mat-bulk-supplier-select', 'mat-bulk-costlabel', 'mat-bulk-role', 'mat-bulk-event', 'mat-bulk-noupdate', 'mat-bulk-find', 'mat-bulk-repl', 'mat-bulk-supplier'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('mat-bulk-supplier').hidden = true;
+    state.materials.sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
     rebuildMaterialIndex();
     rebuildCategoryList();
     rebuildMaterialCategories();
@@ -8536,7 +8660,19 @@
     var groupFilter = groupSel ? groupSel.value : '';
     // 原価計算の仕掛品も「仕掛品」として一緒に出す（単価はいつも最新の原価。編集は原価計算で）
     if(syncWipMaterials() && state.dbxReady) scheduleSave();
+    // 購入業者でしぼる（一覧はいつも今の業者から作り直す）
+    var supSel = document.getElementById('material-supplier-filter');
+    var supFilter = supSel ? supSel.value : '';
+    if(supSel){
+      var sups0 = allSuppliers();
+      var hasNone = state.materials.some(function(m){ return !(m.supplier || '').trim() && !m.wipOf; });
+      var supHtml = '<option value="">すべての購入業者</option>' + sups0.map(function(x){ return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>'; }).join('') + (hasNone ? '<option value="__none__">（購入業者なし）</option>' : '');
+      if(supSel.__html !== supHtml){ supSel.innerHTML = supHtml; supSel.__html = supHtml; }
+      if(supFilter && supFilter !== '__none__' && sups0.indexOf(supFilter) < 0) supFilter = '';
+      supSel.value = supFilter;
+    }
     var list = state.materials.filter(function(m){
+      if(supFilter === '__none__' ? (m.supplier || '').trim() : (supFilter && (m.supplier || '').trim() !== supFilter)) return false;
       if(kindFilter && kindOf(m) !== kindFilter) return false;
       if(groupFilter && groupOf(m.category) !== groupFilter) return false;
       if(catFilter && (m.category || '（カテゴリなし）') !== catFilter) return false;
@@ -8563,12 +8699,23 @@
     });
     var catNames = Object.keys(groups).sort(function(a,b){ return a.localeCompare(b,'ja'); });
 
+    // 資材の役目：決めてある＝色つき、名前から自動＝点線、役目なし＝灰色、決まっていない＝「未設定」
+    function matRoleBadge(m){
+      if(kindOf(m) !== 'supply') return '';
+      var r = m.giftRole;
+      if(m.giftBox && m.giftBox.type) return '<span class="mat-role r-box" title="ギフトでの役目">器</span>';
+      if(r === 'none') return '<span class="mat-role none">役目なし</span>';
+      var k = giftRoleOf(m);
+      if(k === 'other') return '<span class="mat-role unset" title="ギフトでの役目が決まっていません">未設定</span>';
+      if(!r) return '<span class="mat-role auto r-'+giftRoleCss(k)+'" title="名前から自動で決めています（まだ決めていません）">'+escapeHtml(giftRoleName(k))+'?</span>';
+      return '<span class="mat-role r-'+giftRoleCss(k)+'">'+escapeHtml(giftRoleName(k))+'</span>';
+    }
     function matRow(m){
       if(m.wipOf){
         return '<tr data-id="'+m.id+'" data-wip="'+escapeHtml(m.wipOf)+'" class="mat-wip">' +
           '<td></td>' +
           '<td>'+escapeHtml(m.name)+'<span class="mat-kind-tag">仕掛品（原価計算）</span></td>' +
-          '<td><span class="mat-cat-tag">'+escapeHtml(m.category||'仕掛品')+'</span></td>' +
+          '<td></td>' +
           '<td>1 '+escapeHtml(m.unit||'')+'</td>' +
           '<td>'+fmtYen2(m.unitPrice)+'</td>' +
           '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
@@ -8583,7 +8730,7 @@
           (giftEventsOf(m).length ? '<div class="mat-ev">'+giftEventsOf(m).map(escapeHtml).join('・')+'</div>' : '')+
           '<span class="mat-kind-tag">'+kindLabel(kindOf(m))+(m.costLabel?'・'+escapeHtml(m.costLabel):'')+'</span>' +
           ((kindOf(m)==='food' && m.nutrition && m.nutrition.kcal!=null)?'<br><span style="color:var(--ink-faint); font-size:11px;">'+fmtNum(m.nutrition.kcal,0)+'kcal/100g</span>':'')+'</td>' +
-        '<td><span class="mat-cat-tag">'+escapeHtml(m.category||'—')+'</span></td>' +
+        '<td>'+matRoleBadge(m)+'</td>' +
         '<td>'+(m.qty!=null?fmtNum(m.qty):'—')+' '+escapeHtml(m.unit||'')+'</td>' +
         '<td>'+(m.price!=null?fmtYen(m.price):'—')+'</td>' +
         '<td>¥'+fmtNum(m.unitPrice,1)+' / '+escapeHtml(m.unit||'')+'</td>' +
@@ -8706,6 +8853,162 @@
       });
     });
   }
+  // ---------------- カテゴリの編集（中カテゴリ・小カテゴリ） ----------------
+  function catCount(c){ return state.materials.filter(function(m){ return (m.category || '') === c; }).length; }
+  function afterCatEdit(){
+    rebuildMaterialIndex(); rebuildCategoryList(); rebuildMaterialCategories();
+    rebuildMaterialGroupFilter(); rebuildMaterialCategoryFilter();
+    renderMaterialTable(); refreshAllRowCategorySelects();
+    scheduleSave();
+    renderCatEditor();
+  }
+  function renderCatEditor(){
+    var groups = allGroups('');
+    document.getElementById('cat-edit-list').innerHTML = groups.map(function(g, gi){
+      var cats = allCategories('', g);
+      var n = cats.reduce(function(s, c){ return s + catCount(c); }, 0);
+      return '<div class="ce-group" data-g="'+escapeHtml(g)+'">' +
+        '<div class="ce-row ce-g"><input type="text" class="ce-gname" value="'+escapeHtml(g)+'" data-keep>' +
+          '<span class="ce-n">'+n+'件</span>' +
+          '<button type="button" class="band-btn ce-gmove" data-dir="-1"'+(gi === 0 ? ' disabled' : '')+'>▲</button>' +
+          '<button type="button" class="band-btn ce-gmove" data-dir="1"'+(gi === groups.length - 1 ? ' disabled' : '')+'>▼</button>' +
+          '<button type="button" class="icon-btn ce-gdel" title="消す">✕</button></div>' +
+        cats.map(function(c, ci){
+          return '<div class="ce-row ce-c" data-c="'+escapeHtml(c)+'"><input type="text" class="ce-cname" value="'+escapeHtml(c)+'" data-keep>' +
+            '<span class="ce-n">'+catCount(c)+'件</span>' +
+            '<button type="button" class="band-btn ce-cmove" data-dir="-1"'+(ci === 0 ? ' disabled' : '')+'>▲</button>' +
+            '<button type="button" class="band-btn ce-cmove" data-dir="1"'+(ci === cats.length - 1 ? ' disabled' : '')+'>▼</button>' +
+            '<button type="button" class="icon-btn ce-cdel" title="消す">✕</button></div>';
+        }).join('') +
+        '<div class="ce-add"><input type="text" class="ce-newcat" placeholder="新しい小カテゴリの名前" data-keep><button type="button" class="btn btn-sm ce-addcat">＋ 小カテゴリ</button></div>' +
+      '</div>';
+    }).join('') || '<p class="hint" data-keep-hint>まだカテゴリがありません。</p>';
+  }
+  function renameGroup(oldG, newG){
+    if(!newG || newG === oldG) return;
+    state.groupMap = state.groupMap || {};
+    allCategories('', oldG).forEach(function(c){ state.groupMap[c] = newG; });
+    Object.keys(state.groupMap).forEach(function(c){ if(state.groupMap[c] === oldG) state.groupMap[c] = newG; });
+    state.groupOrder = (state.groupOrder || []).map(function(x){ return x === oldG ? newG : x; });
+    state.catOrder = state.catOrder || {};
+    if(state.catOrder[oldG]){ state.catOrder[newG] = (state.catOrder[newG] || []).concat(state.catOrder[oldG]); delete state.catOrder[oldG]; }
+    var ex = extraGroups().map(function(x){ return x === oldG ? newG : x; });
+    state.settings.matExtraGroups = ex.filter(function(x, i){ return ex.indexOf(x) === i; });
+  }
+  function renameCategory(oldC, newC){
+    if(!newC || newC === oldC) return;
+    var g = groupOf(oldC);
+    state.materials.forEach(function(m){ if((m.category || '') === oldC) m.category = newC; });
+    state.groupMap = state.groupMap || {};
+    state.groupMap[newC] = state.groupMap[newC] || g;
+    delete state.groupMap[oldC];
+    state.catOrder = state.catOrder || {};
+    if(state.catOrder[g]) state.catOrder[g] = state.catOrder[g].map(function(x){ return x === oldC ? newC : x; });
+  }
+  document.getElementById('btn-edit-cats').addEventListener('click', function(){
+    renderCatEditor();
+    document.getElementById('cat-modal-backdrop').hidden = false;
+  });
+  document.getElementById('cat-close').addEventListener('click', function(){ document.getElementById('cat-modal-backdrop').hidden = true; });
+  document.getElementById('cat-edit-list').addEventListener('change', function(e){
+    var t = e.target, v = (t.value || '').trim();
+    if(t.classList.contains('ce-gname')){
+      var oldG = t.closest('.ce-group').dataset.g;
+      if(!v){ t.value = oldG; return; }
+      renameGroup(oldG, v); afterCatEdit();
+    } else if(t.classList.contains('ce-cname')){
+      var oldC = t.closest('.ce-row').dataset.c;
+      if(!v){ t.value = oldC; return; }
+      renameCategory(oldC, v); afterCatEdit();
+    }
+  });
+  document.getElementById('cat-edit-list').addEventListener('click', function(e){
+    var t = e.target, grpEl = t.closest('.ce-group'); if(!grpEl) return;
+    var g = grpEl.dataset.g;
+    if(t.classList.contains('ce-gmove')){ moveGroup(g, parseInt(t.dataset.dir, 10)); renderCatEditor(); return; }
+    if(t.classList.contains('ce-cmove')){ moveCategory(g, t.closest('.ce-row').dataset.c, parseInt(t.dataset.dir, 10)); renderCatEditor(); return; }
+    if(t.classList.contains('ce-addcat')){
+      var inp = grpEl.querySelector('.ce-newcat'), nc = (inp.value || '').trim(); if(!nc) return;
+      state.groupMap = state.groupMap || {};
+      state.groupMap[nc] = g;
+      state.catOrder = state.catOrder || {};
+      state.catOrder[g] = allCategories('', g).filter(function(x){ return x !== nc; }).concat([nc]);
+      afterCatEdit();
+      return;
+    }
+    if(t.classList.contains('ce-cdel')){
+      var c = t.closest('.ce-row').dataset.c, n = catCount(c);
+      openConfirmModal('小カテゴリ「' + c + '」を消します。' + (n ? '\n中の材料 ' + n + '件は「カテゴリなし」になります（材料は消えません）。' : ''), function(){
+        state.materials.forEach(function(m){ if((m.category || '') === c) m.category = ''; });
+        if(state.groupMap) delete state.groupMap[c];
+        if(state.catOrder && state.catOrder[g]) state.catOrder[g] = state.catOrder[g].filter(function(x){ return x !== c; });
+        afterCatEdit();
+      }, '消す');
+      return;
+    }
+    if(t.classList.contains('ce-gdel')){
+      var cats = allCategories('', g), n2 = cats.reduce(function(s, c){ return s + catCount(c); }, 0);
+      openConfirmModal('中カテゴリ「' + g + '」と、その中の小カテゴリ ' + cats.length + 'つを消します。' + (n2 ? '\n中の材料 ' + n2 + '件は「カテゴリなし」になります（材料は消えません）。' : ''), function(){
+        cats.forEach(function(c){
+          state.materials.forEach(function(m){ if((m.category || '') === c) m.category = ''; });
+          if(state.groupMap) delete state.groupMap[c];
+        });
+        state.groupOrder = (state.groupOrder || []).filter(function(x){ return x !== g; });
+        if(state.catOrder) delete state.catOrder[g];
+        state.settings.matExtraGroups = extraGroups().filter(function(x){ return x !== g; });
+        afterCatEdit();
+      }, '消す');
+    }
+  });
+  document.getElementById('cat-add-group').addEventListener('click', function(){
+    var inp = document.getElementById('cat-new-group'), g = (inp.value || '').trim(); if(!g) return;
+    var ex = extraGroups().slice(); if(ex.indexOf(g) < 0) ex.push(g);
+    state.settings.matExtraGroups = ex;
+    state.groupOrder = allGroups('').filter(function(x){ return x !== g; }).concat([g]);
+    inp.value = '';
+    afterCatEdit();
+  });
+
+  // ---------------- 品名などを一覧で直す（選んだ材料） ----------------
+  function openNamesModal(){
+    var ids = bulkSelectedIds();
+    var list = ids.map(function(id){ return state.materials.find(function(m){ return m.id === id; }); }).filter(Boolean);
+    if(!list.length){ showToast('先に材料を選んでください'); return; }
+    document.getElementById('names-list').innerHTML = '<div class="names-row names-head"><span>品名</span><span>型番</span><span>キーワード</span><span>購入業者</span></div>' +
+      list.map(function(m){
+        return '<div class="names-row" data-id="'+escapeHtml(m.id)+'">' +
+          '<input type="text" data-f="name" value="'+escapeHtml(m.name || '')+'">' +
+          '<input type="text" data-f="model" value="'+escapeHtml(m.model || '')+'" placeholder="型番">' +
+          '<input type="text" data-f="yomi" value="'+escapeHtml(m.yomi || '')+'" placeholder="キーワード">' +
+          '<input type="text" data-f="supplier" value="'+escapeHtml(m.supplier || '')+'" placeholder="購入業者">' +
+        '</div>';
+      }).join('');
+    document.getElementById('names-modal-backdrop').hidden = false;
+  }
+  document.getElementById('names-cancel').addEventListener('click', function(){ document.getElementById('names-modal-backdrop').hidden = true; });
+  document.getElementById('names-ok').addEventListener('click', function(){
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    var changed = 0, renamed = 0;
+    document.querySelectorAll('#names-list .names-row[data-id]').forEach(function(row){
+      var m = state.materials.find(function(x){ return x.id === row.dataset.id; }); if(!m) return;
+      var any = false;
+      row.querySelectorAll('input[data-f]').forEach(function(inp){
+        var f = inp.dataset.f, v = inp.value.trim();
+        if(f === 'name'){
+          if(!v || v === m.name) return;
+          renamed += renameMaterialEverywhere(m.name, v);
+          m.name = v; any = true;
+        } else if((m[f] || '') !== v){ m[f] = v; any = true; }
+      });
+      if(any) changed++;
+    });
+    document.getElementById('names-modal-backdrop').hidden = true;
+    state.materials.sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
+    rebuildMaterialIndex(); renderMaterialTable(); scheduleSave();
+    showToast(changed + '件を変えました' + (renamed ? '（' + renamed + '件の商品の材料名も）' : ''));
+  });
+  document.getElementById('mat-bulk-names').addEventListener('click', openNamesModal);
+
   // 入力中の連続再描画をまとめるための遅延実行
   function debounce(fn, ms){
     var t = null;
@@ -8740,6 +9043,7 @@
     renderMaterialTable();
   });
   document.getElementById('material-sort').addEventListener('change', renderMaterialTable);
+  document.getElementById('material-supplier-filter').addEventListener('change', renderMaterialTable);
   document.getElementById('material-stale-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-usedstale-only').addEventListener('change', renderMaterialTable);
   document.getElementById('material-search').addEventListener('input', debounce(renderMaterialTable, 150));
@@ -8899,6 +9203,7 @@
     fillPickOrNew(document.getElementById('mm-category-select'), document.getElementById('mm-category'), allCategories('', grp), 'えらぶ', '');
   });
   wirePickOrNew(document.getElementById('mm-category-select'), document.getElementById('mm-category'));
+  wirePickOrNew(document.getElementById('mat-bulk-supplier-select'), document.getElementById('mat-bulk-supplier'));
   wirePickOrNew(document.getElementById('mat-bulk-group-select'), document.getElementById('mat-bulk-group'), function(){
     var grp = pickOrNewValue(document.getElementById('mat-bulk-group-select'), document.getElementById('mat-bulk-group'));
     fillPickOrNew(document.getElementById('mat-bulk-category-select'), document.getElementById('mat-bulk-category'), allCategories('', grp), '変更しない', '');
@@ -9078,11 +9383,12 @@
     var gbType = document.getElementById('mm-gb-type').value;
     var role = gbType ? 'box' : document.getElementById('mm-gw-role').value;
     var auto = !role ? giftRoleOf({name:document.getElementById('mm-name').value || ''}) : null;
+    if(auto === 'other') auto = null;
     var keys = ['box', 'cushion', 'fastener', 'deco', 'insert', 'carry'].concat(giftCustomRoles().map(function(r){ return r.id; }));
     document.getElementById('mm-role-chips').innerHTML = keys.map(function(k){
       var cls = 'tag-chip' + (role === k ? ' on' : (auto === k ? ' auto' : ''));
       return '<button type="button" class="'+cls+'" data-role="'+escapeHtml(k)+'">'+escapeHtml(giftRoleName(k))+'</button>';
-    }).join('') + '<span class="mm-ev-add"><button type="button" class="tag-chip" id="mm-role-plus">＋ 役目</button>' +
+    }).join('') + (role === 'none' ? '<span class="gs-empty">役目なし</span>' : '') + '<span class="mm-ev-add"><button type="button" class="tag-chip" id="mm-role-plus">＋ 役目</button>' +
       '<span id="mm-role-new-wrap" hidden><input type="text" id="mm-role-new" placeholder="新しい役目" data-keep> <button type="button" class="btn btn-sm" id="mm-role-add">足す</button></span></span>';
     var kind = document.getElementById('mm-gb-kind').value;
     document.getElementById('mm-gb-types').innerHTML = giftBoxKindList().map(function(k){
@@ -9108,8 +9414,10 @@
     var b = e.target.closest('[data-role]'); if(!b) return;
     var k = b.dataset.role, gb = document.getElementById('mm-gb-type'), rs = document.getElementById('mm-gw-role');
     var cur = gb.value ? 'box' : rs.value;
+    // 選んでいるもの・名前から自動で決まっているもの（点線）をタップしたら「役目なし」
+    if(!cur && b.classList.contains('auto')) cur = k;
     if(k === 'box'){
-      if(cur === 'box'){ gb.dataset.last = gb.value; gb.value = ''; }
+      if(cur === 'box'){ gb.dataset.last = gb.value; gb.value = ''; rs.value = 'none'; rs.dispatchEvent(new Event('change')); }
       else {
         var kd = document.getElementById('mm-gb-kind');
         if(!kd.value) kd.value = GIFT_BOX_KINDS[0];
@@ -9119,7 +9427,7 @@
     } else {
       if(gb.value) gb.dataset.last = gb.value;
       gb.value = '';
-      rs.value = (cur === k) ? '' : k;
+      rs.value = (cur === k) ? 'none' : k;
       rs.dispatchEvent(new Event('change'));
     }
     gb.dispatchEvent(new Event('change'));
