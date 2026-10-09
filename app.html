@@ -263,7 +263,7 @@
     border:1.5px solid var(--ink-faint); border-radius:50%; background:var(--surface); color:var(--ink-soft);
     font-family:Georgia,"Times New Roman",serif; font-style:italic; font-weight:700; font-size:13px; line-height:1;
     vertical-align:middle; cursor:pointer; flex:none; -webkit-tap-highlight-color:transparent; position:relative;}
-  .info-btn::after{content:''; position:absolute; inset:-10px;}   /* 指で押しやすいように、押せる範囲を広げる */
+  .info-btn::after{content:''; position:absolute; inset:-6px;}   /* 指で押しやすいように、押せる範囲を広げる */
   .info-btn.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-strong);}
   label .info-btn{width:19px; height:19px; font-size:11.5px; margin-left:6px;}
   body:not(.info-all) .info-text{display:none !important;}
@@ -343,6 +343,19 @@
   .gs-checks{display:flex; flex-wrap:wrap; gap:4px 16px;}
   .gs-empty{font-size:12.5px; color:var(--ink-faint);}
   .gs-used{font-size:13px; color:var(--ink-soft); margin-bottom:6px;}
+  /* タップで選ぶタグ（役目・行事） */
+  .tag-chips{display:flex; flex-wrap:wrap; gap:6px 6px; align-items:center;}
+  .tag-chip{border:1.5px solid var(--border); background:var(--surface); color:var(--ink-soft); border-radius:999px;
+    padding:6px 12px; font-size:14px; line-height:1.2; cursor:pointer; -webkit-tap-highlight-color:transparent; font-family:inherit;}
+  .tag-chip small{font-size:11px; color:var(--ink-faint); margin-left:3px;}
+  .tag-chip.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-strong); font-weight:700;}
+  .tag-chip.on small{color:var(--accent-strong);}
+  .tag-chip.auto{border-style:dashed; border-color:var(--accent);}
+  .tag-chips .mm-ev-add{display:inline-flex; gap:6px; align-items:center;}
+  .tag-chips .mm-ev-add input{width:8em; border:1px solid var(--border); background:var(--bg); border-radius:9px; padding:5px 8px;}
+  .mm-gb-sub{margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:var(--bg); display:flex; flex-direction:column; gap:8px;}
+  .mm-gb-sub .mm-gb{display:flex; align-items:center; gap:8px 10px; flex-wrap:wrap;}
+  .mm-gb-k{font-size:12.5px; font-weight:700; color:var(--ink-soft); width:4em; flex:none;}
   .mm-catrow{display:flex; gap:10px 16px; flex-wrap:wrap; align-items:flex-start;}
   .mm-catrow > .field{margin-bottom:0;}
   .mm-gw-role{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:13.5px;}
@@ -1104,7 +1117,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.65</div>
+      <div class="brand-ver">ver.66</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1964,9 +1977,9 @@
           <span class="gm-in"><input id="gm-count" type="number" min="1" step="1" value="6" inputmode="numeric">個入り</span>
         </div>
         <div class="gm-line">
-          <span class="gm-k">入れ物</span>
+          <span class="gm-k">器</span>
           <div class="seg-row" id="gm-boxmode"><button type="button" class="seg-btn on" data-v="auto">おまかせ</button><button type="button" class="seg-btn" data-v="pick">指定する</button></div>
-          <select id="gm-boxkind"><option value="">ぜんぶから</option><option value="box">箱から</option><option value="bag">袋から</option><option value="case">ギフト容器から</option></select>
+          <select id="gm-boxkind"><option value="">ぜんぶから</option><option value="box">箱から</option><option value="bag">袋から</option><option value="case">缶・瓶などから</option></select>
           <select id="gm-box" hidden></select>
         </div>
         <div id="gm-picks"></div>
@@ -1982,7 +1995,7 @@
         </div>
         <div class="gm-line">
           <span class="gm-k">利益を乗せる</span>
-          <label class="skip-toggle"><input type="checkbox" id="gm-markup" checked>入れ物・資材</label>
+          <label class="skip-toggle"><input type="checkbox" id="gm-markup" checked>器・資材</label>
           <label class="skip-toggle"><input type="checkbox" id="gm-markup-labor" checked>詰める手間</label>
         </div>
         <div class="gm-line">
@@ -2171,38 +2184,44 @@
       <span class="hint" style="margin-top:4px;">価格を変えて保存すると「価格を更新しますか？」と聞きます。「はい」で更新日が今月になります。</span>
     </div>
     <div class="field" id="mm-giftbox-block">
-      <label>ギフトの入れ物として使う</label>
-      <div class="mm-gb">
-        <select id="mm-gb-type"><option value="">使わない</option><option value="box">箱</option><option value="bag">袋（OPP袋など）</option><option value="case">ギフト容器（缶・瓶・カップなど）</option></select>
-        <span class="mm-gb-cap" id="mm-gb-cap">入る数 <input id="mm-gb-min" type="number" min="0" step="1" inputmode="numeric">〜<input id="mm-gb-max" type="number" min="0" step="1" inputmode="numeric">個くらい</span>
-      </div>
-      <span class="hint" style="margin-top:4px;">「ギフトの組み合わせ」で、この入れ物に入る数をもとに中身を組みます（1つだけなら両方に同じ数）。</span>
-      <div class="mm-ev-block" style="margin-top:10px;">
-        <label>行事（季節）</label>
-        <div id="mm-ev-list" class="mm-ev-list"></div>
-        <span class="hint" style="margin-top:4px;">何も付けなければ「通年」（いつでも使う）。行事を付けたものは、ギフトの組み合わせでその行事を選んだときだけ使います。通年でも行事でも使うものは「通年」と行事の両方に。</span>
+      <label>ギフトでの役目</label>
+      <div id="mm-role-chips" class="tag-chips"></div>
+      <span class="hint" style="margin-top:4px;">タップで1つ選びます（もう一度タップで外す）。選ばないときは名前から自動で決めます（点線の枠）。「器」はお菓子を直接詰める箱・袋・缶など。手提げの紙袋は「手提げ」です。</span>
+      <select id="mm-gw-role" hidden>
+        <option value="">名前から自動で決める</option>
+        <option value="cushion">緩衝材</option>
+        <option value="fastener">留め具</option>
+        <option value="deco">飾り</option>
+        <option value="insert">添えもの</option>
+        <option value="carry">手提げ</option>
+        <option value="other">そのほか</option>
+      </select>
+      <div id="mm-gb-sub" class="mm-gb-sub" hidden>
+        <div class="mm-gb">
+          <span class="mm-gb-k">種類</span>
+          <div id="mm-gb-types" class="tag-chips"></div>
+          <select id="mm-gb-type" hidden><option value="">使わない</option><option value="box">箱</option><option value="bag">袋（OPP袋など）</option><option value="case">缶・瓶・カップなど</option></select>
+        </div>
+        <div class="mm-gb">
+          <span class="mm-gb-k">入る数</span>
+          <span class="mm-gb-cap" id="mm-gb-cap"><input id="mm-gb-min" type="number" min="0" step="1" inputmode="numeric">〜<input id="mm-gb-max" type="number" min="0" step="1" inputmode="numeric">個くらい</span>
+        </div>
+        <span class="hint" style="margin-top:4px;">「ギフトの組み合わせ」で、この器に入る数をもとに中身を組みます（1つだけなら両方に同じ数）。</span>
       </div>
       <div id="mm-gs-block" style="margin-top:12px;" hidden>
-        <label>ギフトのセット（この入れ物と一緒に使うもの）</label>
-        <span class="hint" style="margin-top:2px;">選べるのは、原材料マスタで「ギフトでの役目」をそれぞれにした資材です。◉／☑ が「ふだん使う」もの。行事のもの（クリスマスリボンなど）も足しておくと、ギフトの組み合わせでその行事を選んだときに使います。「セットのもの」は入れ物に付いているもの（0円）。</span>
+        <label>ギフトのセット（この器と一緒に使うもの）</label>
+        <span class="hint" style="margin-top:2px;">選べるのは、原材料マスタで「ギフトでの役目」をそれぞれにした資材です。◉／☑ が「ふだん使う」もの。行事のもの（クリスマスリボンなど）も足しておくと、ギフトの組み合わせでその行事を選んだときに使います。「セットのもの」は器に付いているもの（0円）。</span>
         <div id="mm-gs-list"></div>
       </div>
       <div id="mm-gw-block" style="margin-top:10px;">
         <div id="mm-gw-list" class="mm-gw-list"></div>
-        <div class="mm-gw-role">
-          <span>ギフトでの役目</span>
-          <select id="mm-gw-role">
-            <option value="">名前から自動で決める</option>
-            <option value="cushion">緩衝材（パッキン・仕切り）</option>
-            <option value="fastener">留め具（リボン・タイ・輪ゴム）</option>
-            <option value="deco">飾り（シール・水引）</option>
-            <option value="insert">添えもの（ショップカード・説明書・乾燥剤）</option>
-            <option value="carry">手提げ（紙袋）</option>
-            <option value="other">そのほか</option>
-          </select>
-        </div>
-        <span class="hint" style="margin-top:4px;">どの入れ物で使うかは、箱・袋・ギフト容器の資材を開いて「ギフトのセット」で決めます。添えもの（ショップカード・チラシ・説明書きなど）は、はじめから値段に入れません。</span>
-        <label class="skip-toggle" style="margin-top:6px;"><input type="checkbox" id="mm-gw-noprice">値段には入れない（販売価格では0円）</label>
+        <label class="skip-toggle" style="margin-top:2px;"><input type="checkbox" id="mm-gw-noprice">値段には入れない（販売価格では0円）</label>
+        <span class="hint" style="margin-top:4px;">どの器で使うかは、器（箱・袋・缶など）の資材を開いて「ギフトのセット」で決めます。添えもの（ショップカード・チラシ・説明書きなど）は、はじめから値段に入れません。</span>
+      </div>
+      <div class="mm-ev-block" style="margin-top:12px;">
+        <label>行事（季節）</label>
+        <div id="mm-ev-list" class="tag-chips"></div>
+        <span class="hint" style="margin-top:4px;">タップでいくつでも選べます。何も選ばなければ「通年」（いつでも使う）。行事を付けたものは、ギフトの組み合わせでその行事を選んだときだけ使います。通年でも行事でも使うものは「通年」と行事の両方に。</span>
       </div>
     </div>
     <div class="field" id="mm-nutrition-block" style="margin-top:4px;">
@@ -2754,7 +2773,7 @@
       return m.giftBox && m.giftBox.type && (!kind || m.giftBox.type === kind) && (ev === undefined || giftUsableIn(m, ev));
     }).sort(function(a, b){ return (a.giftBox.max || 0) - (b.giftBox.max || 0) || (a.name || '').localeCompare(b.name || '', 'ja'); });
   }
-  function giftBoxTypeLabel(t){ return t === 'bag' ? '袋' : t === 'case' ? 'ギフト容器' : '箱'; }
+  function giftBoxTypeLabel(t){ return t === 'bag' ? '袋' : t === 'case' ? '缶・瓶など' : '箱'; }
   function gmBoxLabel(m){
     var gb = m.giftBox;
     return giftBoxTypeLabel(gb.type) + '　' + m.name + '（' + (gb.min === gb.max ? gb.max : gb.min + '〜' + gb.max) + '個）';
@@ -2766,9 +2785,9 @@
     document.getElementById('gm-box').hidden = gmOpt.boxMode !== 'pick';
     var boxes = gmContainers('');
     var note = [];
-    if(!boxes.length) note.push('入れ物がまだありません。原材料マスタで箱や袋の資材を開き、「ギフトの入れ物として使う」と入る数を入れてください（それまでは入れ物なし・3〜15個で組みます）。');
+    if(!boxes.length) note.push('器がまだありません。原材料マスタで箱や袋の資材を開き、「ギフトでの役目」を「器」にして入る数を入れてください（それまでは器なし・3〜15個で組みます）。');
     var mkB = document.getElementById('gm-markup').checked, mkL = document.getElementById('gm-markup-labor').checked;
-    note.push('値段は「中身の販売価格（税込）× 個数」＋ 入れ物・資材' + (mkB ? '（利益込み）' : '（原価のまま）') + ' ＋ 詰める手間' + (mkL ? '（利益込み）' : '（原価のまま）') + '。利益込みは、希望原価率 ' + fmtNum(state.settings.margin, 1) + '% で割った金額です。');
+    note.push('値段は「中身の販売価格（税込）× 個数」＋ 器・資材' + (mkB ? '（利益込み）' : '（原価のまま）') + ' ＋ 詰める手間' + (mkL ? '（利益込み）' : '（原価のまま）') + '。利益込みは、希望原価率 ' + fmtNum(state.settings.margin, 1) + '% で割った金額です。');
     document.getElementById('gm-note').textContent = note.join(' ');
   }
   function gmRenderRules(){
@@ -2830,7 +2849,7 @@
     var bs = document.getElementById('gm-box');
     var cur = bs.value;
     var boxes = gmContainers('');
-    bs.innerHTML = boxes.length ? boxes.map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') : '<option value="">（入れ物がありません）</option>';
+    bs.innerHTML = boxes.length ? boxes.map(function(m){ return '<option value="'+escapeHtml(m.id)+'">'+escapeHtml(gmBoxLabel(m))+'</option>'; }).join('') : '<option value="">（器がありません）</option>';
     if(cur && [].some.call(bs.options, function(o){ return o.value === cur; })) bs.value = cur;
     gmSeg('gm-mode', 'mode'); gmSeg('gm-fit', 'fit'); gmSeg('gm-boxmode', 'boxMode');
     gmRenderTypes(); gmRenderRules(); gmRenderProducts(); gmRenderPicks();
@@ -2843,15 +2862,15 @@
       }).join('') : '<p class="hint" data-keep-hint style="margin:4px 0;">まだグループはありません。</p>';
     }
     // ギフトの組み合わせのプルダウンは、タップで選ぶ一覧にする
-    attachTapPicker(document.getElementById('gm-box'), '入れ物をえらぶ');
-    attachTapPicker(document.getElementById('gm-boxkind'), '入れ物の種類');
+    attachTapPicker(document.getElementById('gm-box'), '器をえらぶ');
+    attachTapPicker(document.getElementById('gm-boxkind'), '器の種類');
     attachTapPicker(document.getElementById('gm-type'), '中身の種類');
     attachTapPicker(document.getElementById('gm-month'), '何月に');
     ['gm-box', 'gm-boxkind', 'gm-type', 'gm-month'].forEach(function(id){ var el = document.getElementById(id); if(el && el.__pickerSync) el.__pickerSync(); });
   }
-  // 上の「組み合わせの設定」（作り方・金額・個数・入れ物・中身・そのほか）を、はじめの状態に戻す。決まり・種類・入れない商品はそのまま
+  // 上の「組み合わせの設定」（作り方・金額・個数・器・中身・そのほか）を、はじめの状態に戻す。決まり・種類・入れない商品はそのまま
   document.getElementById('gm-clear').addEventListener('click', function(){
-    openConfirmModal('上の組み合わせの設定（作り方・金額・個数・入れ物・中身・詰める手間など）を、はじめの状態に戻します。作った組み合わせも消えます。\n\n下の「決まり」「ギフトの種類」「ギフトに入れない商品」はそのまま残ります。', function(){
+    openConfirmModal('上の組み合わせの設定（作り方・金額・個数・器・中身・詰める手間など）を、はじめの状態に戻します。作った組み合わせも消えます。\n\n下の「決まり」「ギフトの種類」「ギフトに入れない商品」はそのまま残ります。', function(){
       gmOpt.mode = 'price'; gmOpt.fit = 'exact'; gmOpt.boxMode = 'auto'; gmOpt.seed = 0; gmOpt.last = null;
       document.getElementById('gm-target').value = 2000;
       document.getElementById('gm-ship').value = 0;
@@ -2985,12 +3004,15 @@
   }
   // 入れ物と一緒に使う資材（手提げ袋・紙パッキン・リボン・ショップカードなど）
   // ギフトでの役目。入れていなければ名前から決める
-  var GIFT_ROLES = {box:'入れ物', cushion:'緩衝材', fastener:'留め具', deco:'飾り', insert:'添えもの', carry:'手提げ', other:'そのほか'};
-  var GIFT_ROLE_HINT = {cushion:'パッキン・仕切り', fastener:'リボン・タイ・輪ゴム', deco:'シール・水引', insert:'ショップカード・説明書・乾燥剤', carry:'紙袋', other:''};
+  var GIFT_ROLES = {box:'器', cushion:'緩衝材', fastener:'留め具', deco:'飾り', insert:'添えもの', carry:'手提げ', other:'そのほか'};
+  var GIFT_ROLE_HINT = {box:'箱・袋・缶など', cushion:'パッキン・仕切り', fastener:'リボン・タイ・輪ゴム', deco:'シール・水引・掛け紙など', insert:'ショップカード・説明書・乾燥剤', carry:'手提げの紙袋', other:''};
   var GIFT_ROLE_ORDER = ['box', 'cushion', 'fastener', 'deco', 'insert', 'carry', 'other'];
   var GIFT_ONE_ROLES = ['cushion', 'fastener', 'carry'];   // 1つだけ使う
   var GIFT_SLOTS = ['cushion', 'fastener', 'deco', 'insert', 'carry'];   // 入れ物の「ギフトのセット」の欄   // 何種類つけても、どれか1つだけ使う
-  var GIFT_EVENTS_DEFAULT = ['クリスマス', 'ハロウィン', '年賀', 'バレンタイン', 'ホワイトデー', '母の日', '父の日'];
+  var GIFT_EVENTS_DEFAULT = ['年賀', '成人の日', '節分', 'バレンタイン', 'ひな祭り', 'ホワイトデー', '卒業・卒園', 'お花見', '入学・入園',
+    'こどもの日', '母の日', '梅雨', '父の日', '七夕', 'お中元', '暑中見舞い', 'お盆', '残暑見舞い', '敬老の日', 'お月見', 'スポーツの日',
+    'ハロウィン', '七五三', 'お歳暮', 'クリスマス', '年末', '春', '夏', '秋', '冬'];
+  var GIFT_EVENTS_VER = 2;   // はじめから入れておく行事を増やしたら上げる（足りないものを足す）
   function giftRoleOf(a){
     if(!a) return 'other';
     if(a.giftBox && a.giftBox.type) return 'box';
@@ -3002,16 +3024,19 @@
     if(/リボン|ribbon|タイ|輪ゴム|ゴム|紐|ひも/i.test(n)) return 'fastener';
     if(/パッキン|緩衝|クッション|プチプチ|仕切/.test(n)) return 'cushion';
     if(/紙袋|手提|手さげ|ショッパー/.test(n)) return 'carry';
-    if(/シール|ステッカー|水引/.test(n)) return 'deco';
+    if(/シール|ステッカー|水引|掛け紙|掛紙|のし/.test(n)) return 'deco';
     if(a.giftNoPrice || /カード|説明|乾燥剤|脱酸素|しおり/.test(n)) return 'insert';
     return 'other';
   }
   // 行事（季節）のタグ。空なら通年
   // 行事は、カレンダーの順（月・だいたいの日）に並べる。知らない行事は最後に（足した順）
+  // 季節（春夏秋冬）は、その季節のはじめ（3・6・9・12月）の頭に置く
   var GIFT_EVENT_WHEN = {'年賀':101, 'お正月':101, '正月':101, '新年':101, '成人の日':110, '節分':203, 'バレンタイン':214,
-    'ひな祭り':303, 'ひなまつり':303, 'ホワイトデー':314, '卒業':315, '春のお彼岸':320, 'お彼岸':320, '入学':401, 'イースター':410,
-    'こどもの日':505, '子どもの日':505, '母の日':510, '父の日':618, 'お中元':710, '七夕':707, 'お盆':813, '敬老の日':916,
-    '秋のお彼岸':922, 'ハロウィン':1031, '七五三':1115, 'お歳暮':1205, 'クリスマス':1225, '大晦日':1231};
+    '春':300, 'ひな祭り':303, 'ひなまつり':303, 'ホワイトデー':314, '卒業':315, '卒業・卒園':315, '卒園':315, '春のお彼岸':320, 'お彼岸':320,
+    'お花見':330, '入学':401, '入学・入園':401, '入園':401, 'イースター':410, 'こどもの日':505, '子どもの日':505, '母の日':510,
+    '夏':600, '梅雨':610, '父の日':618, '七夕':707, 'お中元':708, '暑中見舞い':715, 'お盆':813, '残暑見舞い':808,
+    '秋':900, '敬老の日':916, 'お月見':920, '十五夜':920, '秋のお彼岸':922, 'スポーツの日':1012, 'ハロウィン':1031, '七五三':1115,
+    '冬':1200, 'お歳暮':1205, 'クリスマス':1225, '年末':1228, '大晦日':1231};
   function giftEventSort(list){
     return list.map(function(e, i){ return {e:e, i:i}; }).sort(function(a, b){
       var wa = GIFT_EVENT_WHEN[a.e] || 9999, wb = GIFT_EVENT_WHEN[b.e] || 9999;
@@ -3021,6 +3046,10 @@
   function giftEventList(){
     var c = gmConf();
     if(!Array.isArray(c.events) || !c.events.length) c.events = GIFT_EVENTS_DEFAULT.slice();
+    if((c.eventsVer || 1) < GIFT_EVENTS_VER){
+      GIFT_EVENTS_DEFAULT.forEach(function(e){ if(c.events.indexOf(e) < 0) c.events.push(e); });
+      c.eventsVer = GIFT_EVENTS_VER;
+    }
     // 資材に付いている行事も一覧に入れる
     (state.materials || []).forEach(function(m){ giftEventsOf(m).forEach(function(e){ if(e && e !== '通年' && c.events.indexOf(e) < 0) c.events.push(e); }); });
     var sorted = giftEventSort(c.events);
@@ -3282,7 +3311,7 @@
       var acc = gmAccessories(m);
       acc.forEach(function(a){ if(!giftNoPriceOf(a)) boxCost += matUnitPrice(a) * gmAccQty(a, m); });
       var addCost = boxCost + laborCost;
-      // 入れ物・資材と、詰める手間は別々に（それぞれ利益を乗せるかどうかを選べる）
+      // 器・資材と、詰める手間は別々に（それぞれ利益を乗せるかどうかを選べる）
       var addInBox = (markup ? boxCost / margin : boxCost) * tax;
       var addInLabor = (markupLabor ? laborCost / margin : laborCost) * tax;
       var addIn = addInBox + addInLabor;
@@ -3294,7 +3323,7 @@
       res.forEach(function(r){ r.box = m; r.acc = acc; r.addIn = addIn; r.addInBox = addInBox; r.addInLabor = addInLabor; r.addCost = addCost; r.laborCost = laborCost; all.push(r); });
     });
     if(!all.length){
-      box.innerHTML = '<div class="card gm-empty">決まりに合う組み合わせが見つかりませんでした。決まり（数の上限・下限）や入れ物の入る数を見直すか、「決まりを使う」を外してみてください。</div>';
+      box.innerHTML = '<div class="card gm-empty">決まりに合う組み合わせが見つかりませんでした。決まり（数の上限・下限）や器の入る数を見直すか、「決まりを使う」を外してみてください。</div>';
       return;
     }
     // よいものから。似すぎているものは省いて、いろいろな組み合わせを見せる
@@ -3334,7 +3363,7 @@
       if(r.box) packRows.push('<tr class="gm-pack gm-r-box"><td>'+escapeHtml(r.box.name)+'<span class="gm-cat">'+giftBoxTypeLabel(r.box.giftBox && r.box.giftBox.type)+'</span></td><td class="q">×1</td><td class="n">¥'+fmtNum(matUnitPrice(r.box), 0)+'</td></tr>');
       (r.acc || []).forEach(function(a){
         var aq = gmAccQty(a, r.box), role = giftRoleOf(a), cev = gmEvent();
-        packRows.push('<tr class="gm-pack gm-r-'+role+'"><td>'+escapeHtml(a.name)+'<span class="gm-cat">'+GIFT_ROLES[role]+(cev && giftEventsOf(a).indexOf(cev) >= 0 ? '・'+escapeHtml(cev) : '')+(a._set ? '・入れ物に付いている' : giftNoPriceOf(a) ? '・値段に入れない' : '')+'</span></td><td class="q">'+(a._set ? '' : aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(giftNoPriceOf(a) ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
+        packRows.push('<tr class="gm-pack gm-r-'+role+'"><td>'+escapeHtml(a.name)+'<span class="gm-cat">'+GIFT_ROLES[role]+(cev && giftEventsOf(a).indexOf(cev) >= 0 ? '・'+escapeHtml(cev) : '')+(a._set ? '・器に付いている' : giftNoPriceOf(a) ? '・値段に入れない' : '')+'</span></td><td class="q">'+(a._set ? '' : aq === 1 && !/^(g|kg|cm|m|ml)$/i.test(a.unit || '') ? '×1' : fmtNum(aq)+escapeHtml(a.unit || ''))+'</td><td class="n">'+(giftNoPriceOf(a) ? '—' : '¥'+fmtNum(matUnitPrice(a) * aq, 0))+'</td></tr>');
       });
       if(r.laborCost > 0) packRows.push('<tr class="gm-pack"><td>詰める手間</td><td class="q"></td><td class="n">¥'+fmtNum(r.laborCost, 0)+'</td></tr>');
       var priceIn = Math.round(retail + r.addIn);
@@ -3350,15 +3379,15 @@
       return '<div class="gm-card"><div class="gm-top"><span class="gm-price">¥'+fmtNum(priceIn, 0)+'</span>' +
         '<span class="gm-count">'+r.n+'個入り</span><span class="gm-kinds">'+r.kinds+'種類</span>'+diffTxt +
         (ship > 0 && gmOpt.mode === 'price' ? '<span class="gm-box">＋送料 ¥'+fmtNum(ship, 0)+' ＝ ¥'+fmtNum(priceIn + ship, 0)+'</span>' : '') + '</div>' +
-        (r.box ? '' : '<div class="gm-box">入れ物なし</div>') +
+        (r.box ? '' : '<div class="gm-box">器なし</div>') +
         '<table>'+rows.join('')+'</table>' +
-        (packRows.length ? '<div class="gm-subh">入れ物・資材（原価）</div><table>'+packRows.join('')+'</table>' : '') +
-        '<div class="gm-sum">中身 ¥'+fmtNum(retail, 0)+' ＋ 入れ物・資材 ¥'+fmtNum(Math.round(r.addInBox), 0)+'（'+(markup ? '利益込み' : '原価のまま')+'）' +
+        (packRows.length ? '<div class="gm-subh">器・資材（原価）</div><table>'+packRows.join('')+'</table>' : '') +
+        '<div class="gm-sum">中身 ¥'+fmtNum(retail, 0)+' ＋ 器・資材 ¥'+fmtNum(Math.round(r.addInBox), 0)+'（'+(markup ? '利益込み' : '原価のまま')+'）' +
           (r.laborCost > 0 ? ' ＋ 詰める手間 ¥'+fmtNum(Math.round(r.addInLabor), 0)+'（'+(markupLabor ? '利益込み' : '原価のまま')+'）' : '') + '・税込<br>原価 ¥'+fmtNum(Math.round(cost), 0)+'・利益率 '+fmtNum(pr * 100, 1)+'%</div>' +
         '<button type="button" class="btn btn-sm btn-primary" data-gm="'+k+'">この内容でギフトを作る</button></div>';
     }).join('');
     if(target != null && pick.length < 3){
-      box.insertAdjacentHTML('beforeend', '<div class="card gm-empty">目標に近い組み合わせは、これだけでした。入れ物の入る数や決まりを変えると、ほかの組み合わせが出ることがあります。</div>');
+      box.insertAdjacentHTML('beforeend', '<div class="card gm-empty">目標に近い組み合わせは、これだけでした。器の入る数や決まりを変えると、ほかの組み合わせが出ることがあります。</div>');
     }
     document.getElementById('gm-again').hidden = false;
   }
@@ -4766,8 +4795,10 @@
       else groupFor(head, true).els.push(el);
     });
     groups.forEach(function(g){
-      var b = document.createElement('button');
-      b.type = 'button';
+      // <button> を label の中に置くと、label のどこをタップしても押されてしまうので span にする
+      var b = document.createElement('span');
+      b.setAttribute('role', 'button');
+      b.tabIndex = 0;
       b.className = 'info-btn';
       b.textContent = 'i';
       b.setAttribute('aria-label', '説明を見る');
@@ -8994,7 +9025,48 @@
     document.getElementById('mm-gs-block').hidden = !this.value;
     if(this.value) mmRenderGiftSet();
   });
-  // ---- 入れ物の「ギフトのセット」（緩衝材・留め具・飾り・添えもの・手提げ） ----
+  // ---- 役目と種類は、タグをタップして選ぶ（元の select は隠して、値の入れものとして使う） ----
+  var MM_GB_TYPES = [['box', '箱'], ['bag', '袋（OPP袋など）'], ['case', '缶・瓶・カップなど']];
+  function mmRenderRoleChips(){
+    var gbType = document.getElementById('mm-gb-type').value;
+    var role = gbType ? 'box' : document.getElementById('mm-gw-role').value;
+    var auto = !role ? giftRoleOf({name:document.getElementById('mm-name').value || ''}) : null;
+    document.getElementById('mm-role-chips').innerHTML = GIFT_ROLE_ORDER.map(function(k){
+      var cls = 'tag-chip' + (role === k ? ' on' : (auto === k && k !== 'other' ? ' auto' : ''));
+      return '<button type="button" class="'+cls+'" data-role="'+k+'">'+GIFT_ROLES[k]+(GIFT_ROLE_HINT[k] ? '<small>'+GIFT_ROLE_HINT[k]+'</small>' : '')+'</button>';
+    }).join('');
+    document.getElementById('mm-gb-types').innerHTML = MM_GB_TYPES.map(function(t){
+      return '<button type="button" class="tag-chip'+(gbType === t[0] ? ' on' : '')+'" data-gbtype="'+t[0]+'">'+t[1]+'</button>';
+    }).join('');
+    document.getElementById('mm-gb-sub').hidden = !gbType;
+  }
+  document.getElementById('mm-role-chips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-role]'); if(!b) return;
+    var k = b.dataset.role, gb = document.getElementById('mm-gb-type'), rs = document.getElementById('mm-gw-role');
+    var cur = gb.value ? 'box' : rs.value;
+    if(k === 'box'){
+      if(cur === 'box'){ gb.dataset.last = gb.value; gb.value = ''; }
+      else { gb.value = gb.dataset.last || 'box'; rs.value = ''; }
+    } else {
+      if(gb.value) gb.dataset.last = gb.value;
+      gb.value = '';
+      rs.value = (cur === k) ? '' : k;
+      rs.dispatchEvent(new Event('change'));
+    }
+    gb.dispatchEvent(new Event('change'));
+    mmRenderRoleChips();
+  });
+  document.getElementById('mm-gb-types').addEventListener('click', function(e){
+    var b = e.target.closest('[data-gbtype]'); if(!b) return;
+    var gb = document.getElementById('mm-gb-type');
+    gb.value = b.dataset.gbtype; gb.dataset.last = gb.value;
+    mmRenderRoleChips();
+  });
+  document.getElementById('mm-name').addEventListener('input', function(){
+    if(!document.getElementById('mm-giftbox-block').offsetParent) return;
+    mmRenderRoleChips();
+  });
+  // ---- 器の「ギフトのセット」（緩衝材・留め具・飾り・添えもの・手提げ） ----
   var mmGiftSet = null;
   var GIFT_SLOT_TITLE = {cushion:'緩衝材', fastener:'留め具', deco:'飾り', insert:'添えもの', carry:'手提げ'};
   function giftSlotCandidates(k, editId){
@@ -9021,7 +9093,7 @@
         var list = cands.slice();
         var curM = cur && cur !== 'set' ? giftMatById(cur) : null;
         if(curM && list.indexOf(curM) < 0) list.unshift(curM);
-        return '<option value="set"'+(cur === 'set' ? ' selected' : '')+'>セットのもの（入れ物に付いている）</option>' +
+        return '<option value="set"'+(cur === 'set' ? ' selected' : '')+'>セットのもの（器に付いている）</option>' +
           list.map(function(m){ return '<option value="'+escapeHtml(m.id)+'"'+(m.id === cur ? ' selected' : '')+'>'+escapeHtml(m.name)+(giftEventsOf(m).length ? '（'+giftEventsOf(m).join('・')+'）' : '')+'</option>'; }).join('');
       };
       var anyOn = rows.some(function(r){ return r.on; });
@@ -9085,7 +9157,7 @@
     document.getElementById('mm-gs-block').hidden = !isBox;
     if(isBox) mmRenderGiftSet();
     var boxes = material ? giftBoxesUsing(material.id) : [];
-    document.getElementById('mm-gw-list').innerHTML = '<div class="gs-used">使っている入れ物：' + (boxes.length ? boxes.map(function(b){ return escapeHtml(b.name); }).join('・') : 'まだありません（箱・袋・ギフト容器の「ギフトのセット」で選びます）') + '</div>';
+    document.getElementById('mm-gw-list').innerHTML = '<div class="gs-used">使っている器：' + (boxes.length ? boxes.map(function(b){ return escapeHtml(b.name); }).join('・') : 'まだありません（器の「ギフトのセット」で選びます）') + '</div>';
     document.getElementById('mm-gw-noprice').checked = !!(material && (material.giftNoPrice || giftRoleOf(material) === 'insert'));
     var gr = (material && material.giftRole) || '';
     if(gr === 'ribbon') gr = 'fastener';
@@ -9093,6 +9165,8 @@
     document.getElementById('mm-gw-role').value = gr;
     mmRenderEvents(giftEventsOf(material));
     document.getElementById('mm-gw-block').hidden = !!(material && material.giftBox && material.giftBox.type);
+    document.getElementById('mm-gb-type').dataset.last = '';
+    mmRenderRoleChips();
   }
   // 行事のタグ（チェック）。新しい行事も足せる
   function mmRenderEvents(sel){
@@ -9100,16 +9174,18 @@
     sel.forEach(function(e){ if(e !== '通年' && list.indexOf(e) < 0) list.push(e); });
     list = ['通年'].concat(giftEventSort(list));
     document.getElementById('mm-ev-list').innerHTML = list.map(function(e){
-      return '<label class="skip-toggle"><input type="checkbox" data-ev="'+escapeHtml(e)+'"'+(sel.indexOf(e) >= 0 ? ' checked' : '')+'>'+escapeHtml(e)+'</label>';
+      return '<button type="button" class="tag-chip'+(sel.indexOf(e) >= 0 ? ' on' : '')+'" data-ev="'+escapeHtml(e)+'">'+escapeHtml(e)+'</button>';
     }).join('') + '<span class="mm-ev-add"><input type="text" id="mm-ev-new" placeholder="ほかの行事" data-keep><button type="button" class="btn btn-sm" id="mm-ev-add">＋ 足す</button></span>';
   }
   document.getElementById('mm-ev-list').addEventListener('click', function(e){
+    var chip = e.target.closest('.tag-chip[data-ev]');
+    if(chip){ chip.classList.toggle('on'); return; }
     if(e.target.id !== 'mm-ev-add') return;
     var v = (document.getElementById('mm-ev-new').value || '').trim();
     if(!v) return;
     var evs = giftEventList();
     if(v !== '通年' && evs.indexOf(v) < 0){ evs.push(v); scheduleSave(); }
-    var cur = [].map.call(document.querySelectorAll('#mm-ev-list input[data-ev]:checked'), function(c){ return c.dataset.ev; });
+    var cur = [].map.call(document.querySelectorAll('#mm-ev-list .tag-chip.on'), function(c){ return c.dataset.ev; });
     if(cur.indexOf(v) < 0) cur.push(v);
     mmRenderEvents(cur);
   });
@@ -9264,7 +9340,7 @@
       data.giftSet = gs;
     } else data.giftBox = null;
     if(mmKind === 'supply'){
-      var evSel = [].map.call(document.querySelectorAll('#mm-ev-list input[data-ev]:checked'), function(c){ return c.dataset.ev; });
+      var evSel = [].map.call(document.querySelectorAll('#mm-ev-list .tag-chip.on'), function(c){ return c.dataset.ev; });
       data.giftEvents = evSel.length ? evSel : null;   // 画面の順（通年 → カレンダーの順）のまま
     } else data.giftEvents = null;
     // どの入れ物で使うかは入れ物の「ギフトのセット」で決める（前の giftWith は、まだ移していない入れ物のために残す）
