@@ -1164,7 +1164,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.69</div>
+      <div class="brand-ver">ver.70</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -3305,6 +3305,19 @@
     var q = box && a && a.giftWithQty ? Number(a.giftWithQty[box.id]) : NaN;
     return isFinite(q) && q >= 0 ? q : 1;
   }
+  // 組み合わせの中身を、カテゴリの順（商品のカテゴリの並び → 名前）に並べた [{i, q}]
+  function gmOrderedRows(r, items){
+    var order = (state.productCategories || []).slice();
+    state.products.forEach(function(p){ if(p.category && order.indexOf(p.category) < 0) order.push(p.category); });
+    var list = [];
+    r.cnt.forEach(function(q, i){ if(q) list.push({i:i, q:q}); });
+    return list.sort(function(a, b){
+      var A = items[a.i], B = items[b.i];
+      var ca = order.indexOf(A.cat), cb = order.indexOf(B.cat);
+      if(ca < 0) ca = 9999; if(cb < 0) cb = 9999;
+      return (ca - cb) || (A.cat || '').localeCompare(B.cat || '', 'ja') || (A.group ? 1 : 0) - (B.group ? 1 : 0) || (A.name || '').localeCompare(B.name || '', 'ja');
+    });
+  }
   function gmRandInt(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
   // 入れ物ひとつぶんの候補を作る
   function gmSearch(items, nMin, nMax, addIn, target, fit, rules, maxSame, minKinds, tries){
@@ -3493,9 +3506,8 @@
     gmOpt.lastMarkup = markup;
     box.innerHTML = pick.map(function(r, k){
       var rows = [], cost = 0, retail = 0;
-      r.cnt.forEach(function(q, i){
-        if(!q) return;
-        var it = items[i];
+      gmOrderedRows(r, items).forEach(function(x){
+        var q = x.q, it = items[x.i];
         cost += it.cost * q; retail += it.price * q;
         rows.push('<tr style="background:'+catTint(it.cat, 0.16)+';"><td>'+escapeHtml(it.name)+(it.group ? '<span class="gm-cat">グループ・'+it.members+'種から</span>' : '<span class="gm-cat">'+escapeHtml(it.cat)+'</span>')+'</td><td class="q">×'+q+'</td><td class="n">¥'+fmtNum(it.price * q, 0)+(it.group ? '<span class="gm-cat">平均</span>' : '')+'</td></tr>');
       });
@@ -3552,9 +3564,8 @@
     cs.value = 'ギフト';
     setSourceType('gift', true);
     var rows = [];
-    r.cnt.forEach(function(q, i){
-      if(!q) return;
-      var it = items[i];
+    gmOrderedRows(r, items).forEach(function(x){
+      var q = x.q, it = items[x.i];
       rows.push(it.group ? {groupId:it.group.id, name:it.group.name, qty:q, mode:'packed'} : {productId:it.p.id, name:it.p.name, qty:q, mode:'packed'});
     });
     fillContentRows(rows);
@@ -9283,7 +9294,8 @@
     var pv = material && material.price != null ? Number(material.price) : null;
     if(pv != null && isFinite(pv)) document.getElementById('mm-price').value = String(Math.round(pv * 100) / 100);
     var upEl = document.getElementById('mm-updated');
-    upEl.value = (material && material.priceUpdatedAt) ? String(material.priceUpdatedAt).slice(0,7) : thisMonthISO();
+    // 前からある材料で更新日が空なら空のまま（今月にしない）
+    upEl.value = (material && material.priceUpdatedAt) ? String(material.priceUpdatedAt).slice(0,7) : (material ? '' : thisMonthISO());
     if(!/^\d{4}-\d{2}$/.test(upEl.value)) upEl.value = (material && material.priceUpdatedAt && /^\d{4}$/.test(String(material.priceUpdatedAt))) ? String(material.priceUpdatedAt) + '-12' : upEl.value;
     upEl.hidden = true;
     upEl.dataset.touched = '0';
@@ -9798,6 +9810,10 @@
     }
     var saveBtn = document.getElementById('mm-save');
     var before = materialModalEditId ? state.materials.find(function(x){ return x.id === materialModalEditId; }) : null;
+    // 更新日が変わるのは、値段を変えて「はい」と答えたとき・「今月で更新」・手で直したときだけ。ほかの項目を直しただけなら元のまま
+    if(before && document.getElementById('mm-updated').dataset.touched !== '1'){
+      if(before.priceUpdatedAt) data.priceUpdatedAt = before.priceUpdatedAt; else delete data.priceUpdatedAt;
+    }
     // 画面では小数第2位までにしているので、それ以下の差は「変えていない」とみなし、元の値を残す
     if(before && Math.abs((Number(before.price) || 0) - price) < 0.01){
       data.price = Number(before.price) || 0;
@@ -9808,7 +9824,7 @@
       if(upEl.dataset.touched !== '1' && !data.noUpdate && Math.abs((Number(before.price) || 0) - price) >= 0.01){
         openAskModal('価格を更新しますか？\n' + fmtYen(Number(before.price) || 0) + ' → ' + fmtYen(price) +
           '\n\n「はい」：価格更新日を今月（' + fmtYm(thisMonthISO()) + '）にして保存します。\n「いいえ」：更新日はそのままで保存します（打ち間違いを直したときなど）。',
-          function(){ upEl.value = thisMonthISO(); mmUpdateYmText(); mmAskedPrice = true; saveBtn.click(); },
+          function(){ upEl.value = thisMonthISO(); upEl.dataset.touched = '1'; mmUpdateYmText(); mmAskedPrice = true; saveBtn.click(); },
           function(){ mmAskedPrice = true; saveBtn.click(); });
         return;
       }
