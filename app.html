@@ -388,6 +388,8 @@
   .mat-set i.miss{border:1.5px dashed #e3a39a; color:#c0392b;}
   .mat-set-warn{display:block; font-size:11px; color:#c0392b; margin-top:2px; white-space:nowrap;}
   .row-stale{color:#c0392b; margin-left:3px; font-size:13px; cursor:help;}
+  .calc-head-row input, .calc-head-row select{height:42px; box-sizing:border-box;}
+  .calc-copy-line{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
   .mat-role{display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; border:1.5px solid transparent; white-space:nowrap;}
   .mat-role.r-box{background:#efe3cc; color:#7a5320;}
   .mat-role.r-cushion{background:#f4efdf; color:#6d6040;}
@@ -1165,7 +1167,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.72</div>
+      <div class="brand-ver">ver.73</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1221,13 +1223,13 @@
       </div>
 
       <div class="card section-card">
-        <div class="row-inline">
+        <div class="row-inline calc-head-row">
           <div class="field">
             <label>商品名</label>
             <input id="f-name" type="text" placeholder="例：バニラクッキー">
           </div>
           <div class="field" style="max-width:160px;">
-            <label style="white-space:nowrap; flex-direction:row; align-items:flex-end;">商品番号<span style="font-weight:400; color:var(--ink-faint);">（任意）</span></label>
+            <label style="white-space:nowrap; flex-direction:row; align-items:flex-end; justify-content:flex-start;">商品番号<span style="font-weight:400; color:var(--ink-faint);">（任意）</span></label>
             <input id="f-product-code" type="text" placeholder="例：A-012">
           </div>
           <div class="field" style="max-width:220px;">
@@ -1242,6 +1244,10 @@
               <button type="button" class="btn btn-sm btn-ghost" id="prodcat-new-cancel">やめる</button>
             </div>
           </div>
+        </div>
+        <div class="calc-copy-line">
+          <button type="button" class="btn btn-sm btn-ghost" id="btn-copy-all">ほかの商品から中身をコピー</button>
+          <select id="copy-all-src" hidden></select>
         </div>
       </div>
 
@@ -1309,7 +1315,7 @@
               </div>
             </div>
             <div class="proc-area" id="proc-area-batch">
-              <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><button type="button" class="btn btn-sm goto-bw-btn">ブロックワークで編集する →</button><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
+              <div class="proc-area-head"><h4>工程に関わる費用（製造）</h4><button type="button" class="btn btn-sm goto-bw-btn">ブロックワークで編集する →</button><button type="button" class="btn btn-sm btn-ghost" id="btn-copy-procs">ほかの商品から工程をコピー</button><select id="copy-procs-src" hidden></select><label class="skip-toggle"><input type="checkbox" id="f-skip-proc">工程はこの商品には不要</label></div>
               <div id="proc-batch-wrap"></div>
             </div>
             </div>
@@ -7622,6 +7628,114 @@
     setCalcBaseline();
     return res;
   }
+  // ---- ほかの商品から中身（①②・出来高・倍数など）をコピーする。名前・商品番号・カテゴリ・メモ・販売価格はそのまま ----
+  function productOptgroups(list, labelOf){
+    var cats = [];
+    list.forEach(function(p){ var c = p.category || 'カテゴリなし'; if(cats.indexOf(c) < 0) cats.push(c); });
+    return cats.map(function(c){
+      return '<optgroup label="'+escapeHtml(c)+'">' + list.filter(function(p){ return (p.category || 'カテゴリなし') === c; }).map(function(p){
+        return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml(labelOf(p))+'</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
+  }
+  document.getElementById('btn-copy-all').addEventListener('click', function(){
+    var sel = document.getElementById('copy-all-src');
+    var list = sortedProductList(state.products.slice()).filter(function(p){ return p && p.id !== state.editingProductId; });
+    if(!list.length){ showToast('コピーできる商品がありません'); return; }
+    sel.innerHTML = '<option value="">（えらぶ）</option>' + productOptgroups(list, function(p){ return p.name || '（名前なし）'; });
+    sel.value = '';
+    sel.dataset.pickFold = '1';
+    openTapPicker(sel, 'どの商品の中身をコピーしますか');
+  });
+  document.getElementById('copy-all-src').addEventListener('change', function(){
+    var q = state.products.find(function(x){ return x.id === this.value; }, this);
+    if(!q) return;
+    openConfirmModal('「' + q.name + '」の中身（①の材料と使用量・②の資材・中身・出来高・倍数・1商品に入れる数・希望原価率・工程の振り分け）を写します。\n今の①②の内容は置きかわります。商品名・商品番号・カテゴリ・メモ・販売価格はそのままです。\n\n工程（ブロックワーク）も写すときは、「工程に関わる費用」の「ほかの商品から工程をコピー」を使ってください。', function(){
+      var snap = currentFormSnapshot();
+      var b = q.batch || {}, pk = q.pack || {};
+      snap.yieldCount = b.baseYieldCount != null ? b.baseYieldCount : (b.yieldCount || 1);
+      snap.yieldUnit = b.yieldUnit || '個';
+      snap.multipliers = (Array.isArray(b.allowedMultipliers) && b.allowedMultipliers.length) ? b.allowedMultipliers.slice() : [b.multiplier || 1];
+      snap.costMultiplier = b.costMultiplier;
+      snap.skip = q.skip || null;
+      snap.packCount = pk.piecesPerPackage || 1;
+      snap.margin = q.marginRate != null ? q.marginRate * 100 : state.settings.margin;
+      snap.procRoles = (q.procRoles && typeof q.procRoles === 'object') ? Object.assign({}, q.procRoles) : {};
+      snap.ing = (b.ingredients || []).map(function(r){ return Object.assign({}, r); });
+      snap.pkg = (pk.items || []).map(function(r){ return Object.assign({}, r); });
+      snap.contents = (pk.contents || []).map(function(r){ return Object.assign({}, r); });
+      snap.sourceType = q.sourceType || ((pk.contents && pk.contents.length) || q.category === 'ギフト' ? 'gift' : 'bake');
+      snap.giftMarkup = q.giftMarkup !== false;
+      snap.giftMarkupLabor = q.giftMarkupLabor != null ? q.giftMarkupLabor !== false : q.giftMarkup !== false;
+      applyFormSnapshot(snap);
+      state.calcDirty = true;
+      procViewKey = null;
+      recalc();
+      saveCalcDraft();
+      showToast('「' + q.name + '」の中身を写しました（まだ登録していません）');
+    }, '写す');
+  });
+
+  // ---- ほかの商品から工程（ブロックワークの工程と時間）をコピーする。ブロックワークの商品にも入る ----
+  function bwValue(){ try{ var bw = JSON.parse(state.blockworkValue || 'null'); return (bw && Array.isArray(bw.products)) ? bw : null; }catch(e){ return null; } }
+  function bwTargetIndex(bw){
+    var code = currentFormCode(), name = (document.getElementById('f-name').value || '').trim();
+    var i = -1;
+    if(code) i = bw.products.findIndex(function(x){ return x && x.code === code; });
+    if(i < 0 && name) i = bw.products.findIndex(function(x){ return x && x.name === name; });
+    return i;
+  }
+  document.getElementById('btn-copy-procs').addEventListener('click', function(){
+    var bw = bwValue();
+    if(!bw){ showToast('ブロックワークのデータがまだありません（一度ブロックワークを開いてください）'); return; }
+    if(!(document.getElementById('f-name').value || '').trim()){ showToast('先に商品名を入れてください'); return; }
+    var ti = bwTargetIndex(bw);
+    var list = [];
+    bw.products.forEach(function(x, i){ if(x && i !== ti && Object.keys(x.procs || {}).length) list.push(Object.assign({}, x, {id:'i' + i})); });
+    if(!list.length){ showToast('工程が入っているブロックワークの商品がありません'); return; }
+    var sel = document.getElementById('copy-procs-src');
+    sel.innerHTML = '<option value="">（えらぶ）</option>' + productOptgroups(list, function(x){ return (x.name || '（名前なし）') + '（工程' + Object.keys(x.procs || {}).length + '）'; });
+    sel.value = '';
+    sel.dataset.pickFold = '1';
+    openTapPicker(sel, 'どの商品の工程をコピーしますか');
+  });
+  document.getElementById('copy-procs-src').addEventListener('change', function(){
+    var bw0 = bwValue(); if(!bw0) return;
+    var srcIdx = parseInt(String(this.value).slice(1), 10);
+    var src0 = bw0.products[srcIdx];
+    if(!src0) return;
+    var name = (document.getElementById('f-name').value || '').trim();
+    openConfirmModal('「' + src0.name + '」の工程と時間（' + Object.keys(src0.procs || {}).length + 'つ）を、ブロックワークの「' + name + '」に写します。\n「' + name + '」に入っている工程は置きかわります。', function(){
+      // ブロックワークにまだない商品なら、先に作る（商品番号・単位・出来高・倍数も入る）
+      var bw = bwValue();
+      if(bwTargetIndex(bw) < 0){
+        pushPlanningCodeUnitToBlockwork({
+          name: name, category: document.getElementById('f-category').value || '',
+          planning: {productCode: currentFormCode(), countUnit: document.getElementById('f-count-unit').value.trim() || '個'},
+          batch: {baseYieldCount: parseFloat(document.getElementById('f-yield-count').value) || 1, multiplier: allowedMultipliers[0] || 1, allowedMultipliers: allowedMultipliers.slice()}
+        });
+        bw = bwValue();
+      }
+      var ti = bwTargetIndex(bw);
+      // 位置がずれていないか、名前で確かめる（新しく作った商品は最後に足されるので前の位置は変わらない）
+      var src = bw.products[srcIdx] && bw.products[srcIdx].name === src0.name ? bw.products[srcIdx] : bw.products.find(function(x){ return x && x.name === src0.name && x.code === src0.code; });
+      if(ti < 0 || !src){ showToast('ブロックワークの商品が見つかりませんでした'); return; }
+      bw.products[ti].procs = JSON.parse(JSON.stringify(src.procs || {}));
+      bw.products[ti].procOrder = (src.procOrder || Object.keys(src.procs || {})).slice();
+      state.blockworkValue = JSON.stringify(bw);
+      scheduleSave();
+      markBlockworkStale();
+      // 原価計算の「製造」「仕上げ」の振り分けも、写したもとの商品に合わせる
+      var gq = genkaProductFor(src);
+      if(gq && gq.procRoles) procRoles = Object.assign({}, gq.procRoles);
+      state.calcDirty = true;
+      procViewKey = null;
+      recalc();
+      saveCalcDraft();
+      showToast('「' + src.name + '」の工程を写しました（ブロックワークにも入りました）');
+    }, '写す');
+  });
+
   // ---- 今の材料の値段・設定・工程で、登録済み商品の値段を計算し直す（一覧の⚠用） ----
   var livePrice = {}, liveCost = {}, liveEx = {};
   var liveJob = null, liveStamp = 1, liveDoneStamp = 0;
