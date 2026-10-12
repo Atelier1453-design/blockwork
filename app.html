@@ -1165,7 +1165,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.71</div>
+      <div class="brand-ver">ver.72</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1188,6 +1188,10 @@
   </nav>
 
   <main class="content">
+    <div class="return-bar" id="global-return-bar" hidden>
+      <span>入力途中の原価計算があります</span>
+      <button type="button" class="btn btn-primary btn-sm js-return-edit">← 編集中の「<span class="js-return-name"></span>」に戻る</button>
+    </div>
     <div class="backup-remind" id="backup-remind" hidden>
       <span id="backup-remind-text"></span>
       <span class="br-btns">
@@ -4285,9 +4289,13 @@
   }
   // 入力途中の原価計算があるか（入力して、まだ登録していないとき）
   function calcInProgressName(){
-    if(!state.calcDirty) return '';
-    // 登録してある中身から何も変わっていなければ「入力途中」とは言わない
-    if(calcSameAsBaseline()){ state.calcDirty = false; return ''; }
+    // 目印（calcDirty）だけにたよらず、登録してある中身とくらべて決める
+    if(state.editingProductId && calcBaseline != null){
+      if(calcSameAsBaseline()){ state.calcDirty = false; return ''; }
+      state.calcDirty = true;
+    } else if(!state.calcDirty){
+      return '';
+    }
     var name = (document.getElementById('f-name').value || '').trim();
     if(name) return name;
     var hasRows = Array.prototype.some.call(document.querySelectorAll('#ing-body tr, #pkg-body tr, #cont-body tr'), function(tr){
@@ -4302,6 +4310,8 @@
     if(pb) pb.hidden = !(name && viewName === 'products');
     var bb = document.getElementById('bw-return');
     if(bb) bb.hidden = !(name && viewName === 'blockwork');
+    var gb = document.getElementById('global-return-bar');
+    if(gb) gb.hidden = !(name && ['calc', 'products', 'blockwork'].indexOf(viewName) < 0);
   }
   document.querySelectorAll('.js-return-edit').forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -4314,6 +4324,11 @@
       stopLivePrices();
       // 一覧の「＋ 新規原価計算」は、前に編集していた商品が残っていたら白紙にする
       if(el.getAttribute('data-view') === 'calc' && el.closest('#view-products') && state.editingProductId){
+        var cur = calcInProgressName();
+        if(cur){
+          openConfirmModal('「' + cur + '」の入力途中の内容が、まだ登録されていません。新しく始めると、入力途中の内容は画面から消えます。\n\n新しく始めますか？（続きをするときは「やめる」→「編集中の◯◯に戻る」）', function(){ clearForm(); showView('calc'); }, '新しく始める');
+          return;
+        }
         clearForm();
       }
       showView(el.getAttribute('data-view'));
@@ -5900,6 +5915,8 @@
     hideSuggestions(tr);
     setRowMaterial(tr, name);
     recalc();
+    state.calcDirty = true;   // 候補の一覧は画面の外にあるので、ここで「入力中」にする
+    saveCalcDraft();
     var q = tr.querySelector('.row-qty');
     if(byTouch){
       // 指で選んだときは、キーボードを閉じるだけ（次の欄へ自動で移ると、キーボードが切り替わって位置が飛ぶため）
@@ -7441,6 +7458,13 @@
   function restoreCalcDraft(d){
     stopLivePrices();
     if(!d) return;
+    applyFormSnapshot(d);
+    state.calcDirty = true;
+    recalc();
+    showView('calc');
+  }
+  // 画面の中身を控え（currentFormSnapshot の形）から戻す。画面は切りかえない
+  function applyFormSnapshot(d){
     state.editingProductId = d.editingId || null;
     document.getElementById('f-name').value = d.name || '';
     document.getElementById('f-product-code').value = d.code || '';
@@ -7463,13 +7487,26 @@
     document.getElementById('f-gift-markup-labor').checked = d.giftMarkupLabor != null ? d.giftMarkupLabor !== false : d.giftMarkup !== false;
     document.getElementById('f-sale-price').value = d.salePrice || '';
     setSourceType(d.sourceType || 'bake', true);
-    state.calcDirty = true;
+    loadPlanningFields(Object.assign({}, getExistingPlanning(), {productCode:d.code || '', countUnit:d.countUnit || '個'}));
     if(state.editingProductId){
       document.getElementById('calc-edit-banner').style.display = '';
       document.getElementById('calc-heading').textContent = '原価計算を編集';
+    } else {
+      document.getElementById('calc-edit-banner').style.display = 'none';
+      document.getElementById('calc-heading').textContent = '新規原価計算';
     }
-    recalc();
-    showView('calc');
+  }
+  // 裏の計算（一覧の⚠・仕掛品の原価）は原価計算の画面を借りて計算する。
+  // 終わったら、借りる前の画面の中身（入力途中のものも）をそのまま戻す
+  function borrowCalcForm(){
+    return {snap: currentFormSnapshot(), baseline: calcBaseline, dirty: !!state.calcDirty};
+  }
+  function returnCalcForm(b){
+    if(!b) return;
+    try{ applyFormSnapshot(b.snap); recalc(); }catch(e){ console.error('returnCalcForm failed', e); }
+    calcBaseline = b.baseline;
+    state.calcDirty = b.dirty;
+    procViewKey = null;
   }
   function showDraftBanner(){
     var d = readCalcDraft();
@@ -7538,6 +7575,19 @@
 
   function loadProductIntoForm(p){
     stopLivePrices();
+    var cur = calcInProgressName();
+    // 同じ商品を入力途中なら、入力中の内容のまま開く（登録した中身で上書きしない）
+    if(cur && state.editingProductId === p.id){
+      showView('calc');
+      showToast('入力途中の内容のまま開きました（まだ登録していません）');
+      return;
+    }
+    if(cur){
+      openConfirmModal('「' + cur + '」の入力途中の内容が、まだ登録されていません。\n「' + (p.name || '') + '」を開くと、入力途中の内容は画面から消えます（この端末の下書きの控えは、次に別の商品を入力するまで残ります）。\n\n開きますか？', function(){
+        fillFormFromProduct(p); showView('calc');
+      }, '開く');
+      return;
+    }
     fillFormFromProduct(p);
     showView('calc');
   }
@@ -7581,6 +7631,7 @@
     liveRestore(job);
   }
   function liveRestore(job){
+    if(job.borrow){ returnCalcForm(job.borrow); return; }
     var prev = job.prev ? state.products.find(function(x){ return x.id === job.prev; }) : null;
     try{ if(prev) fillFormFromProduct(prev); else clearForm(); }catch(e){}
     state.calcDirty = false;
@@ -7658,7 +7709,7 @@
     if(!act || (act.id !== 'view-products' && act.id !== 'view-review')) return;
     // 先に仕掛品を今の値段で計算し直す（それを使う商品の計算が、古い仕掛品の原価にならないように）
     refreshWipCosts();
-    var job = {prev: state.editingProductId, queue: state.products.filter(function(p){ return p && p.category !== '仕掛品'; }).map(function(p){ return p.id; }), stamp: liveStamp, aborted:false};
+    var job = {prev: state.editingProductId, borrow: borrowCalcForm(), queue: state.products.filter(function(p){ return p && p.category !== '仕掛品'; }).map(function(p){ return p.id; }), stamp: liveStamp, aborted:false};
     liveJob = job;
     function step(){
       if(job.aborted || liveJob !== job) return;
@@ -7732,7 +7783,7 @@
     if(state.calcDirty || liveJob) return false;
     var wips = (state.products || []).filter(function(p){ return p && p.category === '仕掛品'; });
     if(!wips.length) return false;
-    var prev = state.editingProductId, changed = 0;
+    var prev = state.editingProductId, changed = 0, borrow = borrowCalcForm();
     for(var pass = 0; pass < 3; pass++){   // 仕掛品が別の仕掛品を使うこともあるので、変わらなくなるまで（最大3回）
       var any = false;
       wips.forEach(function(p){
@@ -7751,11 +7802,8 @@
       });
       if(!any) break;
     }
-    // 画面の原価計算を元に戻す
-    var back = prev ? state.products.find(function(x){ return x.id === prev; }) : null;
-    try{ if(back) fillFormFromProduct(back); else clearForm(); }catch(e){}
-    state.calcDirty = false;
-    procViewKey = null;
+    // 画面の原価計算を、借りる前の中身にそのまま戻す
+    returnCalcForm(borrow);
     if(changed && state.dbxReady) scheduleSave();
     return changed > 0;
   }
