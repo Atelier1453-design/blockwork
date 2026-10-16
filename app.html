@@ -390,6 +390,10 @@
   .row-stale{color:#c0392b; margin-left:3px; font-size:13px; cursor:help;}
   .calc-head-row input, .calc-head-row select{height:42px; box-sizing:border-box;}
   .calc-copy-line{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .gs-setup{margin-top:10px;}
+  .gs-setup > summary{cursor:pointer; font-size:13.5px; font-weight:700; color:var(--ink-soft);}
+  .gs-steps{margin:8px 0 0 1.2em; padding:0; font-size:13px; line-height:1.7; color:var(--ink-soft);}
+  .gs-steps code{font-size:12px; background:var(--bg); padding:1px 4px; border-radius:4px; word-break:break-all;}
   .mat-role{display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; border:1.5px solid transparent; white-space:nowrap;}
   .mat-role.r-box{background:#efe3cc; color:#7a5320;}
   .mat-role.r-cushion{background:#f4efdf; color:#6d6040;}
@@ -818,6 +822,13 @@
   .rc-colmark{letter-spacing:.2em;}
   /* 表紙・はじめに・あとがき */
   /* 表紙：題・副題・写真は上下のまんなか、名前と年・季節はページの下 */
+  .rc-pageno{text-align:center; font-size:12px; color:var(--ink-faint); margin-top:18px; letter-spacing:.1em;}
+  .rc-toc{margin-top:10px;}
+  .rc-toc-cat{font-weight:700; font-size:14px; margin:14px 0 4px; padding-left:8px; border-left:4px solid var(--tab, var(--accent));}
+  .rc-toc-row{display:flex; align-items:baseline; gap:6px; padding:3px 0 3px 14px; font-size:14.5px;}
+  .rc-toc-row.col{color:var(--ink-soft); font-size:13.5px;}
+  .rc-toc-dots{flex:1; border-bottom:1px dotted var(--ink-faint); transform:translateY(-4px);}
+  .rc-toc-no{min-width:2em; text-align:right; font-variant-numeric:tabular-nums;}
   .rc-cover{min-height:70vh; display:grid; grid-template-rows:minmax(28px, .35fr) auto 1fr; justify-items:center; text-align:center; padding:24px 8px;}
   .rc-cover-main{grid-row:2; display:flex; flex-direction:column; align-items:center; gap:14px; width:100%;}
   .rc-cover-foot{grid-row:3; align-self:end; display:flex; flex-direction:column; align-items:center; gap:6px; padding-top:18px;}
@@ -1167,7 +1178,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.73</div>
+      <div class="brand-ver">ver.74</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -2038,7 +2049,31 @@
             <button type="button" class="btn" id="btn-open-backup-folder">バックアップのフォルダを開く</button>
             <button type="button" class="btn btn-ghost" id="btn-export-data">この端末にも保存する</button>
           </div>
+
           <p class="hint">バックアップは、Dropbox のアプリ用フォルダの中の「backups」フォルダに、日付つきのファイルで保存されます。「フォルダを開く」で Dropbox の「アプリ」フォルダが開くので、このアプリのフォルダ →「backups」の順に開いてください。復元するときは「バックアップから復元」で、そのファイルを選びます（iPad では、ファイルを選ぶ画面の「ブラウズ」から Dropbox を選べます）。</p>
+        </div>
+        <div class="backup-box gs-box">
+          <div class="backup-last">Google スプレッドシート（人が読める表）：<b id="gs-last">—</b></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center;">
+            <button type="button" class="btn btn-primary" id="btn-gs-export">スプレッドシートに書き出す</button>
+            <button type="button" class="btn" id="btn-gs-open" hidden>スプレッドシートを開く</button>
+          </div>
+          <details class="gs-setup" id="gs-setup">
+            <summary>はじめての準備（Google のクライアントID）</summary>
+            <div class="field" style="margin-top:8px;">
+              <label>Google のクライアントID</label>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;"><input type="text" id="gs-client-id" placeholder="例：123456789-xxxx.apps.googleusercontent.com" data-keep autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1; min-width:220px;"><button type="button" class="btn btn-sm" id="gs-client-save">保存</button></div>
+            </div>
+            <ol class="gs-steps" data-keep-hint>
+              <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud</a> に、ふだんの Google アカウントでログインして、新しいプロジェクトを作る（名前は「工房ノート」など）。</li>
+              <li>「APIとサービス」→「ライブラリ」で <b>Google Sheets API</b> を探して「有効にする」。</li>
+              <li>「OAuth 同意画面」（Google Auth Platform）で、アプリ名「工房ノート」・自分のメールを入れて作る。対象は「外部」。「対象」→「テストユーザー」に自分の Gmail を追加する。</li>
+              <li>「認証情報」→「認証情報を作成」→「OAuth クライアント ID」。種類は <b>ウェブ アプリケーション</b>。<br>「承認済みの JavaScript 生成元」に <code>https://atelier1453-design.github.io</code><br>「承認済みのリダイレクト URI」に <code id="gs-redirect-uri">https://atelier1453-design.github.io/blockwork/app.html</code> を入れて作成。</li>
+              <li>できた「クライアント ID」（〜.apps.googleusercontent.com）をコピーして、上の欄に貼って「保存」。</li>
+              <li>「スプレッドシートに書き出す」を押すと Google のログイン画面が出るので、許可する（「確認されていないアプリ」と出たら「詳細」→「工房ノート（安全ではないページ）に移動」）。</li>
+            </ol>
+          </details>
+          <p class="hint">商品はカテゴリごとのシートに、1商品ずつ表にして書き出します（原価・材料・資材・工程・栄養成分表示）。ほかに「原材料」「棚卸し」のシート。書き出すたびに中身は最新に上書きします（商品のシートの見た目はアプリが毎回付け直します。「原材料」「棚卸し」は値だけ書くので、見た目を変えても残ります）。</p>
         </div>
         <p class="hint" id="data-import-hint" style="margin-top:10px;"></p>
       </div>
@@ -5044,6 +5079,251 @@
   }
   document.getElementById('s-show-info').addEventListener('change', function(){ setAppearance({showInfo: this.checked}); });
 
+  // ================= Google スプレッドシートへの書き出し =================
+  // ログインは Google の画面へ行って戻ってくる形（ライブラリなし）。トークンは1時間ほど使える
+  var GS_TOKEN_KEY = 'atelier_gs_token', GS_PENDING_KEY = 'atelier_gs_pending';
+  var GS_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  var GS_CAT_ORDER = ['クッキー', '焼き菓子', '半生菓子', 'パウンド', '仕掛品', '生菓子', 'チョコ', 'ギフト', 'ホールケーキ'];
+  function gsRedirectUri(){ return location.origin + location.pathname; }
+  function gsToken(){
+    try{ var t = JSON.parse(localStorage.getItem(GS_TOKEN_KEY) || 'null'); if(t && t.access_token && t.exp > Date.now() + 60000) return t.access_token; }catch(e){}
+    return null;
+  }
+  // Google から戻ってきたとき（#access_token=…）にトークンを受け取る
+  function gsHandleRedirect(){
+    var h = location.hash || '';
+    if(h.indexOf('access_token=') < 0) return false;
+    var q = new URLSearchParams(h.slice(1));
+    if(q.get('state') !== 'gsheets') return false;
+    try{ localStorage.setItem(GS_TOKEN_KEY, JSON.stringify({access_token:q.get('access_token'), exp:Date.now() + (Number(q.get('expires_in')) || 3600) * 1000})); }catch(e){}
+    try{ history.replaceState({}, '', location.pathname + location.search); }catch(e){}
+    return true;
+  }
+  function gsHandleError(){
+    var h = location.hash || '';
+    if(h.indexOf('error=') < 0 || h.indexOf('state=gsheets') < 0) return;
+    var q = new URLSearchParams(h.slice(1));
+    try{ localStorage.removeItem(GS_PENDING_KEY); }catch(e){}
+    try{ history.replaceState({}, '', location.pathname + location.search); }catch(e){}
+    setTimeout(function(){ showToast('Google のログインができませんでした（' + (q.get('error') || '') + '）'); }, 800);
+  }
+  function gsLogin(){
+    var cid = (state.settings && state.settings.gClientId) || '';
+    try{ localStorage.setItem(GS_PENDING_KEY, String(Date.now())); }catch(e){}
+    var params = new URLSearchParams({client_id:cid, redirect_uri:gsRedirectUri(), response_type:'token', scope:GS_SCOPE, state:'gsheets', include_granted_scopes:'true'});
+    location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+  }
+  async function gsFetch(url, opts){
+    var tok = gsToken();
+    if(!tok) throw {gsAuth:true};
+    opts = opts || {};
+    opts.headers = Object.assign({'Authorization':'Bearer ' + tok}, opts.body ? {'Content-Type':'application/json'} : {}, opts.headers || {});
+    var res = await fetch(url, opts);
+    if(res.status === 401){ try{ localStorage.removeItem(GS_TOKEN_KEY); }catch(e){} throw {gsAuth:true}; }
+    var txt = await res.text();
+    var json = null; try{ json = txt ? JSON.parse(txt) : {}; }catch(e){}
+    if(!res.ok){ var err = new Error((json && json.error && json.error.message) || ('HTTP ' + res.status)); err.status = res.status; throw err; }
+    return json || {};
+  }
+  // CSS の色 → Google の色（0〜1）。白に寄せて薄くする（t：白の割合）
+  function gsColor(css, t){
+    var el = document.createElement('span'); el.style.color = css; document.body.appendChild(el);
+    var m = getComputedStyle(el).color.match(/\d+(\.\d+)?/g) || [200, 200, 200]; el.remove();
+    t = t == null ? 0 : t;
+    return {red:(m[0] / 255) * (1 - t) + t, green:(m[1] / 255) * (1 - t) + t, blue:(m[2] / 255) * (1 - t) + t};
+  }
+  function gsR(v, d){ v = Number(v) || 0; var k = Math.pow(10, d == null ? 2 : d); return Math.round(v * k) / k; }
+  // ---- 商品1つぶんの表（行の配列と、見た目の印） ----
+  function gsProductBlock(p, rows, fmts){
+    var code = (p.planning && p.planning.productCode) || '';
+    var yu = (p.batch && p.batch.yieldUnit) || '個', cu = (p.planning && p.planning.countUnit) || '個';
+    var pieces = (p.pack && Number(p.pack.piecesPerPackage)) || 1;
+    var wip = p.category === '仕掛品', gift = isGiftProduct(p) || p.category === 'ギフト';
+    function push(r, kind){ if(kind) fmts.push({row:rows.length, kind:kind}); rows.push(r); }
+    push(['■ ' + (p.name || '') + (code ? '（' + code + '）' : ''), '', '', '', '更新', p.updatedAt ? String(p.updatedAt).slice(0, 10) : ''], 'title');
+    if(wip){
+      push(['1' + yu + 'あたりの原価', gsR(p.batch && p.batch.costPerYieldUnit), '1倍の出来高', ((p.batch && p.batch.baseYieldCount) || '') + yu, '', '']);
+    } else {
+      var calcIn = priceInTaxOf(p), ex = Number(p.priceExTax) || 0, cost = Number(p.totalCost) || 0;
+      push(['販売価格（税込）', p.salePrice > 0 ? p.salePrice : '', '計算の税込', Math.round(calcIn), '税抜', Math.round(ex)]);
+      push(['原価（1' + cu + '）', gsR(cost), '原価率', ex > 0 ? gsR(cost / ex * 100, 1) + '%' : '', '利益（税抜）', ex > 0 ? gsR(ex - cost) : '']);
+      if(!gift) push(['1倍の出来高', ((p.batch && p.batch.baseYieldCount) || '') + yu, '1' + cu + 'に入る数', pieces + yu, '', '']);
+    }
+    var ing = (p.batch && p.batch.ingredients) || [];
+    if(ing.length && !gift){
+      push(['材料（1倍）', '使用量', '単位', '単価', '金額', ''], 'head');
+      ing.forEach(function(r){ var q = Number(r.qty) || 0, up = Number(r.unitPrice) || 0; push([r.name || '', q, r.unit || '', gsR(up, 2), gsR(r.amount != null ? r.amount : q * up), '']); });
+    }
+    var cont = (p.pack && p.pack.contents) || [];
+    if(cont.length){
+      push(['中身', '個数', '', '', '', ''], 'head');
+      cont.forEach(function(c){ push([c.name || '', Number(c.qty) || 0, '', '', '', '']); });
+    }
+    var pk = (p.pack && p.pack.items) || [];
+    if(pk.length){
+      push(['資材（1' + cu + '）', '使用量', '単位', '単価', '金額', ''], 'head');
+      pk.forEach(function(r){ var q = Number(r.qty) || 0, up = Number(r.unitPrice) || 0; push([r.name || '', q, r.unit || '', gsR(up, 2), gsR(r.amount != null ? r.amount : q * up), '']); });
+    }
+    try{
+      var info = getProcessCosting(p.name, 1, code);
+      if(info && info.rows && info.rows.length){
+        push(['工程（1倍）', info.rows.map(function(r){ return r.label + ' ' + fmtMinSec(r.minutes); }).join('・'), '', '', '', ''], 'head1');
+      }
+    }catch(e){}
+    var n = productNutrition(p);
+    if(n.used){
+      var cols = wip ? [['1' + yu + 'あたり', n.piece]] : [['1' + cu + 'あたり', n.pack]].concat(pieces > 1 && !gift ? [['1' + yu + 'あたり', n.piece]] : []);
+      push(['栄養成分表示（推定値）'].concat(cols.map(function(c){ return c[0]; })).concat(['', '', '', '', '']).slice(0, 6), 'head');
+      NUTRI_ROWS.forEach(function(r){
+        push([r[0]].concat(cols.map(function(c){ return gsR(c[1][r[1]], r[2]) + ' ' + r[3]; })).concat(['', '', '', '', '']).slice(0, 6));
+      });
+    }
+    push(['', '', '', '', '', '']);
+  }
+  function gsSheetPlan(){
+    var prods = sortedProductList(state.products.slice()).filter(Boolean);
+    var catOf = function(p){ return (isGiftProduct(p) && p.category !== '仕掛品') ? 'ギフト' : (p.category || 'カテゴリなし'); };
+    var cats = GS_CAT_ORDER.slice();
+    // 決まったカテゴリのほかは、商品があるものだけシートにする（並びは登録済み商品のカテゴリの順）
+    (state.productCategories || []).concat(prods.map(catOf)).forEach(function(c){ if(c && cats.indexOf(c) < 0 && prods.some(function(p){ return catOf(p) === c; })) cats.push(c); });
+    return cats.map(function(c){
+      var rows = [], fmts = [];
+      prods.filter(function(p){ return catOf(p) === c; }).forEach(function(p){ gsProductBlock(p, rows, fmts); });
+      if(!rows.length) rows.push(['（まだ商品がありません）', '', '', '', '', '']);
+      return {title:c, rows:rows, fmts:fmts, block:true, color:categoryColor(c)};
+    });
+  }
+  function gsMaterialsSheet(){
+    var rows = [['品名', '型番', '大カテゴリ', '中カテゴリ', '小カテゴリ', '勘定科目', '容量', '単位', '価格（税込）', '単価', '購入業者', '価格更新', 'キーワード', 'ギフトの役目', '行事', '熱量(kcal/100g)']];
+    state.materials.slice().sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); }).forEach(function(m){
+      var gift = kindOf(m) === 'supply' && giftUseOf(m);
+      rows.push([m.name || '', m.model || '', kindLabel(kindOf(m)), groupOf(m.category), m.category || '', m.costLabel || '',
+        m.qty != null ? Number(m.qty) : '', m.unit || '', m.price != null ? Number(m.price) : '', gsR(m.unitPrice, 2), m.supplier || '',
+        m.noUpdate ? '更新しない' : fmtYm(m.priceUpdatedAt), m.yomi || '', gift ? giftRoleName(giftRoleOf(m)) : '', giftEventsOf(m).join('・'),
+        (m.nutrition && m.nutrition.kcal != null) ? Number(m.nutrition.kcal) : '']);
+    });
+    return {title:'原材料', rows:rows, block:false};
+  }
+  function gsStocktakeSheet(){
+    var year = stDefaultYear();
+    var prevY = stYear; stYear = year;
+    var rows = [['区分', 'グループ', '品名', '数量', '単位', '単価', '金額']];
+    try{
+      var st = stCur(), total = 0;
+      stItems().forEach(function(it){
+        var q = stQty(it, st.counts[it.key]);
+        var amt = stAmount(it, st); total += amt;
+        rows.push([it.label, it.group || '', it.name || '', q || '', it.unit || '', gsR(stUnitCost(it, st), 2), q ? gsR(amt) : '']);
+      });
+      rows.push(['', '', year + '年末の合計', '', '', '', gsR(total)]);
+    }catch(e){ console.error(e); }
+    stYear = prevY;
+    return {title:'棚卸し', rows:rows, block:false};
+  }
+  async function gsExport(){
+    var cid = (state.settings && state.settings.gClientId) || '';
+    if(!cid){ document.getElementById('gs-setup').open = true; showToast('先に「はじめての準備」でクライアントIDを入れてください'); return; }
+    if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
+    if(!gsToken()){ gsLogin(); return; }
+    var btn = document.getElementById('btn-gs-export');
+    btn.disabled = true; btn.textContent = '書き出し中…';
+    try{
+      var API = 'https://sheets.googleapis.com/v4/spreadsheets';
+      var plan = gsSheetPlan().concat([gsMaterialsSheet(), gsStocktakeSheet()]);
+      var id = state.settings.gSheetId || '', meta = null;
+      if(id){
+        try{ meta = await gsFetch(API + '/' + id + '?fields=sheets.properties'); }
+        catch(e){ if(e && e.gsAuth) throw e; id = ''; }
+      }
+      if(!id){
+        meta = await gsFetch(API, {method:'POST', body:JSON.stringify({properties:{title:'工房ノート（バックアップ）', locale:'ja_JP', timeZone:'Asia/Tokyo'}, sheets:plan.map(function(sh){ return {properties:{title:sh.title}}; })})});
+        id = meta.spreadsheetId;
+        state.settings.gSheetId = id;
+      }
+      var have = {};
+      (meta.sheets || []).forEach(function(sh){ have[sh.properties.title] = sh.properties.sheetId; });
+      var add = plan.filter(function(sh){ return have[sh.title] == null; });
+      var fresh = {};
+      if(add.length){
+        var r1 = await gsFetch(API + '/' + id + ':batchUpdate', {method:'POST', body:JSON.stringify({requests:add.map(function(sh){ return {addSheet:{properties:{title:sh.title}}}; })})});
+        (r1.replies || []).forEach(function(rp, i){ have[add[i].title] = rp.addSheet.properties.sheetId; fresh[add[i].title] = 1; });
+      }
+      if(!meta.spreadsheetId) {} // 既存
+      else plan.forEach(function(sh){ fresh[sh.title] = 1; });   // 新しく作ったときは全部はじめて
+      // 中身を消して書く（値だけ）
+      await gsFetch(API + '/' + id + '/values:batchClear', {method:'POST', body:JSON.stringify({ranges:plan.map(function(sh){ return "'" + sh.title + "'"; })})});
+      await gsFetch(API + '/' + id + '/values:batchUpdate', {method:'POST', body:JSON.stringify({valueInputOption:'RAW', data:plan.map(function(sh){ return {range:"'" + sh.title + "'!A1", values:sh.rows}; })})});
+      // 見た目：商品のシートは毎回付け直す。原材料・棚卸しは、はじめての時だけ見出しを太字・固定
+      var reqs = [];
+      plan.forEach(function(sh){
+        var sid = have[sh.title];
+        if(sh.block){
+          reqs.push({repeatCell:{range:{sheetId:sid}, cell:{userEnteredFormat:{}}, fields:'userEnteredFormat'}});
+          reqs.push({updateDimensionProperties:{range:{sheetId:sid, dimension:'COLUMNS', startIndex:0, endIndex:1}, properties:{pixelSize:240}, fields:'pixelSize'}});
+          reqs.push({updateDimensionProperties:{range:{sheetId:sid, dimension:'COLUMNS', startIndex:1, endIndex:6}, properties:{pixelSize:120}, fields:'pixelSize'}});
+          var titleBg = gsColor(sh.color, 0.75), headBg = {red:0.94, green:0.93, blue:0.90};
+          sh.fmts.forEach(function(f){
+            var range = {sheetId:sid, startRowIndex:f.row, endRowIndex:f.row + 1, startColumnIndex:0, endColumnIndex:6};
+            if(f.kind === 'title') reqs.push({repeatCell:{range:range, cell:{userEnteredFormat:{backgroundColor:titleBg, textFormat:{bold:true, fontSize:12}}}, fields:'userEnteredFormat(backgroundColor,textFormat)'}});
+            else reqs.push({repeatCell:{range:range, cell:{userEnteredFormat:{backgroundColor:headBg, textFormat:{bold:true}}}, fields:'userEnteredFormat(backgroundColor,textFormat)'}});
+          });
+          reqs.push({updateSheetProperties:{properties:{sheetId:sid, tabColor:gsColor(sh.color, 0.2)}, fields:'tabColor'}});
+        } else if(fresh[sh.title]){
+          reqs.push({repeatCell:{range:{sheetId:sid, startRowIndex:0, endRowIndex:1}, cell:{userEnteredFormat:{textFormat:{bold:true}, backgroundColor:{red:0.94, green:0.93, blue:0.90}}}, fields:'userEnteredFormat(textFormat,backgroundColor)'}});
+          reqs.push({updateSheetProperties:{properties:{sheetId:sid, gridProperties:{frozenRowCount:1}}, fields:'gridProperties.frozenRowCount'}});
+        }
+      });
+      // シートの並びも決まった順に
+      plan.forEach(function(sh, i){ reqs.push({updateSheetProperties:{properties:{sheetId:have[sh.title], index:i}, fields:'index'}}); });
+      await gsFetch(API + '/' + id + ':batchUpdate', {method:'POST', body:JSON.stringify({requests:reqs})});
+      state.settings.lastGsheetAt = new Date().toISOString();
+      scheduleSave();
+      renderGsInfo();
+      showToast('スプレッドシートに書き出しました');
+    }catch(e){
+      if(e && e.gsAuth){ gsLogin(); return; }
+      console.error('gsheets export failed', e);
+      showToast('書き出しに失敗しました：' + (e && e.message ? e.message : e));
+    }finally{
+      btn.disabled = false; btn.textContent = 'スプレッドシートに書き出す';
+    }
+  }
+  function renderGsInfo(){
+    var st = state.settings || {};
+    var last = document.getElementById('gs-last');
+    if(last){
+      var d = st.lastGsheetAt ? new Date(st.lastGsheetAt) : null;
+      last.textContent = d && !isNaN(d) ? (d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')) : '—';
+    }
+    var ob = document.getElementById('btn-gs-open'); if(ob) ob.hidden = !st.gSheetId;
+    var ci = document.getElementById('gs-client-id'); if(ci && document.activeElement !== ci) ci.value = st.gClientId || '';
+    var ru = document.getElementById('gs-redirect-uri'); if(ru) ru.textContent = gsRedirectUri();
+  }
+  document.getElementById('btn-gs-export').addEventListener('click', gsExport);
+  document.getElementById('btn-gs-open').addEventListener('click', function(){
+    var id = state.settings && state.settings.gSheetId; if(!id) return;
+    window.open('https://docs.google.com/spreadsheets/d/' + id + '/edit', '_blank', 'noopener');
+  });
+  document.getElementById('gs-client-save').addEventListener('click', function(){
+    var v = document.getElementById('gs-client-id').value.trim();
+    if(v && !/\.apps\.googleusercontent\.com$/.test(v)){ showToast('クライアントIDは「〜.apps.googleusercontent.com」で終わる文字です'); return; }
+    state.settings.gClientId = v;
+    if(state.dbxReady) scheduleSave();
+    renderGsInfo();
+    showToast(v ? 'クライアントIDを保存しました' : 'クライアントIDを消しました');
+  });
+  // Google から戻ってきて、書き出しの途中だったら続ける（データを読み終わってから）
+  function gsResumeIfPending(){
+    var t = 0; try{ t = Number(localStorage.getItem(GS_PENDING_KEY)) || 0; }catch(e){}
+    if(!t) return;
+    try{ localStorage.removeItem(GS_PENDING_KEY); }catch(e){}
+    if(Date.now() - t > 15 * 60000 || !gsToken() || !state.dbxReady) return;
+    showToast('Google にログインしました。スプレッドシートに書き出しています…');
+    gsExport();
+  }
+  gsHandleError();
+  gsHandleRedirect();
+
   async function init(){
     setupInfoToggles();
     applyAppearance();
@@ -5109,6 +5389,8 @@
     document.getElementById('mat-count-foot').textContent = state.materials.length ? ('材料 ' + state.materials.length + ' 件') : '';
     rebuildCategoryList();
     if(state.dbxReady) refreshWipCosts();
+    try{ renderGsInfo(); }catch(e){}
+    if(state.dbxReady) setTimeout(gsResumeIfPending, 600);
   }
 
 
@@ -6971,9 +7253,25 @@
     }
   }
   // ブロックワークを開いて、その商品の詳細まで開かせる
+  // ブロックワークにまだない商品（新しく入力中など）は、先に登録してから開く（工程を入れられるように）
+  var goBwAfterSave = 0;   // 「登録して移動する」を押した時刻（登録が終わったらブロックワークを開く）
   function gotoBlockworkForCurrentProduct(){
     var name = document.getElementById('f-name').value.trim();
     var code = currentFormCode();
+    var bwv = bwValue();
+    if(name && bwv && bwTargetIndex(bwv) < 0 && state.dbxReady){
+      var reg = state.editingProductId ? state.products.find(function(x){ return x.id === state.editingProductId; }) : null;
+      if(reg && !calcInProgressName()){
+        // 登録ずみで変更なし：ブロックワークに商品を作ってから開く
+        pushPlanningCodeUnitToBlockwork(reg);
+      } else {
+        openConfirmModal('「' + name + '」はまだブロックワークにありません。\n登録して、ブロックワークで工程を入力しますか？\n（あとで続きを入力して、もう一度登録できます）', function(){
+          goBwAfterSave = Date.now();
+          document.getElementById('btn-save').click();
+        }, '登録して移動する');
+        return;
+      }
+    }
     showView('blockwork');
     if(!name && !code){ showToast('先に商品名を入れてください'); return; }
     // ブロックワークの読み込みが終わるタイミングが読めないので、「開けた」と返事が来るまで何回か送る。
@@ -7989,7 +8287,8 @@
       document.getElementById('calc-edit-banner').style.display = '';
       document.getElementById('calc-heading').textContent = '原価計算を編集';
       btn.disabled = false;
-      showView('products');       // 登録したら一覧に戻る
+      if(goBwAfterSave && Date.now() - goBwAfterSave < 120000){ goBwAfterSave = false; gotoBlockworkForCurrentProduct(); }   // 「登録して移動する」のとき
+      else showView('products');       // 登録したら一覧に戻る
     }catch(e){
       showToast('保存に失敗しました：' + (e && e.message ? e.message : e));
       document.getElementById('btn-save').disabled = false;
@@ -10103,10 +10402,13 @@
     return all.__columns;
   }
   // 商品のページの並びに、コラムのページをはさむ（afterId の商品のすぐあと。空なら最初＝表紙など）
+  // 目次のページ（自動でできる。保存はしない）
+  var RECIPE_TOC = {id:'__toc', kind:'toc', title:'目次', afterId:''};
   function recipeProducts(){
     var prods = sortedProductList(state.products.slice());
     var cols = (state.recipes && Array.isArray(state.recipes.__columns)) ? state.recipes.__columns : [];
-    if(!cols.length) return prods;
+    var toc = {id:'__toc', isColumn:true, isToc:true, name:'目次', category:prods.length ? prods[0].category : '', col:RECIPE_TOC};
+    if(!cols.length) return prods.length ? [toc].concat(prods) : prods;
     var byAfter = {};
     // 表紙・はじめに・あとがきは、置く場所が決まっている（表紙→はじめに→…→あとがき）
     var special = {cover:[], intro:[], afterword:[]};
@@ -10119,6 +10421,7 @@
     var firstCat = prods.length ? prods[0].category : '';
     special.cover.forEach(function(c){ out.push(mk(c, firstCat)); });
     special.intro.forEach(function(c){ out.push(mk(c, firstCat)); });
+    if(prods.length) out.push(toc);
     (byAfter[''] || []).forEach(function(c){ out.push(mk(c, firstCat)); });
     prods.forEach(function(p){
       out.push(p); seen[p.id] = 1;
@@ -10129,7 +10432,28 @@
     special.afterword.forEach(function(c){ out.push(mk(c, lastCat)); });
     return out;
   }
-  var COL_KIND_LABEL = {cover:'表紙', intro:'はじめに', column:'（無題のコラム）', afterword:'あとがき'};
+  var COL_KIND_LABEL = {cover:'表紙', intro:'はじめに', column:'（無題のコラム）', afterword:'あとがき', toc:'目次'};
+  // ページ番号：表紙には付けない。表紙のあとから 1, 2, 3 …
+  function recipePageNumbers(list){
+    var nums = {}, n = 0;
+    list.forEach(function(p){ if(p.isColumn && p.col && p.col.kind === 'cover') return; n++; nums[p.id] = n; });
+    return nums;
+  }
+  function recipeTocHtml(){
+    var list = recipeProducts(), nums = recipePageNumbers(list);
+    var ti = list.findIndex(function(p){ return p.isToc; });
+    var html = '', lastCat = null;
+    list.slice(ti + 1).forEach(function(p){
+      var kind = p.isColumn && p.col ? (p.col.kind || 'column') : '';
+      if(!kind){
+        var cat = p.category || 'カテゴリなし';
+        if(cat !== lastCat){ html += '<div class="rc-toc-cat" style="--tab:'+categoryColor(cat)+';">'+escapeHtml(cat)+'</div>'; lastCat = cat; }
+      } else if(kind === 'afterword') lastCat = null;
+      var label = kind === 'column' ? p.name : (kind ? (p.name || COL_KIND_LABEL[kind]) : p.name);
+      html += '<div class="rc-toc-row' + (kind ? ' col' : '') + '"><span class="rc-toc-name">'+escapeHtml(label || '')+'</span><span class="rc-toc-dots"></span><span class="rc-toc-no">'+(nums[p.id] || '')+'</span></div>';
+    });
+    return '<h1 class="rc-title rc-intro-title">目次</h1><div class="rc-toc">' + (html || '<p class="rc-empty">まだページがありません。</p>') + '</div>';
+  }
   // ---- 印刷の形（保存用・仕事用） ----
   var PAPER_MM = {A4:[210,297], B5:[182,257], A5:[148,210], B6:[128,182], letter:[216,279]};
   var PAPER_LABEL = {A4:'A4', B5:'B5（182×257）', A5:'A5', B6:'B6（128×182）', letter:'レター'};
@@ -10287,7 +10611,7 @@
     // 商品は、いま開いているページのカテゴリの中だけ
     sel.innerHTML = list.map(function(p, i){
       if(catOf(p) !== curCat) return '';
-      if(p.isColumn) return '<option value="'+i+'">'+({cover:'📖 ', intro:'✍️ ', afterword:'🔚 '}[p.col && p.col.kind] || '📝 ')+escapeHtml(p.name)+'</option>';
+      if(p.isColumn) return '<option value="'+i+'">'+({cover:'📖 ', intro:'✍️ ', afterword:'🔚 ', toc:'📑 '}[p.col && p.col.kind] || '📝 ')+escapeHtml(p.name)+'</option>';
       var code = (p.planning && p.planning.productCode) || '';
       return '<option value="'+i+'">'+escapeHtml((code ? code + '　' : '') + p.name)+'</option>';
     }).join('');
@@ -10532,7 +10856,7 @@
   }
   // ページの上の外側に、カテゴリごとのつまみ（インデックス）。押すとそのカテゴリの最初のページへ
   function recipePageCategory(p){
-    if(p && p.isColumn && p.col && (p.col.kind === 'cover' || p.col.kind === 'intro')) return '__front';
+    if(p && p.isColumn && p.col && (p.col.kind === 'cover' || p.col.kind === 'intro' || p.col.kind === 'toc')) return '__front';
     if(p && p.isColumn && p.col && p.col.kind === 'afterword') return '__back';
     return (p && p.category) || 'カテゴリなし';
   }
@@ -10578,6 +10902,7 @@
   document.getElementById('col-title').addEventListener('input', colTitleGrow);
   document.getElementById('col-title').addEventListener('focus', colTitleGrow);
   function buildColumnHtml(p, opts){
+    if(p && p.isToc) return recipeTocHtml();
     var c = p.col || {};
     var screen = !opts;
     var body = c.html ? sanitizeRichHtml(c.html) : '';
@@ -10611,6 +10936,12 @@
                : (screen ? '<p class="rc-empty">（「このページを編集」から書けます）</p>' : ''));
   }
   function buildRecipeHtmlFor(p, opts){
+    var h = buildRecipeHtmlForInner(p, opts);
+    if(!p) return h;
+    var n = recipePageNumbers(recipeProducts())[p.id];
+    return h + (n ? '<div class="rc-pageno">' + n + '</div>' : '');
+  }
+  function buildRecipeHtmlForInner(p, opts){
     if(p && p.isColumn) return buildColumnHtml(p, opts);
     var screen = !opts;
     var o = opts || {code:1, title:1, desc:1, photo:1, source:1, ing:1, oven:1, method:1, memo:1};
@@ -10897,7 +11228,7 @@
   function saveColumnFromForm(){
     var list = recipeProducts();
     var cur = list[recipeIndex];
-    if(!cur || !cur.isColumn) return;
+    if(!cur || !cur.isColumn || cur.isToc) return;
     if(!state.dbxReady){ showToast('Dropboxに接続されていません'); return; }
     var c = cur.col;
     var newAfter = document.getElementById('col-after').value;
@@ -11028,6 +11359,8 @@
   });
   window.__recipeCurl = { start: startCurl, set: setCurlProgress, finish: finishCurl };
   document.getElementById('btn-recipe-edit').addEventListener('click', function(){
+    var curP = recipeProducts()[recipeIndex];
+    if(curP && curP.isToc){ showToast('目次は、ページの並びから自動でできます（直すところはありません）'); return; }
     var box = document.getElementById('recipe-edit');
     box.hidden = !box.hidden;
     if(!box.hidden){ loadRecipeIntoForm(); box.scrollIntoView({behavior:'smooth', block:'start'}); }
@@ -11065,7 +11398,7 @@
   document.getElementById('col-delete').addEventListener('click', function(){
     var list = recipeProducts();
     var cur = list[recipeIndex];
-    if(!cur || !cur.isColumn) return;
+    if(!cur || !cur.isColumn || cur.isToc) return;
     var kl = (cur.col.kind && cur.col.kind !== 'column') ? COL_KIND_LABEL[cur.col.kind] : 'コラム';
     openConfirmModal(kl + '「' + (cur.col.title || kl) + '」を削除します。よろしいですか？', function(){
       var cols = recipeColumns();
