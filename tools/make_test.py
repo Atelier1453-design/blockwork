@@ -10,7 +10,7 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 g = io.open(os.path.join(root, "app.html"), encoding="utf-8").read()
 names = ["state", "recalc", "kindOf", "rebuildMaterialIndex", "rebuildMaterialCategories",
          "rebuildMaterialCategoryFilter", "renderMaterialTable", "renderProductList",
-         "setRowMaterial", "batchMultiplierValue", "setAllowedMultipliers", "fillRows", "loadBlockworkFrame", "syncBwTimeFactor", "syncGiftsToBlockwork"]
+         "setRowMaterial", "batchMultiplierValue", "setAllowedMultipliers", "fillRows", "loadBlockworkFrame", "syncBwTimeFactor", "syncGiftsToBlockwork", "syncYieldsToBlockwork"]
 for n in names[1:]:
     if ("function " + n + "(") not in g:
         sys.exit("MISSING function " + n)
