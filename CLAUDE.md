@@ -26,7 +26,7 @@
   `app.html` の `BW_APP_HTML_B64` に base64 で埋め込み、`srcdoc` の iframe で表示している。
   - 保存は iframe → 親へ `postMessage({type:'bw-storage', ...})` で橋渡し（親が `state.blockworkValue` を持つ）。
   - そのほかのメッセージ：`bw-open-genka`（原価計算を開く）、`bw-open-product`（親→iframe：商品を開く。iframe は開けたら `bw-product-opened` を返し、親は送るのをやめる。何度も送ると開き直して画面が上に戻る）、`bw-open-stocktake`（棚卸しを開く）、`bw-numpad`。
-  - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（文法チェックも走る）。
+  - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（ブロックワークの中のスクリプトと app.html の両方を文法チェックする）。
   - `src/blockwork.html` の React 部分は日本語が `\uXXXX` で書かれている。探すときも直すときも、この形に直してから扱う（絵文字はサロゲートペア）。
 - 原価計算と ブロックワークの商品は **商品番号**（なければ商品名）で突き合わせる。
   - 原価計算 → ブロックワーク：商品名・単位・カテゴリ・1倍の出来高（×1の出来高÷1商品に入れる数）・使用可能倍数（`multis`）・ギフトの中身／仕掛品の「使うもの」（`uses` の `src:'genka'`）。ギフトの中身のグループは `{grp, pids, qty}` の1件で渡し、ブロックワークで種類が重ならないように1つずつ整数で減らす
@@ -72,6 +72,7 @@
 
 ## 確かめ方
 
+- **上げる前に、iPad の横（1180×820）と縦（820×1180）の両方で、画面の外にはみ出すものがないか確かめる**（本人から何度も指摘あり。小窓のボタン・長い説明文・表など）。
 - `python3 tools/make_test.py` で `test/index.html`（`window.__debug` つき）を作る。`cd test && python3 -m http.server 8934` で開く。
 - Playwright（Chromium）で、`__debug.state` にテスト用データを入れて画面を操作する。
   - 指の操作は CDP の `Input.dispatchTouchEvent` を使う。日本語の変換中は `Input.imeSetComposition`。
