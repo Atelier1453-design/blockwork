@@ -26,6 +26,8 @@
   `app.html` の `BW_APP_HTML_B64` に base64 で埋め込み、`srcdoc` の iframe で表示している。
   - 保存は iframe → 親へ `postMessage({type:'bw-storage', ...})` で橋渡し（親が `state.blockworkValue` を持つ）。
   - そのほかのメッセージ：`bw-open-genka`（原価計算を開く）、`bw-open-product`（親→iframe：商品を開く。iframe は開けたら `bw-product-opened` を返し、親は送るのをやめる。何度も送ると開き直して画面が上に戻る）、`bw-open-stocktake`（棚卸しを開く）、`bw-numpad`。
+  - 注文・イベントの候補（グループ・資材）は、iframe から親の `window.__atelierBwExtra()` を呼んで受け取る。注文は `kind`（gift/deco/other）・`time`・`paid`・`handover`（bara/wrap）・`smallBag`・`mats`、中身はグループなら `{grp, gname, pids, qty}`。
+  - 計画の決まり（`rules`）は `procs`（数える工程。空ならすべて）を持つ。
   - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（ブロックワークの中のスクリプトと app.html の両方を文法チェックする）。
   - `src/blockwork.html` の React 部分は日本語が `\uXXXX` で書かれている。探すときも直すときも、この形に直してから扱う（絵文字はサロゲートペア）。
 - 原価計算と ブロックワークの商品は **商品番号**（なければ商品名）で突き合わせる。
