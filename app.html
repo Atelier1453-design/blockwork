@@ -1213,7 +1213,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.86</div>
+      <div class="brand-ver">ver.87</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -4354,7 +4354,7 @@
                 showToast('ブロックワークの商品名を「'+doc.name+'」に更新しました');
               }
             }catch(e){ console.error('rename in blockwork failed', e); }
-          });
+          }, '上書きして更新する');
         }
       }
       if(!changed) return;
@@ -4938,7 +4938,7 @@
   }
 
   function confirmDbxDisconnect(){
-    openConfirmModal('Dropboxとの連携をこの端末から解除します。データ自体はDropbox上にそのまま残ります。よろしいですか？', function(){ Dbx.disconnect(); });
+    openConfirmModal('Dropboxとの連携をこの端末から解除します。データ自体はDropbox上にそのまま残ります。よろしいですか？', function(){ Dbx.disconnect(); }, '解除する');
   }
   document.getElementById('dbx-connect-btn').addEventListener('click', function(){ Dbx.connect(); });
   document.getElementById('dbx-disconnect-btn').addEventListener('click', confirmDbxDisconnect);
@@ -5072,7 +5072,7 @@
         }).catch(function(e){
           hint.textContent = '保存に失敗しました：' + (e && e.message ? e.message : e);
         });
-      });
+      }, '上書きして読み込む');
       fileInput.value = '';
     };
     reader.readAsText(f, 'utf-8');
@@ -7586,12 +7586,15 @@
   }
   SKIP_KEYS.forEach(function(key){
     var b = skipBox(key);
-    if(b) b.addEventListener('change', function(){ applySkipUI(); saveCalcDraft(); });
+    if(b) b.addEventListener('change', function(){ applySkipUI(); state.calcDirty = true; recalc(); saveCalcDraft(); });
   });
   function recalc(){
     var isGift = state.sourceType === 'gift';
     var ing = readRows('ing-body');
     if(isGift) ing = [];
+    // 「この商品には不要」にした欄は、入っている材料・資材・工程を原価に入れない（入力した中身は残しておく）
+    var skp = readSkip();
+    if(skp.ing) ing = [];
     var ingTotal1 = ing.reduce(function(s,r){ return s + r.amount; }, 0);
     var ycEl = document.getElementById('f-yield-count');
     var yieldCount1 = isGift ? 1 : (parseFloat(ycEl.value) || parseFloat(ycEl.dataset.prev) || 1);
@@ -7604,9 +7607,9 @@
 
     // 工程（ブロックワークの時間）→ 製造分は仕込み全体、仕上げ分は1包装に按分
     var procInfo = renderProcessSection(document.getElementById('f-name').value.trim(), mult);
-    var batchLaborMin = procInfo ? procInfo.batchMinutes : 0;
-    var batchLaborCost = procInfo ? procInfo.batchLaborCost : 0;
-    var finishMin = procInfo ? procInfo.finishMinutes : 0;
+    var batchLaborMin = procInfo && !skp.proc ? procInfo.batchMinutes : 0;
+    var batchLaborCost = procInfo && !skp.proc ? procInfo.batchLaborCost : 0;
+    var finishMin = procInfo && !skp.proc ? procInfo.finishMinutes : 0;
 
     // 製造間接費：製造工程にかかる時間 × 設定の製造間接費単価
     var batchOverheadMin = batchLaborMin;
@@ -7648,6 +7651,7 @@
     document.getElementById('f-pack-unit-echo').textContent = document.getElementById('f-yield-unit').value || '個';
 
     var pkg = readRows('pkg-body');
+    if(skp.pkg) pkg = [];
     var pkgTotal = pkg.reduce(function(s,r){ return s + r.amount; }, 0);
     var pkgTotalEl = document.getElementById('pkg-total');
     if(pkgTotalEl) pkgTotalEl.textContent = fmtYen(pkgTotal);
@@ -8845,7 +8849,7 @@
       renderProductList();
       showToast(missing.length + ' 件を登録済み商品に取り込みました（原価は未入力です）');
       markBlockworkStale();
-    });
+    }, '登録する');
   });
   var productSortSel = document.getElementById('product-sort');
   productSortSel.value = productSortMode;
@@ -10658,7 +10662,8 @@
     var okBtn = document.getElementById('confirm-modal-ok');
     var freshOk = okBtn.cloneNode(true);
     freshOk.textContent = okLabel || '削除する';
-    freshOk.className = altLabel ? 'btn btn-primary' : 'btn btn-danger';
+    // 消す・削除するときだけ赤いボタン。更新・登録などはふつうのボタン
+    freshOk.className = (altLabel || !/削除|消す|クリア/.test(freshOk.textContent)) ? 'btn btn-primary' : 'btn btn-danger';
     okBtn.parentNode.replaceChild(freshOk, okBtn);
     freshOk.addEventListener('click', function(){ closeConfirmModal(); onOk(); });
   }
