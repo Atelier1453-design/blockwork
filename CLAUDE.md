@@ -28,7 +28,7 @@
   - そのほかのメッセージ：`bw-open-genka`（原価計算を開く）、`bw-open-product`（親→iframe：商品を開く。iframe は開けたら `bw-product-opened` を返し、親は送るのをやめる。何度も送ると開き直して画面が上に戻る）、`bw-open-stocktake`（棚卸しを開く）、`bw-numpad`。
   - 注文・イベントの候補（グループ・資材）は、iframe から親の `window.__atelierBwExtra()` を呼んで受け取る。注文は `kind`（gift/deco/other）・`time`・`paid`・`handover`（bara/wrap）・`smallBag`・`mats`、中身はグループなら `{grp, gname, pids, qty}`。
   - 計画の決まり（`rules`）は `procs`（数える工程。空ならすべて）を持つ。
-  - 注文の「在庫から出す」は `pickDays`（ピックアップの何日前か）。計画の `b.pickups`（日ごとは `day.pickups`）に在庫の見込みと警告。ラッピングの注文は `sets`（ギフトの個数）で中身を掛ける。お渡し済みは `handedDates`（その回の日付）。
+  - 注文の「在庫から出す」は `pickDays`（ピックアップの何日前か）。計画の `b.pickups`（日ごとは `day.pickups`）に在庫の見込みと警告。ラッピングの注文は `sets`（ギフトの個数）で中身を掛ける。進み具合は `madeDates`（作った）・`handedDates`（お渡し済み）にその回の日付。種類は gift/deco/custom（特注）/other。領収書は `receipt`。
   - その日にできた数は `madeLog`（日付→商品→数）。「メニュー確定」（`lockedDays`：日付→その日の商品の控え）した日だけ入れられ、打ち終えてから反映。今の見込みの数＋差を `stock` にして、`stockMark.d` を今日にする。確定中のチップの消込は `ticks`。
 - **並び順は商品番号順**（本人の決まり）。ブロックワークは `byCode`、app.html は `productCodeOf` で並べる。
   - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（ブロックワークの中のスクリプトと app.html の両方を文法チェックする）。
