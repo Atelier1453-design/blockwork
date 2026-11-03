@@ -43,6 +43,8 @@
   - その日にできた数は `madeLog`（日付→商品→数）。「メニュー確定」（`lockedDays`：日付→その日の商品の控え）した日だけ入れられ、打ち終えてから反映。今の見込みの数＋差を `stock` にして、`stockMark.d` を今日にする。確定中のチップの消込は `ticks`。
   - 「◯時までに終わらせたい」は日ごと `finishByDay`（日付→HH:MM）。日ごとの時間とあふれは `DTM(day, 時刻)`。
   - 在庫を確認するかは状態だけで決める（`ckOf`：販売中・季節もの＝確認する）。古い `stockCheck` の印は見ない。
+  - その日だけのシフト（単発）は `spotShifts`（日付→[{staffId,start,end}]）。計画では `SH(staff, day)` でシフトを読む。
+  - ほかの日へ送った商品は、送り先のチップに「（◯/◯の分）」で出し、詳細は `l = 送り先:商品@もとの日` で開く。
   - 原材料マスタの仕掛品（`wipOf`）は、ふつうの行として編集できる。品名・量・単位・値段は原価計算から（`syncWipMaterials`）。
 - **並び順は商品番号順**（本人の決まり）。ブロックワークは `byCode`、app.html は `productCodeOf` で並べる。
   - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（ブロックワークの中のスクリプトと app.html の両方を文法チェックする）。
