@@ -93,6 +93,10 @@
 
 ## 確かめ方
 
+- **手順はスキル `.claude/skills/kobo-note-dev`**（直す→版を上げる→確かめる→記録→上げる）。
+- ブロックワークを直すときは `tools/bwedit.py`（日本語に戻して直し、`\uXXXX` に戻して保存）。
+- 全画面の確かめは `bash tools/check/run.sh`（iPad の横・縦で全画面とブロックワークの全タブ。最後に「★ はみ出し・エラーなし」）。直したところのテストも `tools/check/` に置いて `bash tools/check/run.sh そのテスト.js`。
+
 - **上げる前に、iPad の横（1180×820）と縦（820×1180）の両方で、画面の外にはみ出すものがないか確かめる**（本人から何度も指摘あり。小窓のボタン・長い説明文・表など）。
 - `python3 tools/make_test.py` で `test/index.html`（`window.__debug` つき）を作る。`cd test && python3 -m http.server 8934` で開く。
 - Playwright（Chromium）で、`__debug.state` にテスト用データを入れて画面を操作する。
