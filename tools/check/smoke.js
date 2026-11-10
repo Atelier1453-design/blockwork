@@ -7,7 +7,7 @@ const {open}=require('./setup.js'); const {check}=require('./ovf.js');
   const {b,p,errs}=await open({viewport:vp});
   console.log('=== '+vp.width+'×'+vp.height);
   const ck=async(ctx,label)=>{ const r=await check(ctx,label); bad+=r.length; };
-  for (const v of ['products','materials','giftmaker','recipes','links','settings']) {
+  for (const v of ['products','materials','giftmaker','events','recipes','links','settings']) {
     await p.click('.nav button[data-view="'+v+'"]'); await p.waitForTimeout(600); await ck(p, v);
   }
   await p.click('.nav button[data-view="products"]'); await p.waitForTimeout(300);

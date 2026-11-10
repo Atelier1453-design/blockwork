@@ -8,7 +8,7 @@ test/ は .gitignore で公開しない。
 import io, os, sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 g = io.open(os.path.join(root, "app.html"), encoding="utf-8").read()
-names = ["state", "recalc", "kindOf", "rebuildMaterialIndex", "rebuildMaterialCategories",
+names = ["state", "evCal", "evOcc", "evSekkiOfYear", "evNow", "evCheckPrompts", "renderEvents", "recalc", "kindOf", "rebuildMaterialIndex", "rebuildMaterialCategories",
          "rebuildMaterialCategoryFilter", "renderMaterialTable", "renderProductList",
          "setRowMaterial", "batchMultiplierValue", "setAllowedMultipliers", "fillRows", "loadBlockworkFrame", "syncBwTimeFactor", "syncGiftsToBlockwork", "syncYieldsToBlockwork"]
 for n in names[1:]:
