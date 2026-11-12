@@ -1390,7 +1390,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.105</div>
+      <div class="brand-ver">ver.106</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -11620,12 +11620,14 @@
   // A-ONE 51268（A4・10面・名刺 91×55mm、上 11mm・左 14mm の余白）。1枚を縦長（55×91mm）に使う
   var GC_TOP = 11, GC_LEFT = 14, GC_W = 91, GC_H = 55;
   // 大きさの基準：iPad の Safari の印刷は、そのままだと大きく出る（80% で収まった）。その大きさを 100% とする
-  var GC_BASE_SC = 0.8;
+  // ver.106：その基準から 96% で外枠が全部 A4 に入った（0.8×0.96）ので、それを 100% にした
+  var GC_BASE_SC = 0.768;
   var gcSel = null, gcFold = {};
   try{ gcFold = JSON.parse(localStorage.getItem('atelier_gc_fold') || '{}') || {}; }catch(e){}
-  function gcConf(){ var c = state.settings.giftCard; if(!c || typeof c !== 'object') c = state.settings.giftCard = {}; var df = {hole:'l', bg:true, start:1, dx:0, dy:0, sc:100}; Object.keys(df).forEach(function(k){ if(c[k] == null) c[k] = df[k]; });
+  function gcConf(){ var c = state.settings.giftCard; if(!c || typeof c !== 'object') c = state.settings.giftCard = {}; var df = {hole:'l', bg:true, start:1, dx:0, dy:0, sc:100}; if(c.sc == null){ c.scV2 = 1; c.scV3 = 1; } Object.keys(df).forEach(function(k){ if(c[k] == null) c[k] = df[k]; });
     // ver.105：iPad で 80% にしないと入らなかったので、その大きさを 100%（基準）にした。前に入れた数はその基準に直す
-    if(!c.scV2){ if(Number(c.sc) < 100) c.sc = Math.round(Number(c.sc) / GC_BASE_SC * 2) / 2; c.scV2 = 1; }
+    if(!c.scV2){ if(Number(c.sc) < 100) c.sc = Math.round(Number(c.sc) / 0.8 * 2) / 2; c.scV2 = 1; }
+    if(!c.scV3){ c.sc = Math.round(Number(c.sc || 100) * 0.8 / GC_BASE_SC * 2) / 2; c.scV3 = 1; }
     return c; }
   function gcGifts(){
     return (state.products || []).filter(function(p){ return isGiftProduct(p); })
