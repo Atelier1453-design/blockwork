@@ -46,7 +46,7 @@
   - 仕掛品は、ふだん安全在庫まで前もって作らない（使う商品を作る日に足りないときだけ）。`keepSafety` がオンのものだけ安全在庫まで作る。
   - その日だけのシフト（単発）は `spotShifts`（日付→[{staffId,start,end}]）。計画では `SH(staff, day)` でシフトを読む。
   - ほかの日へ送った商品は、送り先のチップに「（◯/◯の分）」で出し、詳細は `l = 送り先:商品@もとの日` で開く。
-  - 行事カレンダーは app 側の `state.eventCal`（`events`：{id,name,emoji,color,rule,saleB,saleA,prep,kind,tag,items:[{pid,qty}],plan:{年:'yes'|'no'},notes:{年:メモ}}、`flowers`：{月:花}）。保存・読み込みに入れてある。ブロックワークは `window.parent.__atelierEvents()` で、帯（`now`・二十四節気・月の花）と、計画に組み込む行事の商品（`occ`）を受け取る。計画では `EVQ`（目安の数）を安全在庫の代わりに使う。
+  - 行事カレンダーは app 側の `state.eventCal`（`events`：{id,name,emoji,color,rule,saleB,saleA,prep,kind,tag,items:[{pid,qty}],plan:{年:'yes'|'no'},notes:{年:メモ}}、`flowers`：{月:花}）。保存・読み込みに入れてある。ブロックワークは `window.parent.__atelierEvents()` で、帯（`now`・二十四節気・月の花）と、計画に組み込む行事の商品（`occ`）を受け取る。計画では目安の数を売れ方の見込み（`EVW`：はじめ少し・週末ちらほら・1週間前から増える・前日が山・当日少し・休みは0）で日ごとに割りふり、`EVS`（その日に売れる見込み）を減る数に足し、`EVQ`（次の営業日の分）を安全在庫に足す。app 側の `evCurve` も同じ形（ver.102）。
   - 行事の目安の数は年ごと `ev.qtys`（年→商品→数）、売れた数は `ev.sold`。並べる商品（`ev.items`：[{pid}]）は登録済み商品の詳細の「行事」チップで選ぶ（ver.101）。
   - ギフトのあんちょこカード（`gcOpen`・`gcPrint`、設定は `settings.giftCard`）：A-ONE 51268（A4・10面・91×55mm、上11・左14mm）に縦長で印刷。
   - 原材料マスタの仕掛品（`wipOf`）は、ふつうの行として編集できる。品名・量・単位・値段は原価計算から（`syncWipMaterials`）。
