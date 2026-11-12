@@ -47,6 +47,8 @@
   - その日だけのシフト（単発）は `spotShifts`（日付→[{staffId,start,end}]）。計画では `SH(staff, day)` でシフトを読む。
   - ほかの日へ送った商品は、送り先のチップに「（◯/◯の分）」で出し、詳細は `l = 送り先:商品@もとの日` で開く。
   - 行事カレンダーは app 側の `state.eventCal`（`events`：{id,name,emoji,color,rule,saleB,saleA,prep,kind,tag,items:[{pid,qty}],plan:{年:'yes'|'no'},notes:{年:メモ}}、`flowers`：{月:花}）。保存・読み込みに入れてある。ブロックワークは `window.parent.__atelierEvents()` で、帯（`now`・二十四節気・月の花）と、計画に組み込む行事の商品（`occ`）を受け取る。計画では `EVQ`（目安の数）を安全在庫の代わりに使う。
+  - 行事の目安の数は年ごと `ev.qtys`（年→商品→数）、売れた数は `ev.sold`。並べる商品（`ev.items`：[{pid}]）は登録済み商品の詳細の「行事」チップで選ぶ（ver.101）。
+  - ギフトのあんちょこカード（`gcOpen`・`gcPrint`、設定は `settings.giftCard`）：A-ONE 51268（A4・10面・91×55mm、上11・左14mm）に縦長で印刷。
   - 原材料マスタの仕掛品（`wipOf`）は、ふつうの行として編集できる。品名・量・単位・値段は原価計算から（`syncWipMaterials`）。
 - **並び順は商品番号順**（本人の決まり）。ブロックワークは `byCode`、app.html は `productCodeOf` で並べる。
   - **`src/blockwork.html` を直したら、必ず `python3 tools/embed_blockwork.py` で `app.html` に埋め込み直す**（ブロックワークの中のスクリプトと app.html の両方を文法チェックする）。

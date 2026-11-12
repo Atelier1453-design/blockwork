@@ -359,12 +359,24 @@
   .ev-dhead small{font-size:13px; color:var(--ink-soft); font-weight:400;}
   .ev-ddates{font-size:14px;}
   #ev-modal-body h4{margin:14px 0 6px; font-size:14px;}
-  .ev-items{width:100%; border-collapse:collapse; font-size:14px;}
-  .ev-items td{padding:5px 6px; border-top:1px solid var(--border);}
-  .ev-items .n{text-align:right; white-space:nowrap;}
+  .ev-items{font-size:14px;}
+  .ev-item{padding:7px 2px; border-top:1px solid var(--border);}
+  .ev-iname{display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .ev-iname > span:first-child{min-width:0;}
+  .ev-iprice{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .ev-inums{display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; margin-top:4px;}
+  .ev-inum{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-soft);}
+  .ev-inum input{width:5em; font-size:16px; text-align:right;}
+  .ev-inow{font-size:12.5px; color:var(--ink-soft);}
+  .ev-ilast{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
   .ev-cat{font-size:11.5px; color:var(--ink-faint); margin-left:6px;}
   .ev-plan{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:10px 0 4px; font-size:14px;}
-  .ev-mats{font-size:13.5px; line-height:1.7;}
+  .ev-mats{font-size:14px; line-height:1.6;}
+  .ev-mrole{margin:0 0 8px;}
+  .ev-mrole-h{margin:0 0 2px;}
+  .ev-mline{padding:1px 0 1px 10px;}
+  .ev-salebox{display:flex; flex-direction:column; gap:6px;}
+  .ev-salebox > div{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   #ev-note{width:100%; font-size:16px; box-sizing:border-box;}
   .ev-oldnote{border-top:1px dashed var(--border); padding:8px 0; font-size:14px; line-height:1.7;}
   .ev-oldnote b{display:block;}
@@ -385,6 +397,49 @@
   .ev-hits{position:absolute; left:0; right:0; top:100%; z-index:5; background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.12); max-height:260px; overflow:auto;}
   .ev-hits button{display:block; width:100%; text-align:left; padding:9px 12px; border:none; border-bottom:1px solid #f0ebe2; background:#fff; font-family:inherit; font-size:15px; cursor:pointer;}
   .ev-hits small{margin-left:8px; color:var(--ink-faint); font-size:12px;}
+
+  /* ギフトのあんちょこカード（A-ONE 51268：A4 10面・名刺 91×55mm を縦長に使う） */
+  .gc-modal{max-width:900px;}
+  .gc-opts{display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; font-size:14px; margin:6px 0 10px;}
+  .gc-opts label{display:inline-flex; align-items:center; gap:6px;}
+  .gc-opts select{font-size:16px;}
+  .gc-opts input[type=number]{width:4.5em; font-size:16px;}
+  .gc-cat{border-top:1px solid var(--border);}
+  .gc-cathead{display:flex; justify-content:space-between; align-items:center; width:100%; padding:8px 4px; border:none; background:none; font:inherit; font-size:14px; font-weight:700; color:var(--ink-soft); cursor:pointer; text-align:left;}
+  .gc-cathead small{font-weight:400; color:var(--ink-faint);}
+  .gc-items{display:flex; flex-direction:column; gap:2px; padding:0 4px 8px;}
+  .gc-items label{display:flex; align-items:center; gap:8px; font-size:14px; padding:3px 0;}
+  .gc-items input{width:20px; height:20px; flex:none;}
+  .gc-items .gc-ev{font-size:12px; color:var(--ink-faint);}
+  .gc-preview{display:flex; flex-wrap:wrap; gap:10px; padding:10px; background:#eee8dc; border-radius:10px; margin-top:8px; justify-content:center;}
+  .gc-card{position:relative; width:55mm; height:91mm; box-sizing:border-box; overflow:hidden; background:#fff; color:#2a241c;
+    font-family:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif; font-size:8pt; line-height:1.4;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  .gc-preview .gc-card{box-shadow:0 1px 4px rgba(0,0,0,.18);}
+  .gc-frame{position:absolute; inset:1.6mm; border:0.35mm solid var(--gc-c); border-radius:1.6mm; pointer-events:none;}
+  .gc-frame::after{content:""; position:absolute; inset:0.7mm; border:0.15mm solid var(--gc-c); border-radius:1mm; opacity:.6;}
+  .gc-hole{position:absolute; top:3.4mm; width:4.2mm; height:4.2mm; border-radius:50%; border:0.25mm dashed #9a8f80; background:#fff; box-sizing:border-box;}
+  .gc-hole.l{left:3.4mm;} .gc-hole.r{right:3.4mm;}
+  .gc-in{position:absolute; left:4.2mm; right:4.2mm; top:8.6mm; bottom:6.2mm; display:flex; flex-direction:column; overflow:hidden;}
+  .gc-name{text-align:center; font-size:10.5pt; font-weight:700; line-height:1.3; letter-spacing:.02em;}
+  .gc-count{text-align:center; font-size:7.5pt; color:#5c5246; margin-top:0.6mm;}
+  .gc-price{text-align:center; font-size:12pt; font-weight:700; color:#8B3A1E; margin:0.6mm 0 1.2mm; font-variant-numeric:tabular-nums;}
+  .gc-price small{font-size:7pt; font-weight:400; margin-left:0.6mm;}
+  .gc-rule{border-top:0.2mm solid var(--gc-c); opacity:.7; margin:0 0 1.2mm;}
+  .gc-list .r{display:flex; justify-content:space-between; gap:1.5mm;}
+  .gc-list .r span:first-child{min-width:0;}
+  .gc-list .r span:last-child{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .gc-pk{margin-top:0.7em;}
+  .gc-date{position:absolute; right:4.2mm; bottom:2.6mm; font-size:6.5pt; color:#6b6155;}
+  #gc-print{display:none;}
+  @media print{
+    body.print-gc > *:not(#gc-print){display:none !important;}
+    body.print-gc #gc-print{display:block !important;}
+    #gc-print .gc-sheet{position:relative; width:210mm; height:296mm; overflow:hidden; break-after:page; page-break-after:always;}
+    #gc-print .gc-sheet:last-child{break-after:auto; page-break-after:auto;}
+    #gc-print .gc-cell{position:absolute; width:91mm; height:55mm;}
+    #gc-print .gc-cell .gc-card{position:absolute; left:18mm; top:-18mm; transform:rotate(-90deg);}
+  }
   /* リンク帳 */
   .link-cat-head{font-size:14px; font-weight:700; color:var(--ink-soft); margin:18px 0 8px;}
   .link-cat-head:first-child{margin-top:4px;}
@@ -1306,7 +1361,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.100</div>
+      <div class="brand-ver">ver.101</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -1628,8 +1683,9 @@
     <section class="view" id="view-products">
       <div class="page-head">
         <div><h2>登録済み商品</h2><p>商品名で検索して、過去の原価計算書を呼び出せます。<br>カード右上のスイッチで、ブロックワークに出すかどうかを切り替えます（右に寄っていれば表示・左なら非表示）。</p></div>
-        <div style="display:flex; gap:8px; flex:none;">
+        <div style="display:flex; gap:8px; flex:0 1 auto; flex-wrap:wrap; justify-content:flex-end;">
           <button type="button" class="btn btn-ghost" data-view="review">📈 値段の見直し</button>
+          <button type="button" class="btn btn-ghost" id="btn-gift-cards">🏷 あんちょこカード</button>
           <button type="button" class="btn btn-ghost" id="btn-import-bw-products">ブロックワークから取り込む</button>
           <button class="btn btn-primary" data-view="calc">＋ 新規原価計算</button>
         </div>
@@ -2636,6 +2692,10 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="gc-modal-backdrop" hidden>
+  <div class="modal-box gc-modal"><div id="gc-modal-body"></div></div>
+</div>
+<div id="gc-print" aria-hidden="true"></div>
 <div class="modal-backdrop" id="ev-modal-backdrop" hidden>
   <div class="modal-box ev-modal"><div id="ev-modal-body"></div></div>
 </div>
@@ -9414,7 +9474,9 @@
       '<div class="card section-card pd-section" id="pd-sec-batch" style="display:none;">'+batchSection+'</div>' +
       (contentList.length ? '<div class="card section-card pd-section" id="pd-sec-cont" style="display:none;">'+contentSection+'</div>' : '') +
       '<div class="card section-card pd-section" id="pd-sec-pkg" style="display:none;">'+pkgSection+'</div>' +
+      (p.category === '仕掛品' ? '' : '<div class="card section-card pd-events" id="pd-events" style="margin-top:16px;"></div>') +
       planningBlock;
+    pdRenderEvents(p);
 
     var editInline = document.getElementById('pd-edit-inline');
     if(editInline) editInline.addEventListener('click', function(){ loadProductIntoForm(p); });
@@ -9436,6 +9498,28 @@
     if(fromList) productListScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
     showView('product-detail');
     try{ window.scrollTo(0, 0); }catch(e){}
+  }
+  // 商品の詳細：この商品を並べる行事（行事カレンダーの「並べる商品・ギフト」になる）
+  function pdRenderEvents(p){
+    var box = document.getElementById('pd-events'); if(!box) return;
+    var y = new Date().getFullYear();
+    var evs = evCal().events.filter(function(ev){ return ev.kind !== 'day'; })
+      .map(function(ev){ return {ev:ev, d:evDayOf(ev, y) || ''}; }).sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    var on = function(ev){ return (ev.items || []).some(function(it){ return it.pid === p.id; }); };
+    box.innerHTML = '<h3 style="margin-top:0;">行事 <span style="font-weight:400; color:var(--ink-faint); font-size:13px;">（この商品を並べる行事）</span></h3>' +
+      '<div class="tag-chips">' + evs.map(function(x){ var ev = x.ev;
+        return '<button type="button" class="tag-chip' + (on(ev) ? ' on' : '') + '" data-pdev="' + escapeHtml(ev.id) + '"' + (on(ev) ? ' style="border-color:' + ev.color + '; background:' + evTint(ev.color, 0.14) + '; color:#333;"' : '') + '>' + escapeHtml((ev.emoji || '') + ' ' + ev.name) + '</button>';
+      }).join('') + '</div>' +
+      '<p class="hint" style="margin:8px 0 0;">選んだ行事の「並べる商品・ギフト」に入ります。目安の数は、行事カレンダーの行事のくわしい欄で入れます。</p>';
+    box.querySelectorAll('[data-pdev]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var ev = evCal().events.find(function(x){ return x.id === b.dataset.pdev; }); if(!ev) return;
+        ev.items = ev.items || [];
+        if(on(ev)) ev.items = ev.items.filter(function(it){ return it.pid !== p.id; });
+        else ev.items.push({pid:p.id});
+        scheduleSave(); markBlockworkStale(); pdRenderEvents(p);
+      });
+    });
   }
   var productListScrollY = 0, detailFromReview = false;
   document.querySelector('#view-product-detail .detail-back').addEventListener('click', function(){
@@ -11032,7 +11116,34 @@
       c.events = EV_DEFAULTS.map(function(x, i){ return {id:'ev' + (i + 1), name:x[0], emoji:x[1], color:x[2], rule:x[3], saleB:x[4], saleA:x[5], prep:x[6], kind:x[7], tag:x[8] || x[0], items:[], plan:{}, notes:{}}; });
     }
     if(!c.flowers || typeof c.flowers !== 'object') c.flowers = Object.assign({}, EV_FLOWERS);
+    // ver.101：目安の数は年ごと（qtys：{年:{pid:数}}）、売れた数も年ごと（sold）。前の items[].qty は今年の目安へ移す
+    c.events.forEach(function(ev){
+      if(!Array.isArray(ev.items)) ev.items = [];
+      if(!ev.qtys || typeof ev.qtys !== 'object') ev.qtys = {};
+      if(!ev.sold || typeof ev.sold !== 'object') ev.sold = {};
+      ev.items.forEach(function(it){
+        if(it && it.qty != null){
+          var yk = String(new Date().getFullYear());
+          if(Number(it.qty) > 0 && (ev.qtys[yk] || {})[it.pid] == null){ ev.qtys[yk] = ev.qtys[yk] || {}; ev.qtys[yk][it.pid] = Number(it.qty); }
+          delete it.qty;
+        }
+      });
+    });
     return c;
+  }
+  // その年の目安の数・売れた数（入れていなければ null）
+  function evQty(ev, pid, y){ var v = ((ev.qtys || {})[String(y)] || {})[pid]; return v == null || v === '' ? null : Number(v) || 0; }
+  function evSold(ev, pid, y){ var v = ((ev.sold || {})[String(y)] || {})[pid]; return v == null || v === '' ? null : Number(v) || 0; }
+  function evSetYear(ev, key, pid, y, v){
+    ev[key] = ev[key] || {}; var yk = String(y);
+    if(v == null){ if(ev[key][yk]){ delete ev[key][yk][pid]; if(!Object.keys(ev[key][yk]).length) delete ev[key][yk]; } return; }
+    ev[key][yk] = ev[key][yk] || {}; ev[key][yk][pid] = v;
+  }
+  // 商品が入っている行事（ギフトを売る行事だけ・カレンダーの順）
+  function evEventsOfProduct(pid){
+    var y = new Date().getFullYear();
+    return evCal().events.filter(function(ev){ return ev.kind !== 'day' && (ev.items || []).some(function(it){ return it.pid === pid; }); })
+      .sort(function(a, b){ var da = evDayOf(a, y) || '', db = evDayOf(b, y) || ''; return da < db ? -1 : da > db ? 1 : 0; });
   }
   // 日付（その土地の日）を 'YYYY-MM-DD' に
   function evYmd(dt){ return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
@@ -11159,7 +11270,7 @@
           var o = evOcc(ev, yy); if(!o || !o.gift) return;
           var plan = (ev.plan || {})[String(o.day.slice(0, 4))] || null;
           var items = [];
-          if(plan === 'yes' && bw && Array.isArray(bw.products)) (ev.items || []).forEach(function(it){ var p = evProd(it.pid); var b2 = p ? bwProductFor(bw, p) : null; if(b2 && b2.id) items.push({bw:b2.id, qty:Number(it.qty) || 0}); });
+          if(plan === 'yes' && bw && Array.isArray(bw.products)) (ev.items || []).forEach(function(it){ var p = evProd(it.pid); var b2 = p ? bwProductFor(bw, p) : null; var q = evQty(ev, it.pid, yy); if(b2 && b2.id && q > 0) items.push({bw:b2.id, qty:q}); });
           occ.push({id:ev.id, name:ev.name, from:o.from, pre:evAdd(o.from, -1), to:o.to, plan:plan, items:items});
         });
       });
@@ -11261,52 +11372,98 @@
     return (orders.length ? '<p>注文 ' + orders.length + '件' + (t1.length ? '：' + t1.map(function(k){ return escapeHtml(k) + ' ' + fmtNum(tally[k]); }).join('、') : '') + '</p>' : '') +
       (t2.length ? '<p>できた数（計画の記録）：' + t2.map(function(k){ return escapeHtml(k) + ' ' + fmtNum(made[k]); }).join('、') + '</p>' : '');
   }
+  // その年の販売期間に、商品ごとにできた数・注文の数（登録済み商品の id で）
+  function evProdRecord(o){
+    var out = {made:{}, ordered:{}};
+    if(!o) return out;
+    var bw = null; try{ bw = JSON.parse(state.blockworkValue || 'null'); }catch(e){}
+    if(!bw || !Array.isArray(bw.products)) return out;
+    var toG = {};
+    (o.ev.items || []).forEach(function(it){ var p = evProd(it.pid); var b2 = p ? bwProductFor(bw, p) : null; if(b2 && b2.id) toG[b2.id] = it.pid; });
+    Object.keys(bw.madeLog || {}).forEach(function(dt){ if(dt < o.from || dt > o.to) return; Object.keys(bw.madeLog[dt] || {}).forEach(function(bid){ var g = toG[bid]; if(g) out.made[g] = (out.made[g] || 0) + (Number(bw.madeLog[dt][bid]) || 0); }); });
+    (bw.events || []).forEach(function(x){
+      if(!x || x.date < o.from || x.date > o.to) return;
+      var sm = x.handover === 'wrap' ? Math.max(1, Number(x.sets) || 1) : 1;
+      (x.items || []).forEach(function(it){ var g = it && !it.grp ? toG[it.productId] : null; if(g) out.ordered[g] = (out.ordered[g] || 0) + (Number(it.qty) || 0) * sm; });
+    });
+    return out;
+  }
   function evOpenDetail(id, year, edit){
     var c = evCal(), ev = c.events.find(function(x){ return x.id === id; }); if(!ev) return;
     year = year || new Date().getFullYear();
     if(edit) return evOpenEdit(ev, year);
     var o = evOcc(ev, year), today = evYmd(new Date()), s = o ? evStatus(o, today) : null, yk = String(year);
-    var items = (ev.items || []).map(function(it){ var p = evProd(it.pid); return p ? {p:p, qty:it.qty} : null; }).filter(Boolean).sort(function(a, b){ return cmpByCode(a.p, b.p); });
+    var items = (ev.items || []).map(function(it){ var p = evProd(it.pid); return p ? {p:p} : null; }).filter(Boolean)
+      .sort(function(a, b){ return (categoryRank(a.p.category || '') - categoryRank(b.p.category || '')) || cmpByCode(a.p, b.p); });
     var tag = ev.tag || ev.name;
     var mats = (state.materials || []).filter(function(m){ return giftEventsOf(m).indexOf(tag) >= 0; }).sort(function(a, b){ return (a.name || '').localeCompare(b.name || '', 'ja'); });
+    var lastO = evOcc(ev, year - 1), recNow = evProdRecord(o), recLast = evProdRecord(lastO);
     var notes = ev.notes || {}, otherYears = Object.keys(notes).filter(function(k){ return k !== yk && notes[k]; }).sort().reverse();
     var plan = (ev.plan || {})[yk];
     var h = '<div class="ev-dhead" style="border-color:' + ev.color + '; background:' + evTint(ev.color, 0.10) + ';"><h3>' + escapeHtml((ev.emoji || '') + ' ' + ev.name) + '　<small>' + year + '年</small></h3>' +
       (o ? '<div class="ev-ddates">' + (o.gift ? '当日 <b>' + evMd(o.day) + '</b>・販売 <b>' + evMd(o.from) + '〜' + evMd(o.to) + '</b>・準備 ' + evMd(o.prep) + '〜' : '<b>' + evMd(o.day) + '</b>（記念日）') + (s && year === new Date().getFullYear() ? '　<span class="ev-rst st-' + s.st + '">' + escapeHtml(s.label) + '</span>' : '') + '</div>' : '') + '</div>';
     if(ev.kind !== 'day'){
-      h += '<h4>並べる商品・ギフト</h4>' + (items.length ? '<table class="ev-items">' + items.map(function(x){
-        var code = productCodeOf(x.p);
-        return '<tr><td>' + (code ? '<span class="rv-code">' + escapeHtml(code) + '</span>' : '') + escapeHtml(x.p.name) + '<span class="ev-cat">' + escapeHtml(x.p.category || '') + '</span></td><td class="n">' + (retailOf(x.p) > 0 ? fmtYen(retailOf(x.p)) : '—') + '</td><td class="n">目安 ' + fmtNum(Number(x.qty) || 0) + '</td></tr>';
-      }).join('') + '</table>' : '<p class="hint">まだ選んでいません。「直す」から選べます。</p>');
+      h += '<h4>並べる商品・ギフト</h4>' + (items.length ? '<div class="ev-items">' + items.map(function(x){
+        var code = productCodeOf(x.p), pid = x.p.id;
+        var q = evQty(ev, pid, year), sd = evSold(ev, pid, year);
+        var lq = evQty(ev, pid, year - 1), ls = evSold(ev, pid, year - 1), lm = recLast.made[pid], lo = recLast.ordered[pid];
+        var last = [];
+        if(lq != null) last.push('目安 ' + fmtNum(lq));
+        if(lm) last.push('できた ' + fmtNum(lm));
+        if(lo) last.push('注文 ' + fmtNum(lo));
+        if(ls != null) last.push('売れた ' + fmtNum(ls));
+        var made = recNow.made[pid], ord = recNow.ordered[pid];
+        return '<div class="ev-item">' +
+          '<div class="ev-iname"><span>' + (code ? '<span class="rv-code">' + escapeHtml(code) + '</span>' : '') + escapeHtml(x.p.name) + '<span class="ev-cat">' + escapeHtml(x.p.category || '') + '</span></span><span class="ev-iprice">' + (retailOf(x.p) > 0 ? fmtYen(retailOf(x.p)) : '—') + '</span></div>' +
+          '<div class="ev-inums">' +
+            '<label class="ev-inum">' + year + '年の目安<input type="number" min="0" data-q="' + escapeHtml(pid) + '" value="' + (q != null ? q : '') + '" placeholder="—"></label>' +
+            '<label class="ev-inum">売れた数<input type="number" min="0" data-s="' + escapeHtml(pid) + '" value="' + (sd != null ? sd : '') + '" placeholder="—"></label>' +
+            ((made || ord) ? '<span class="ev-inow">' + (made ? 'できた ' + fmtNum(made) : '') + (made && ord ? '・' : '') + (ord ? '注文 ' + fmtNum(ord) : '') + '</span>' : '') +
+          '</div>' +
+          '<div class="ev-ilast">' + (year - 1) + '年：' + (last.length ? escapeHtml(last.join('・')) : '記録なし') + '</div>' +
+        '</div>';
+      }).join('') + '</div>' : '<p class="hint">まだありません。登録済み商品の詳細の「行事」で、この行事を選ぶとここに出ます。</p>');
       h += '<div class="ev-plan">' + year + '年の計画：' +
         '<button type="button" class="btn btn-sm' + (plan === 'yes' ? ' btn-primary' : '') + '" data-plan="yes">計画に組み込む</button>' +
         '<button type="button" class="btn btn-sm' + (plan === 'no' ? ' btn-primary' : '') + '" data-plan="no">組み込まない</button>' +
         '<span class="hint" style="margin:0;">' + (plan === 'yes' ? '販売のはじまりの前の日から、目安の数まで作る計画が入ります。' : plan === 'no' ? '計画には入れません（知らせるだけ）。' : '準備がはじまる日に、聞きます。') + '</span></div>';
-      h += '<h4>この行事の資材（行事のタグ「' + escapeHtml(tag) + '」）</h4>' + (mats.length ? '<p class="ev-mats">' + mats.map(function(m){ return escapeHtml(m.name); }).join('、') + '</p>' : '<p class="hint">この行事のタグが付いた資材はありません（原材料マスタの資材で「行事」を選ぶと出ます）。</p>');
+      h += '<h4>この行事の資材（行事のタグ「' + escapeHtml(tag) + '」）</h4>' + (mats.length ? '<div class="ev-mats">' + GIFT_ROLE_ORDER.concat(giftCustomRoles().map(function(r){ return r.id; })).map(function(k){
+          var ms = mats.filter(function(m){ var r = giftRoleOf(m); return r === k || (k === 'other' && !GIFT_ROLES[r] && !giftCustomRoles().some(function(c){ return c.id === r; })); });
+          return ms.length ? '<div class="ev-mrole"><div class="ev-mrole-h"><span class="mat-role r-' + giftRoleCss(k) + '">' + escapeHtml(giftRoleName(k)) + '</span></div>' + ms.map(function(m){ return '<div class="ev-mline">' + escapeHtml(m.name) + '</div>'; }).join('') + '</div>' : '';
+        }).join('') + '</div>' :'<p class="hint">この行事のタグが付いた資材はありません（原材料マスタの資材で「行事」を選ぶと出ます）。</p>');
       h += '<button type="button" class="btn btn-sm" id="ev-to-gm">この行事でギフトの組み合わせを開く</button>';
     }
     h += '<h4>' + year + '年の振り返り</h4>' + (o && o.gift ? evRecord(o) : '') +
       '<textarea id="ev-note" rows="4" placeholder="何が何個売れたか・よかったこと・次の年に気をつけることなど">' + escapeHtml(notes[yk] || '') + '</textarea>' +
       (otherYears.length ? '<h4>ほかの年のメモ</h4>' + otherYears.map(function(k){ var oo = evOcc(ev, +k); return '<div class="ev-oldnote"><b>' + k + '年</b>' + escapeHtml(notes[k]).replace(/\n/g, '<br>') + (oo && oo.gift ? '<div class="ev-oldrec">' + evRecord(oo) + '</div>' : '') + '</div>'; }).join('') : '');
-    h += '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="ev-edit">直す</button><button type="button" class="btn btn-primary" id="ev-close">閉じる</button></div>';
+    h += '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="ev-edit">編集</button><button type="button" class="btn btn-primary" id="ev-close">閉じる</button></div>';
     evModal(h);
     var body = document.getElementById('ev-modal-body');
     var note = document.getElementById('ev-note');
     note.addEventListener('change', function(){ ev.notes = ev.notes || {}; if(note.value.trim()) ev.notes[yk] = note.value; else delete ev.notes[yk]; scheduleSave(); });
+    // 目安の数・売れた数：打ち終えてから（欄を離れる・改行）入れる
+    body.querySelectorAll('input[data-q], input[data-s]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var isQ = inp.hasAttribute('data-q'), pid = isQ ? inp.dataset.q : inp.dataset.s;
+        var v = String(inp.value).trim() === '' ? null : Math.max(0, Math.round(parseFloat(inp.value) || 0));
+        evSetYear(ev, isQ ? 'qtys' : 'sold', pid, year, v);
+        scheduleSave(); if(isQ) markBlockworkStale();
+      });
+    });
+    if(typeof applyNumericKeyboard === 'function') applyNumericKeyboard(body);
     body.querySelectorAll('[data-plan]').forEach(function(b){ b.addEventListener('click', function(){ ev.plan = ev.plan || {}; ev.plan[yk] = b.dataset.plan; scheduleSave(); markBlockworkStale(); evOpenDetail(id, year); }); });
     var gmb = document.getElementById('ev-to-gm');
-    if(gmb) gmb.addEventListener('click', function(){ var gc = gmConf(); var list = giftEventList(); if(list.indexOf(tag) < 0) list.push(tag); gc.event = tag; gc.eventManualKey = 'manual'; scheduleSave(); evModalClose(); showView('giftmaker'); });
+    if(gmb) gmb.addEventListener('click', function(){ var gc = gmConf(); var list = giftEventList(); if(list.indexOf(tag) < 0) list.push(tag); gc.event = tag; gc.eventManualKey = evMainKey(); scheduleSave(); evModalClose(); showView('giftmaker'); });
     document.getElementById('ev-edit').addEventListener('click', function(){ if(note.value !== (notes[yk] || '')){ ev.notes = ev.notes || {}; ev.notes[yk] = note.value; scheduleSave(); } evOpenEdit(ev, year); });
     document.getElementById('ev-close').addEventListener('click', function(){ if(note.value !== (notes[yk] || '')){ ev.notes = ev.notes || {}; if(note.value.trim()) ev.notes[yk] = note.value; else delete ev.notes[yk]; scheduleSave(); } evModalClose(); renderEvents(); });
   }
   function evOpenEdit(ev, year){
     var r = ev.rule || {t:'md', m:1, d:1};
     var W = ['日','月','火','水','木','金','土'];
-    var draft = (ev.items || []).map(function(it){ return {pid:it.pid, qty:it.qty}; });
     function opt(v, cur, t){ return '<option value="' + v + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + t + '</option>'; }
     var months = ''; for(var m = 1; m <= 12; m++) months += opt(m, r.m, m + '月');
     var sekOpts = SEKKI.map(function(x){ return opt(x[1], r.lon, x[0]); }).join('');
-    var h = '<h3>行事を直す</h3>' +
+    var h = '<h3>行事の編集</h3>' +
       '<div class="ev-form">' +
       '<label>名前<input id="evf-name" type="text" value="' + escapeHtml(ev.name) + '"></label>' +
       '<label>しるし<input id="evf-emoji" type="text" value="' + escapeHtml(ev.emoji || '') + '" style="max-width:5em;"></label>' +
@@ -11315,10 +11472,9 @@
       '<div class="ev-frow"><span>種類</span><select id="evf-kind">' + opt('gift', ev.kind, 'ギフトを売る時期がある') + opt('day', ev.kind, '記念日だけ') + '</select></div>' +
       '<div class="ev-frow"><span>当日の決め方</span><select id="evf-rt">' + opt('md', r.t, '毎年同じ日') + opt('nth', r.t, '◯月の第◯◯曜日') + opt('sekki', r.t, '二十四節気の日から') + opt('lunar', r.t, '旧暦の日') + '</select></div>' +
       '<div class="ev-frow" id="evf-rule"></div>' +
-      '<div class="ev-frow ev-gift-only"><span>販売</span>当日の<input id="evf-saleB" type="number" min="0" value="' + (Number(ev.saleB) || 0) + '">日前から、当日の<input id="evf-saleA" type="number" min="0" value="' + (Number(ev.saleA) || 0) + '">日後まで</div>' +
+      '<div class="ev-frow ev-gift-only"><span>販売</span><div class="ev-salebox"><div>当日の<input id="evf-saleB" type="number" min="0" value="' + (Number(ev.saleB) || 0) + '">日前から、</div><div>当日の<input id="evf-saleA" type="number" min="0" value="' + (Number(ev.saleA) || 0) + '">日後まで</div></div></div>' +
       '<div class="ev-frow ev-gift-only"><span>準備</span>販売のはじまりの<input id="evf-prep" type="number" min="0" value="' + (Number(ev.prep) || 0) + '">日前から</div>' +
-      '<div class="ev-gift-only"><h4>並べる商品・ギフトと目安の数</h4><div id="evf-items"></div>' +
-      '<div class="ev-pick"><input id="evf-q" type="text" placeholder="商品名を入れて選ぶ" data-keep autocomplete="off"><div id="evf-hits" class="ev-hits" hidden></div></div></div>' +
+      '<p class="hint ev-gift-only" style="margin:4px 0 0;">並べる商品は、登録済み商品の詳細の「行事」で選びます。目安の数は、行事のくわしい欄で年ごとに入れます。</p>' +
       '</div>' +
       '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="evf-del" style="margin-right:auto; color:#b03a1e;">🗑 この行事を消す</button><button type="button" class="btn btn-ghost" id="evf-cancel">やめる</button><button type="button" class="btn btn-primary" id="evf-save">保存</button></div>';
     evModal(h);
@@ -11333,27 +11489,6 @@
     document.getElementById('evf-rt').addEventListener('change', ruleUi);
     function kindUi(){ var g = document.getElementById('evf-kind').value !== 'day'; document.querySelectorAll('#ev-modal-body .ev-gift-only').forEach(function(x){ x.hidden = !g; }); }
     kindUi(); document.getElementById('evf-kind').addEventListener('change', kindUi);
-    function itemsUi(){
-      var el = document.getElementById('evf-items');
-      var rows = draft.map(function(it, i){ var p = evProd(it.pid); return p ? {p:p, it:it, i:i} : null; }).filter(Boolean).sort(function(a, b){ return cmpByCode(a.p, b.p); });
-      el.innerHTML = rows.length ? rows.map(function(x){ return '<div class="ev-irow"><span>' + escapeHtml(x.p.name) + '<small>' + escapeHtml(x.p.category || '') + '</small></span>目安<input type="number" min="0" data-i="' + x.i + '" value="' + (Number(x.it.qty) || 0) + '"><button type="button" class="btn btn-sm btn-ghost" data-rm="' + x.i + '">消す</button></div>'; }).join('') : '<p class="hint" style="margin:4px 0;">まだありません。下の欄に名前を入れて選んでください。</p>';
-      el.querySelectorAll('input[data-i]').forEach(function(inp){ inp.addEventListener('change', function(){ draft[+inp.dataset.i].qty = Math.max(0, parseFloat(inp.value) || 0); }); });
-      el.querySelectorAll('[data-rm]').forEach(function(b){ b.addEventListener('click', function(){ draft.splice(+b.dataset.rm, 1); itemsUi(); }); });
-      if(typeof applyNumericKeyboard === 'function') applyNumericKeyboard(el);
-    }
-    itemsUi();
-    var q = document.getElementById('evf-q'), hits = document.getElementById('evf-hits');
-    function showHits(){
-      var k = searchKey(q.value.trim());
-      var list = (state.products || []).filter(function(p){ return p && p.name && p.category !== '仕掛品' && !draft.some(function(d){ return d.pid === p.id; }) && (!k || searchKey(p.name + ' ' + (productCodeOf(p) || '') + ' ' + (p.category || '')).indexOf(k) >= 0); })
-        .sort(function(a, b){ return (categoryRank(a.category || '') - categoryRank(b.category || '')) || cmpByCode(a, b); });
-      hits.innerHTML = list.length ? list.map(function(p){ return '<button type="button" data-pid="' + p.id + '">' + escapeHtml(p.name) + '<small>' + escapeHtml((productCodeOf(p) ? productCodeOf(p) + ' ' : '') + (p.category || '')) + '</small></button>'; }).join('') : '<div class="hint" style="padding:8px;">見つかりません。</div>';
-      hits.hidden = false;
-    }
-    q.addEventListener('focus', showHits); q.addEventListener('input', showHits);
-    q.addEventListener('blur', function(){ setTimeout(function(){ hits.hidden = true; }, 250); });
-    hits.addEventListener('mousedown', function(e){ e.preventDefault(); });
-    hits.addEventListener('click', function(e){ var b = e.target.closest('[data-pid]'); if(!b) return; draft.push({pid:b.dataset.pid, qty:10}); q.value = ''; hits.hidden = true; itemsUi(); });
     if(typeof applyNumericKeyboard === 'function') applyNumericKeyboard(document.getElementById('ev-modal-body'));
     document.getElementById('evf-cancel').addEventListener('click', function(){ evOpenDetail(ev.id, year); });
     document.getElementById('evf-del').addEventListener('click', function(){
@@ -11368,7 +11503,6 @@
       ev.name = name; ev.emoji = document.getElementById('evf-emoji').value.trim(); ev.color = document.getElementById('evf-color').value;
       ev.tag = document.getElementById('evf-tag').value.trim() || name; ev.kind = document.getElementById('evf-kind').value; ev.rule = nr;
       ev.saleB = Math.max(0, g('evf-saleB')); ev.saleA = Math.max(0, g('evf-saleA')); ev.prep = Math.max(0, g('evf-prep'));
-      ev.items = draft.filter(function(d){ return evProd(d.pid); });
       scheduleSave(); markBlockworkStale(); renderEvents(); evOpenDetail(ev.id, year);
       showToast('「' + name + '」を保存しました');
     });
@@ -11396,7 +11530,7 @@
     });
     if(!hit) return;
     var ev = hit.ev, yk = hit.day.slice(0, 4);
-    var names = (ev.items || []).map(function(it){ var p = evProd(it.pid); return p ? p.name + '（目安 ' + fmtNum(Number(it.qty) || 0) + '）' : null; }).filter(Boolean);
+    var names = (ev.items || []).map(function(it){ var p = evProd(it.pid); var q = evQty(ev, it.pid, +yk); return p ? p.name + (q != null ? '（目安 ' + fmtNum(q) + '）' : '（目安 まだ）') : null; }).filter(Boolean);
     evModal('<div class="ev-dhead" style="border-color:' + ev.color + '; background:' + evTint(ev.color, 0.10) + ';"><h3>' + escapeHtml((ev.emoji || '') + ' ' + ev.name) + 'の準備がはじまります</h3>' +
       '<div class="ev-ddates">当日 <b>' + evMd(hit.day) + '</b>・販売 <b>' + evMd(hit.from) + '〜' + evMd(hit.to) + '</b></div></div>' +
       '<p>並べる商品：' + escapeHtml(names.join('、')) + '</p><p>この商品を、ブロックワークの計画に組み込みますか？（販売のはじまりの前の日から、目安の数まで作る計画が入ります）</p>' +
@@ -11417,6 +11551,134 @@
     if(tag && giftEventList().indexOf(tag) < 0) tag = '';
     if((gc.event || '') !== tag){ gc.event = tag; gc.eventAutoKey = key; }
   }
+
+  // ---------------- ギフトのあんちょこカード ----------------
+  // A-ONE 51268（A4・10面・名刺 91×55mm、上 11mm・左 14mm の余白）。1枚を縦長（55×91mm）に使う
+  var GC_TOP = 11, GC_LEFT = 14, GC_W = 91, GC_H = 55;
+  var gcSel = null, gcFold = {};
+  try{ gcFold = JSON.parse(localStorage.getItem('atelier_gc_fold') || '{}') || {}; }catch(e){}
+  function gcConf(){ state.settings.giftCard = Object.assign({hole:'l', bg:true, start:1, dx:0, dy:0}, state.settings.giftCard || {}); return state.settings.giftCard; }
+  function gcGifts(){
+    return (state.products || []).filter(function(p){ return isGiftProduct(p); })
+      .sort(function(a, b){ return (categoryRank(a.category || '') - categoryRank(b.category || '')) || cmpByCode(a, b); });
+  }
+  function gcMat(name){ return (state.materials || []).find(function(m){ return m.name === name; }); }
+  function gcCardHtml(p, conf){
+    var evs = evEventsOfProduct(p.id), ev = evs[0];
+    var col = ev ? ev.color : '#A8834F';
+    var bg = conf.bg ? (ev ? evTint(ev.color, 0.09) : '#FBF6EC') : '#fff';
+    var rows = [], total = 0;
+    ((p.pack && p.pack.contents) || []).forEach(function(r){
+      var q = Number(r.qty) || 0; if(q <= 0) return;
+      total += q;
+      var price = 0;
+      if(r.groupId){ var gr = findGroup(r.groupId); price = gr ? groupRetailIn(gr) : 0; if(gr && r.mode === 'bulk'){ var ms = groupMembers(gr); var pp = ms.length ? ms.reduce(function(t, m){ return t + ((m.pack && Number(m.pack.piecesPerPackage)) || 1); }, 0) / ms.length : 1; price = price / (pp || 1); } }
+      else { var m = state.products.find(function(x){ return x.id === r.productId; }); if(m){ price = retailOf(m); if(r.mode === 'bulk') price = price / ((m.pack && Number(m.pack.piecesPerPackage)) || 1); } }
+      rows.push('<div class="r"><span>' + escapeHtml(r.name || '') + ' ×' + fmtNum(q) + '</span><span>' + (price > 0 ? fmtYen(price * q) : '') + '</span></div>');
+    });
+    var box = [], carry = [];
+    ((p.pack && p.pack.items) || []).forEach(function(r){ var m = gcMat(r.name); var k = m ? giftRoleOf(m) : giftRoleOf({name:r.name}); if(k === 'box') box.push(r.name); else if(k === 'carry') carry.push(r.name); });
+    var price = retailOf(p);
+    var upd = p.updatedAt ? (+p.updatedAt.slice(0, 4)) + '年' + (+p.updatedAt.slice(5, 7)) + '月更新' : '';
+    return '<div class="gc-card" style="--gc-c:' + col + '; background:' + bg + ';">' +
+      '<div class="gc-frame"></div>' + (conf.hole !== 'none' ? '<div class="gc-hole ' + (conf.hole === 'r' ? 'r' : 'l') + '"></div>' : '') +
+      '<div class="gc-in">' +
+        '<div class="gc-name">' + escapeHtml(p.name) + '</div>' +
+        '<div class="gc-count">' + fmtNum(total) + '点入り</div>' +
+        '<div class="gc-price">' + (price > 0 ? fmtYen(price) + '<small>（税込）</small>' : '—') + '</div>' +
+        '<div class="gc-rule"></div>' +
+        '<div class="gc-list">' + rows.join('') + '</div>' +
+        ((box.length || carry.length) ? '<div class="gc-pk">' + (box.length ? '<div>器：' + escapeHtml(box.join('・')) + '</div>' : '') + (carry.length ? '<div>手提げ：' + escapeHtml(carry.join('・')) + '</div>' : '') + '</div>' : '') +
+      '</div>' +
+      (upd ? '<div class="gc-date">' + upd + '</div>' : '') +
+    '</div>';
+  }
+  // 中身が多くて入りきらないときは、一覧の文字を少しずつ小さくする（6.5pt まで）
+  function gcFit(card){
+    var inner = card.querySelector('.gc-in'); if(!inner) return;
+    var fs = 8;
+    card.style.fontSize = '';
+    while(inner.scrollHeight > inner.clientHeight + 1 && fs > 6.5){ fs -= 0.25; card.style.fontSize = fs + 'pt'; }
+  }
+  function gcOpen(){
+    var gifts = gcGifts(), conf = gcConf();
+    if(!gcSel){ gcSel = {}; gifts.forEach(function(p){ gcSel[p.id] = 1; }); }
+    var cats = [];
+    gifts.forEach(function(p){ var c = p.category || 'カテゴリなし'; if(cats.indexOf(c) < 0) cats.push(c); });
+    var opt = function(v, cur, t){ return '<option value="' + v + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + t + '</option>'; };
+    var starts = ''; for(var i = 1; i <= 10; i++) starts += opt(i, conf.start, i + '枚目から');
+    var h = '<h3>🏷 ギフトのあんちょこカード</h3>' +
+      '<p class="hint" style="margin:0 0 6px;">A-ONE 51268（A4・10面）に、1枚ずつ縦長で印刷します。印刷するギフトにチェックを入れてください。</p>' +
+      (gifts.length ? cats.map(function(c){
+        var list = gifts.filter(function(p){ return (p.category || 'カテゴリなし') === c; });
+        var n = list.filter(function(p){ return gcSel[p.id]; }).length, open = !gcFold[c];
+        return '<div class="gc-cat"><button type="button" class="gc-cathead" data-gccat="' + escapeHtml(c) + '"><span>' + (open ? '▾ ' : '▸ ') + escapeHtml(c) + '</span><small>' + n + '／' + list.length + '件</small></button>' +
+          (open ? '<div class="gc-items">' + list.map(function(p){ var ev = evEventsOfProduct(p.id)[0]; var code = productCodeOf(p);
+            return '<label><input type="checkbox" data-gcp="' + escapeHtml(p.id) + '"' + (gcSel[p.id] ? ' checked' : '') + '>' + (code ? '<span class="rv-code">' + escapeHtml(code) + '</span>' : '') + escapeHtml(p.name) + '<span class="gc-ev">' + escapeHtml(ev ? (ev.emoji || '') + ' ' + ev.name : '通年') + '</span></label>'; }).join('') + '</div>' : '') + '</div>';
+      }).join('') : '<p class="hint">ギフト（中身のある商品）がまだありません。</p>') +
+      '<div class="gc-opts">' +
+        '<button type="button" class="btn btn-sm" id="gc-all">全部</button><button type="button" class="btn btn-sm" id="gc-none">なし</button>' +
+        '<label>穴<select id="gc-hole">' + opt('l', conf.hole, '左上') + opt('r', conf.hole, '右上') + opt('none', conf.hole, 'なし') + '</select></label>' +
+        '<label><input type="checkbox" id="gc-bg"' + (conf.bg ? ' checked' : '') + '>背景に色（通年・行事ごと）</label>' +
+        '<label>用紙の<select id="gc-start">' + starts + '</select></label>' +
+      '</div>' +
+      '<div class="gc-opts"><span class="hint" style="margin:0;">印刷がずれるとき（mm）</span>' +
+        '<label>右へ<input type="number" id="gc-dx" step="0.5" value="' + (Number(conf.dx) || 0) + '"></label>' +
+        '<label>下へ<input type="number" id="gc-dy" step="0.5" value="' + (Number(conf.dy) || 0) + '"></label></div>' +
+      '<div class="gc-preview" id="gc-preview"></div>' +
+      '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn btn-primary" id="gc-print-btn">印刷</button></div>';
+    document.getElementById('gc-modal-body').innerHTML = h;
+    document.getElementById('gc-modal-backdrop').hidden = false;
+    gcPreview();
+    var body = document.getElementById('gc-modal-body');
+    if(typeof applyNumericKeyboard === 'function') applyNumericKeyboard(body);
+    body.querySelectorAll('[data-gccat]').forEach(function(b){ b.addEventListener('click', function(){ var c = b.dataset.gccat; if(gcFold[c]) delete gcFold[c]; else gcFold[c] = 1; try{ localStorage.setItem('atelier_gc_fold', JSON.stringify(gcFold)); }catch(e){} gcOpen(); }); });
+    body.querySelectorAll('[data-gcp]').forEach(function(c){ c.addEventListener('change', function(){ if(c.checked) gcSel[c.dataset.gcp] = 1; else delete gcSel[c.dataset.gcp]; gcOpen(); }); });
+    document.getElementById('gc-all').addEventListener('click', function(){ gifts.forEach(function(p){ gcSel[p.id] = 1; }); gcOpen(); });
+    document.getElementById('gc-none').addEventListener('click', function(){ gcSel = {}; gcOpen(); });
+    document.getElementById('gc-hole').addEventListener('change', function(){ conf.hole = this.value; scheduleSave(); gcPreview(); });
+    document.getElementById('gc-bg').addEventListener('change', function(){ conf.bg = this.checked; scheduleSave(); gcPreview(); });
+    document.getElementById('gc-start').addEventListener('change', function(){ conf.start = +this.value; scheduleSave(); });
+    ['dx', 'dy'].forEach(function(k){ document.getElementById('gc-' + k).addEventListener('change', function(){ conf[k] = Math.max(-10, Math.min(10, parseFloat(this.value) || 0)); this.value = conf[k]; scheduleSave(); }); });
+    document.getElementById('gc-close').addEventListener('click', function(){ document.getElementById('gc-modal-backdrop').hidden = true; });
+    document.getElementById('gc-print-btn').addEventListener('click', gcPrint);
+  }
+  function gcChosen(){ return gcGifts().filter(function(p){ return gcSel && gcSel[p.id]; }); }
+  function gcPreview(){
+    var box = document.getElementById('gc-preview'); if(!box) return;
+    var list = gcChosen(), conf = gcConf();
+    box.innerHTML = list.length ? list.map(function(p){ return gcCardHtml(p, conf); }).join('') : '<p class="hint" style="margin:0;">印刷するギフトを選んでください。</p>';
+    box.querySelectorAll('.gc-card').forEach(gcFit);
+  }
+  function gcPrint(){
+    var list = gcChosen(), conf = gcConf();
+    if(!list.length){ showToast('印刷するギフトを選んでください'); return; }
+    // 大きさの合わせ方は、見本（画面）で決めたものをそのまま使う
+    var fs = [].map.call(document.querySelectorAll('#gc-preview .gc-card'), function(c){ return c.style.fontSize || ''; });
+    var slots = [], start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
+    for(var i = 0; i < start; i++) slots.push(null);
+    list.forEach(function(p, i){ slots.push({p:p, fs:fs[i] || ''}); });
+    var h = '';
+    for(var s = 0; s < slots.length; s += 10){
+      h += '<div class="gc-sheet">';
+      for(var k = 0; k < 10 && s + k < slots.length; k++){
+        var x = slots[s + k]; if(!x) continue;
+        var col = k % 2, row = Math.floor(k / 2);
+        var card = gcCardHtml(x.p, conf);
+        if(x.fs) card = card.replace('<div class="gc-card" style="', '<div class="gc-card" style="font-size:' + x.fs + '; ');
+        h += '<div class="gc-cell" style="left:' + (GC_LEFT + col * GC_W + (Number(conf.dx) || 0)) + 'mm; top:' + (GC_TOP + row * GC_H + (Number(conf.dy) || 0)) + 'mm;">' + card + '</div>';
+      }
+      h += '</div>';
+    }
+    document.getElementById('gc-print').innerHTML = h;
+    applyPrintPageStyle({paper:'A4', orient:'portrait', mt:0, mb:0, ml:0, mr:0, fs:'m', lh:'s', items:{}});
+    document.body.classList.add('print-gc');
+    lastPrintBuiltAt = Date.now();
+    setTimeout(function(){ window.print(); }, 60);
+  }
+  window.addEventListener('afterprint', function(){ document.body.classList.remove('print-gc'); });
+  document.getElementById('btn-gift-cards').addEventListener('click', gcOpen);
+  document.getElementById('gc-modal-backdrop').addEventListener('click', function(e){ if(e.target === this) this.hidden = true; });
 
 
   // ---------------- レシピ帳 ----------------
