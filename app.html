@@ -422,6 +422,8 @@
   .gc-items label{display:flex; align-items:center; gap:8px; font-size:14px; padding:3px 0;}
   .gc-items input{width:20px; height:20px; flex:none;}
   .gc-items .gc-ev{font-size:12px; color:var(--ink-faint);}
+  .gc-adjust{margin:4px 0; font-size:14px;}
+  .gc-adjust summary{cursor:pointer; color:var(--ink-soft); font-weight:700; padding:4px 0;}
   .gc-preview{display:flex; flex-wrap:wrap; gap:10px; padding:10px; background:#eee8dc; border-radius:10px; margin-top:8px; justify-content:center;}
   .gc-card{position:relative; width:55mm; height:91mm; box-sizing:border-box; overflow:hidden; background:#fff; color:#2a241c;
     font-family:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif; font-size:8pt; line-height:1.4;
@@ -448,7 +450,13 @@
     body.print-gc #gc-print{display:block !important;}
     #gc-print .gc-sheet{position:relative; width:210mm; height:296mm; overflow:hidden; break-after:page; page-break-after:always;}
     #gc-print .gc-sheet:last-child{break-after:auto; page-break-after:auto;}
+    #gc-print .gc-sheet-in{position:absolute; left:0; top:0; width:210mm; height:296mm; transform-origin:0 0;}
     #gc-print .gc-cell{position:absolute; width:91mm; height:55mm;}
+    #gc-print .gc-testcell{position:absolute; inset:0; border:0.2mm solid #000; box-sizing:border-box;}
+    #gc-print .gc-testcell b{position:absolute; left:3mm; top:2mm; font-size:10pt;}
+    #gc-print .gc-testcell i{position:absolute; left:50%; top:50%; width:8mm; height:8mm; margin:-4mm 0 0 -4mm; background:linear-gradient(#000,#000) center/100% 0.2mm no-repeat, linear-gradient(#000,#000) center/0.2mm 100% no-repeat;}
+    #gc-print .gc-ruler{position:absolute; left:55mm; top:4.5mm; width:100mm; height:2.5mm; border:0.25mm solid #000; border-top:none; box-sizing:border-box;}
+    #gc-print .gc-ruler span{position:absolute; left:0; right:0; top:2.6mm; text-align:center; font-size:7pt; line-height:1;}
     #gc-print .gc-cell .gc-card{position:absolute; left:18mm; top:-18mm; transform:rotate(-90deg);}
   }
   /* リンク帳 */
@@ -1372,7 +1380,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.102</div>
+      <div class="brand-ver">ver.103</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -4404,11 +4412,14 @@
     });
     document.getElementById('st-print').innerHTML = h;
     applyPrintPageStyle({paper:'A4', orient:'portrait', mt:12, mb:12, ml:14, mr:12, fs:'m', lh:'s', items:{}});
-    document.body.classList.add('print-st');
+    clearPrintMode(); document.body.classList.add('print-st');
     lastPrintBuiltAt = Date.now();
-    setTimeout(function(){ window.print(); }, 60);
+    // ボタンを押したその場で印刷を呼ぶ（あとから呼ぶと Safari が「自動的に印刷」として止める）
+    window.print();
   });
-  window.addEventListener('afterprint', function(){ document.body.classList.remove('print-st'); });
+  // 印刷の印（print-st・print-gc）は、印刷が終わっても外さない（iPad はプリンタを選び直すたびに見本を作り直すため）。
+  // ほかの画面へ移る・ほかの印刷をはじめる・あんちょこカードを閉じるときに外す
+  function clearPrintMode(){ document.body.classList.remove('print-st', 'print-gc'); }
 
   // ブロックワーク側の「原価計算で編集」ボタン
   window.addEventListener('message', function(ev){
@@ -4620,6 +4631,7 @@
     if(dc && dc.closest('.section-card')) dc.closest('.section-card').setAttribute('data-instant', '1');
   })();
   function showView(name){
+    clearPrintMode();
     var curV = document.querySelector('.view.active');
     if(settingsDirty && curV && curV.id === 'view-settings' && name !== 'settings'){
       openConfirmModal('変更した設定がまだ保存されていません。保存してから移動しますか？', function(){
@@ -11599,7 +11611,7 @@
   var GC_TOP = 11, GC_LEFT = 14, GC_W = 91, GC_H = 55;
   var gcSel = null, gcFold = {};
   try{ gcFold = JSON.parse(localStorage.getItem('atelier_gc_fold') || '{}') || {}; }catch(e){}
-  function gcConf(){ state.settings.giftCard = Object.assign({hole:'l', bg:true, start:1, dx:0, dy:0}, state.settings.giftCard || {}); return state.settings.giftCard; }
+  function gcConf(){ var c = state.settings.giftCard; if(!c || typeof c !== 'object') c = state.settings.giftCard = {}; var df = {hole:'l', bg:true, start:1, dx:0, dy:0, sc:100}; Object.keys(df).forEach(function(k){ if(c[k] == null) c[k] = df[k]; }); return c; }
   function gcGifts(){
     return (state.products || []).filter(function(p){ return isGiftProduct(p); })
       .sort(function(a, b){ return (categoryRank(a.category || '') - categoryRank(b.category || '')) || cmpByCode(a, b); });
@@ -11664,9 +11676,13 @@
         '<label><input type="checkbox" id="gc-bg"' + (conf.bg ? ' checked' : '') + '>背景に色（通年・行事ごと）</label>' +
         '<label>用紙の<select id="gc-start">' + starts + '</select></label>' +
       '</div>' +
-      '<div class="gc-opts"><span class="hint" style="margin:0;">印刷がずれるとき（mm）</span>' +
-        '<label>右へ<input type="number" id="gc-dx" step="0.5" value="' + (Number(conf.dx) || 0) + '"></label>' +
-        '<label>下へ<input type="number" id="gc-dy" step="0.5" value="' + (Number(conf.dy) || 0) + '"></label></div>' +
+      '<details class="gc-adjust"><summary>印刷の位置・大きさを合わせる</summary>' +
+        '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、下の数を直してもう一度試し刷りします。上の線が10cmより長い・短いときは「大きさ」を直します。</p>' +
+        '<div class="gc-opts">' +
+        '<label>右へ<input type="number" id="gc-dx" step="0.5" value="' + (Number(conf.dx) || 0) + '">mm</label>' +
+        '<label>下へ<input type="number" id="gc-dy" step="0.5" value="' + (Number(conf.dy) || 0) + '">mm</label>' +
+        '<label>大きさ<input type="number" id="gc-sc" step="0.5" value="' + (Number(conf.sc) || 100) + '">%</label>' +
+        '<button type="button" class="btn btn-sm" id="gc-test">位置合わせの試し刷り</button></div></details>' +
       '<div class="gc-preview" id="gc-preview"></div>' +
       '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn btn-primary" id="gc-print-btn">印刷</button></div>';
     document.getElementById('gc-modal-body').innerHTML = h;
@@ -11681,9 +11697,11 @@
     document.getElementById('gc-hole').addEventListener('change', function(){ conf.hole = this.value; scheduleSave(); gcPreview(); });
     document.getElementById('gc-bg').addEventListener('change', function(){ conf.bg = this.checked; scheduleSave(); gcPreview(); });
     document.getElementById('gc-start').addEventListener('change', function(){ conf.start = +this.value; scheduleSave(); });
-    ['dx', 'dy'].forEach(function(k){ document.getElementById('gc-' + k).addEventListener('change', function(){ conf[k] = Math.max(-10, Math.min(10, parseFloat(this.value) || 0)); this.value = conf[k]; scheduleSave(); }); });
-    document.getElementById('gc-close').addEventListener('click', function(){ document.getElementById('gc-modal-backdrop').hidden = true; });
-    document.getElementById('gc-print-btn').addEventListener('click', gcPrint);
+    ['dx', 'dy'].forEach(function(k){ document.getElementById('gc-' + k).addEventListener('change', function(){ conf[k] = Math.max(-20, Math.min(20, parseFloat(this.value) || 0)); this.value = conf[k]; scheduleSave(); }); });
+    document.getElementById('gc-sc').addEventListener('change', function(){ conf.sc = Math.max(80, Math.min(120, parseFloat(this.value) || 100)); this.value = conf.sc; scheduleSave(); });
+    document.getElementById('gc-close').addEventListener('click', gcClose);
+    document.getElementById('gc-print-btn').addEventListener('click', function(){ gcPrint(false); });
+    document.getElementById('gc-test').addEventListener('click', function(){ gcPrint(true); });
   }
   function gcChosen(){ return gcGifts().filter(function(p){ return gcSel && gcSel[p.id]; }); }
   function gcPreview(){
@@ -11692,35 +11710,47 @@
     box.innerHTML = list.length ? list.map(function(p){ return gcCardHtml(p, conf); }).join('') : '<p class="hint" style="margin:0;">印刷するギフトを選んでください。</p>';
     box.querySelectorAll('.gc-card').forEach(gcFit);
   }
-  function gcPrint(){
+  function gcClose(){ document.getElementById('gc-modal-backdrop').hidden = true; clearPrintMode(); }
+  // test：位置合わせの試し刷り（カードの枠と番号・10cm の線だけ）
+  function gcPrint(test){
     var list = gcChosen(), conf = gcConf();
-    if(!list.length){ showToast('印刷するギフトを選んでください'); return; }
+    if(!test && !list.length){ showToast('印刷するギフトを選んでください'); return; }
     // 大きさの合わせ方は、見本（画面）で決めたものをそのまま使う
     var fs = [].map.call(document.querySelectorAll('#gc-preview .gc-card'), function(c){ return c.style.fontSize || ''; });
-    var slots = [], start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
-    for(var i = 0; i < start; i++) slots.push(null);
-    list.forEach(function(p, i){ slots.push({p:p, fs:fs[i] || ''}); });
+    var slots = [];
+    if(test){ for(var t = 0; t < 10; t++) slots.push({test:t + 1}); }
+    else {
+      var start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
+      for(var i = 0; i < start; i++) slots.push(null);
+      list.forEach(function(p, i){ slots.push({p:p, fs:fs[i] || ''}); });
+    }
+    var k = (Number(conf.sc) || 100) / 100, dx = Number(conf.dx) || 0, dy = Number(conf.dy) || 0;
     var h = '';
-    for(var s = 0; s < slots.length; s += 10){
-      h += '<div class="gc-sheet">';
-      for(var k = 0; k < 10 && s + k < slots.length; k++){
-        var x = slots[s + k]; if(!x) continue;
-        var col = k % 2, row = Math.floor(k / 2);
-        var card = gcCardHtml(x.p, conf);
-        if(x.fs) card = card.replace('<div class="gc-card" style="', '<div class="gc-card" style="font-size:' + x.fs + '; ');
-        h += '<div class="gc-cell" style="left:' + (GC_LEFT + col * GC_W + (Number(conf.dx) || 0)) + 'mm; top:' + (GC_TOP + row * GC_H + (Number(conf.dy) || 0)) + 'mm;">' + card + '</div>';
+    for(var s0 = 0; s0 < slots.length; s0 += 10){
+      h += '<div class="gc-sheet"><div class="gc-sheet-in" style="transform:translate(' + dx + 'mm,' + dy + 'mm) scale(' + k + ');">';
+      if(test) h += '<div class="gc-ruler"><span>この線が 10cm なら、大きさは合っています</span></div>';
+      for(var c = 0; c < 10 && s0 + c < slots.length; c++){
+        var x = slots[s0 + c]; if(!x) continue;
+        var col = c % 2, row = Math.floor(c / 2);
+        var inner;
+        if(x.test) inner = '<div class="gc-testcell"><b>' + x.test + '</b><i></i></div>';
+        else {
+          inner = gcCardHtml(x.p, conf);
+          if(x.fs) inner = inner.replace('<div class="gc-card" style="', '<div class="gc-card" style="font-size:' + x.fs + '; ');
+        }
+        h += '<div class="gc-cell" style="left:' + (GC_LEFT + col * GC_W) + 'mm; top:' + (GC_TOP + row * GC_H) + 'mm;">' + inner + '</div>';
       }
-      h += '</div>';
+      h += '</div></div>';
     }
     document.getElementById('gc-print').innerHTML = h;
     applyPrintPageStyle({paper:'A4', orient:'portrait', mt:0, mb:0, ml:0, mr:0, fs:'m', lh:'s', items:{}});
-    document.body.classList.add('print-gc');
+    clearPrintMode(); document.body.classList.add('print-gc');
     lastPrintBuiltAt = Date.now();
-    setTimeout(function(){ window.print(); }, 60);
+    // ボタンを押したその場で印刷を呼ぶ（あとから呼ぶと Safari が「自動的に印刷」として止める）
+    window.print();
   }
-  window.addEventListener('afterprint', function(){ document.body.classList.remove('print-gc'); });
   document.getElementById('btn-gift-cards').addEventListener('click', gcOpen);
-  document.getElementById('gc-modal-backdrop').addEventListener('click', function(e){ if(e.target === this) this.hidden = true; });
+  document.getElementById('gc-modal-backdrop').addEventListener('click', function(e){ if(e.target === this) gcClose(); });
 
 
   // ---------------- レシピ帳 ----------------
@@ -12061,12 +12091,14 @@
     box.className = 'rp-' + kind + ' rp-paper-' + preset.paper;
     applyPrintPageStyle(preset);
     document.getElementById('print-modal-backdrop').hidden = true;
+    clearPrintMode();
     lastPrintBuiltAt = Date.now();
-    setTimeout(function(){ window.print(); }, 60);
+    window.print();
   }
   // Safariの共有メニューなど、印刷ボタンを通さずに印刷したときは「保存用」で出す
   var lastPrintBuiltAt = 0;
   window.addEventListener('beforeprint', function(){
+    if(document.body.classList.contains('print-st') || document.body.classList.contains('print-gc')) return;
     if(Date.now() - lastPrintBuiltAt < 5000) return;
     var list = recipeProducts();
     var box = document.getElementById('recipe-print');
