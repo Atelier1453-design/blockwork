@@ -444,20 +444,30 @@
   .gc-list .r span:last-child{white-space:nowrap; font-variant-numeric:tabular-nums;}
   .gc-pk{margin-top:0.7em;}
   .gc-date{position:absolute; right:4.2mm; bottom:2.6mm; font-size:6.5pt; color:#6b6155;}
-  #gc-print{display:none;}
+  /* 画面では見えない所に置いておく（書体を先に読み込ませるため。display:none だと読み込まれない） */
+  #gc-print{position:fixed; left:-10000px; top:0; width:182mm; height:1px; overflow:hidden; visibility:hidden; pointer-events:none;}
+  .gc-adj{display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; margin:6px 0;}
+  .gc-pad{display:grid; grid-template-columns:repeat(3, 44px); grid-template-rows:repeat(3, 40px); gap:4px; align-items:center; justify-items:center;}
+  .gc-pad .btn{width:44px; height:40px; padding:0; font-size:15px; display:inline-flex; align-items:center; justify-content:center;}
+  .gc-padc{font-size:11px; line-height:1.2; color:var(--ink-faint); text-align:center;}
+  .gc-adjv{display:flex; flex-direction:column; gap:8px; font-size:14px;}
+  .gc-scrow{display:flex; align-items:center; gap:6px;}
+  .gc-scrow b{min-width:4em; text-align:center;}
   @media print{
     body.print-gc > *:not(#gc-print){display:none !important;}
-    body.print-gc #gc-print{display:block !important;}
-    #gc-print .gc-sheet{position:relative; width:210mm; height:296mm; overflow:hidden; break-after:page; page-break-after:always;}
-    #gc-print .gc-sheet:last-child{break-after:auto; page-break-after:auto;}
-    #gc-print .gc-sheet-in{position:absolute; left:0; top:0; width:210mm; height:296mm; transform-origin:0 0;}
+    body.print-gc #gc-print{position:static; left:auto; width:auto; height:auto; overflow:visible; visibility:visible; display:block !important;}
+    body.print-gc.gc-test #gc-print .gc-run-cards, body.print-gc:not(.gc-test) #gc-print .gc-run-test{display:none !important;}
+    /* 1枚 = 用紙の余白の内側。並び（182×275mm）を左右の真ん中に */
+    #gc-print .gc-sheet{position:relative; width:100%; height:274mm; break-after:page; page-break-after:always;}
+    #gc-print .gc-run-cards .gc-sheet:last-child, #gc-print .gc-run-test .gc-sheet:last-child{break-after:auto; page-break-after:auto;}
+    #gc-print .gc-sheet-in{position:absolute; left:50%; top:0; margin-left:-91mm; width:182mm; height:275mm; transform-origin:50% 0;}
     #gc-print .gc-cell{position:absolute; width:91mm; height:55mm;}
+    #gc-print .gc-cell .gc-card{position:absolute; left:18mm; top:-18mm; transform:rotate(-90deg);}
     #gc-print .gc-testcell{position:absolute; inset:0; border:0.2mm solid #000; box-sizing:border-box;}
     #gc-print .gc-testcell b{position:absolute; left:3mm; top:2mm; font-size:10pt;}
     #gc-print .gc-testcell i{position:absolute; left:50%; top:50%; width:8mm; height:8mm; margin:-4mm 0 0 -4mm; background:linear-gradient(#000,#000) center/100% 0.2mm no-repeat, linear-gradient(#000,#000) center/0.2mm 100% no-repeat;}
-    #gc-print .gc-ruler{position:absolute; left:55mm; top:4.5mm; width:100mm; height:2.5mm; border:0.25mm solid #000; border-top:none; box-sizing:border-box;}
-    #gc-print .gc-ruler span{position:absolute; left:0; right:0; top:2.6mm; text-align:center; font-size:7pt; line-height:1;}
-    #gc-print .gc-cell .gc-card{position:absolute; left:18mm; top:-18mm; transform:rotate(-90deg);}
+    #gc-print .gc-ruler{position:absolute; left:45.5mm; top:40mm; width:100mm; height:2.5mm; border:0.25mm solid #000; border-top:none; box-sizing:border-box;}
+    #gc-print .gc-ruler span{position:absolute; left:0; right:0; top:-4mm; text-align:center; font-size:7pt; line-height:1;}
   }
   /* リンク帳 */
   .link-cat-head{font-size:14px; font-weight:700; color:var(--ink-soft); margin:18px 0 8px;}
@@ -1380,7 +1390,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.103</div>
+      <div class="brand-ver">ver.104</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -4419,7 +4429,7 @@
   });
   // 印刷の印（print-st・print-gc）は、印刷が終わっても外さない（iPad はプリンタを選び直すたびに見本を作り直すため）。
   // ほかの画面へ移る・ほかの印刷をはじめる・あんちょこカードを閉じるときに外す
-  function clearPrintMode(){ document.body.classList.remove('print-st', 'print-gc'); }
+  function clearPrintMode(){ document.body.classList.remove('print-st', 'print-gc', 'gc-test'); }
 
   // ブロックワーク側の「原価計算で編集」ボタン
   window.addEventListener('message', function(ev){
@@ -11677,12 +11687,16 @@
         '<label>用紙の<select id="gc-start">' + starts + '</select></label>' +
       '</div>' +
       '<details class="gc-adjust"><summary>印刷の位置・大きさを合わせる</summary>' +
-        '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、下の数を直してもう一度試し刷りします。上の線が10cmより長い・短いときは「大きさ」を直します。</p>' +
-        '<div class="gc-opts">' +
-        '<label>右へ<input type="number" id="gc-dx" step="0.5" value="' + (Number(conf.dx) || 0) + '">mm</label>' +
-        '<label>下へ<input type="number" id="gc-dy" step="0.5" value="' + (Number(conf.dy) || 0) + '">mm</label>' +
-        '<label>大きさ<input type="number" id="gc-sc" step="0.5" value="' + (Number(conf.sc) || 100) + '">%</label>' +
-        '<button type="button" class="btn btn-sm" id="gc-test">位置合わせの試し刷り</button></div></details>' +
+        '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、矢印でずれた向きと反対へ動かして、もう一度試し刷りします（例：枠が2mm 右にずれていたら ◀ を4回）。9・10番の線が10cmより長い・短いときは「大きさ」を直します。</p>' +
+        '<div class="gc-adj"><div class="gc-pad">' +
+          '<span></span><button type="button" class="btn btn-sm" data-gcmv="0,-0.5" aria-label="上へ">▲</button><span></span>' +
+          '<button type="button" class="btn btn-sm" data-gcmv="-0.5,0" aria-label="左へ">◀</button><span class="gc-padc">0.5mm<br>ずつ</span><button type="button" class="btn btn-sm" data-gcmv="0.5,0" aria-label="右へ">▶</button>' +
+          '<span></span><button type="button" class="btn btn-sm" data-gcmv="0,0.5" aria-label="下へ">▼</button><span></span>' +
+        '</div><div class="gc-adjv">' +
+          '<div id="gc-pos"></div>' +
+          '<div class="gc-scrow">大きさ <button type="button" class="btn btn-sm" data-gcsc="-0.5">−</button><b id="gc-scv"></b><button type="button" class="btn btn-sm" data-gcsc="0.5">＋</button></div>' +
+          '<div style="display:flex; gap:6px; flex-wrap:wrap;"><button type="button" class="btn btn-sm" id="gc-adj-reset">もとに戻す</button><button type="button" class="btn btn-sm btn-primary" id="gc-test">位置合わせの試し刷り</button></div>' +
+        '</div></div></details>' +
       '<div class="gc-preview" id="gc-preview"></div>' +
       '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn btn-primary" id="gc-print-btn">印刷</button></div>';
     document.getElementById('gc-modal-body').innerHTML = h;
@@ -11696,9 +11710,18 @@
     document.getElementById('gc-none').addEventListener('click', function(){ gcSel = {}; gcOpen(); });
     document.getElementById('gc-hole').addEventListener('change', function(){ conf.hole = this.value; scheduleSave(); gcPreview(); });
     document.getElementById('gc-bg').addEventListener('change', function(){ conf.bg = this.checked; scheduleSave(); gcPreview(); });
-    document.getElementById('gc-start').addEventListener('change', function(){ conf.start = +this.value; scheduleSave(); });
-    ['dx', 'dy'].forEach(function(k){ document.getElementById('gc-' + k).addEventListener('change', function(){ conf[k] = Math.max(-20, Math.min(20, parseFloat(this.value) || 0)); this.value = conf[k]; scheduleSave(); }); });
-    document.getElementById('gc-sc').addEventListener('change', function(){ conf.sc = Math.max(80, Math.min(120, parseFloat(this.value) || 100)); this.value = conf.sc; scheduleSave(); });
+    document.getElementById('gc-start').addEventListener('change', function(){ conf.start = +this.value; scheduleSave(); gcBuildPrint(); });
+    var r1 = function(v){ return Math.round(v * 10) / 10; };
+    var adjText = function(){
+      var dx = Number(conf.dx) || 0, dy = Number(conf.dy) || 0;
+      document.getElementById('gc-pos').textContent = (dx === 0 && dy === 0) ? 'ずらしていません' :
+        [dx ? (dx > 0 ? '右へ ' : '左へ ') + Math.abs(dx) + 'mm' : '', dy ? (dy > 0 ? '下へ ' : '上へ ') + Math.abs(dy) + 'mm' : ''].filter(Boolean).join('・');
+      document.getElementById('gc-scv').textContent = (Number(conf.sc) || 100) + '%';
+    };
+    adjText();
+    body.querySelectorAll('[data-gcmv]').forEach(function(b){ b.addEventListener('click', function(){ var v = b.dataset.gcmv.split(','); conf.dx = Math.max(-30, Math.min(30, r1((Number(conf.dx) || 0) + Number(v[0])))); conf.dy = Math.max(-30, Math.min(30, r1((Number(conf.dy) || 0) + Number(v[1])))); scheduleSave(); adjText(); gcBuildPrint(); }); });
+    body.querySelectorAll('[data-gcsc]').forEach(function(b){ b.addEventListener('click', function(){ conf.sc = Math.max(80, Math.min(120, r1((Number(conf.sc) || 100) + Number(b.dataset.gcsc)))); scheduleSave(); adjText(); gcBuildPrint(); }); });
+    document.getElementById('gc-adj-reset').addEventListener('click', function(){ conf.dx = 0; conf.dy = 0; conf.sc = 100; scheduleSave(); adjText(); gcBuildPrint(); });
     document.getElementById('gc-close').addEventListener('click', gcClose);
     document.getElementById('gc-print-btn').addEventListener('click', function(){ gcPrint(false); });
     document.getElementById('gc-test').addEventListener('click', function(){ gcPrint(true); });
@@ -11709,44 +11732,51 @@
     var list = gcChosen(), conf = gcConf();
     box.innerHTML = list.length ? list.map(function(p){ return gcCardHtml(p, conf); }).join('') : '<p class="hint" style="margin:0;">印刷するギフトを選んでください。</p>';
     box.querySelectorAll('.gc-card').forEach(gcFit);
+    gcBuildPrint();
   }
   function gcClose(){ document.getElementById('gc-modal-backdrop').hidden = true; clearPrintMode(); }
-  // test：位置合わせの試し刷り（カードの枠と番号・10cm の線だけ）
-  function gcPrint(test){
+  // 印刷する中身（カード／位置合わせの試し刷り）を、先に作っておく。
+  // 印刷を押したときに初めて文字の書体を読み込むと、Safari が印刷をあとまわしにして「自動的に印刷」と見なすため
+  // 並びは用紙の左右の真ん中にそろえる（iPad の Safari は用紙の余白の指定を使わず、自分の余白を足すため）。
+  // 用紙：A4、左右14mm・上下11mm、1面 91×55mm を 2列×5段
+  function gcBuildPrint(){
+    var box = document.getElementById('gc-print'); if(!box) return;
     var list = gcChosen(), conf = gcConf();
-    if(!test && !list.length){ showToast('印刷するギフトを選んでください'); return; }
-    // 大きさの合わせ方は、見本（画面）で決めたものをそのまま使う
     var fs = [].map.call(document.querySelectorAll('#gc-preview .gc-card'), function(c){ return c.style.fontSize || ''; });
-    var slots = [];
-    if(test){ for(var t = 0; t < 10; t++) slots.push({test:t + 1}); }
-    else {
-      var start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
-      for(var i = 0; i < start; i++) slots.push(null);
-      list.forEach(function(p, i){ slots.push({p:p, fs:fs[i] || ''}); });
-    }
     var k = (Number(conf.sc) || 100) / 100, dx = Number(conf.dx) || 0, dy = Number(conf.dy) || 0;
-    var h = '';
-    for(var s0 = 0; s0 < slots.length; s0 += 10){
-      h += '<div class="gc-sheet"><div class="gc-sheet-in" style="transform:translate(' + dx + 'mm,' + dy + 'mm) scale(' + k + ');">';
-      if(test) h += '<div class="gc-ruler"><span>この線が 10cm なら、大きさは合っています</span></div>';
-      for(var c = 0; c < 10 && s0 + c < slots.length; c++){
-        var x = slots[s0 + c]; if(!x) continue;
-        var col = c % 2, row = Math.floor(c / 2);
-        var inner;
-        if(x.test) inner = '<div class="gc-testcell"><b>' + x.test + '</b><i></i></div>';
-        else {
-          inner = gcCardHtml(x.p, conf);
-          if(x.fs) inner = inner.replace('<div class="gc-card" style="', '<div class="gc-card" style="font-size:' + x.fs + '; ');
+    var sheets = function(slots, test){
+      var h = '';
+      for(var s0 = 0; s0 < slots.length; s0 += 10){
+        h += '<div class="gc-sheet"><div class="gc-sheet-in" style="transform:translate(' + dx + 'mm,' + dy + 'mm) scale(' + k + ');">';
+        for(var c = 0; c < 10 && s0 + c < slots.length; c++){
+          var x = slots[s0 + c]; if(!x) continue;
+          var col = c % 2, row = Math.floor(c / 2), inner;
+          if(test) inner = '<div class="gc-testcell"><b>' + x.n + '</b><i></i>' + (x.n === 9 ? '<div class="gc-ruler"><span>この線が 10cm なら、大きさは合っています</span></div>' : '') + '</div>';
+          else {
+            inner = gcCardHtml(x.p, conf);
+            if(x.fs) inner = inner.replace('<div class="gc-card" style="', '<div class="gc-card" style="font-size:' + x.fs + '; ');
+          }
+          h += '<div class="gc-cell" style="left:' + (col * GC_W) + 'mm; top:' + (row * GC_H) + 'mm;">' + inner + '</div>';
         }
-        h += '<div class="gc-cell" style="left:' + (GC_LEFT + col * GC_W) + 'mm; top:' + (GC_TOP + row * GC_H) + 'mm;">' + inner + '</div>';
+        h += '</div></div>';
       }
-      h += '</div></div>';
-    }
-    document.getElementById('gc-print').innerHTML = h;
-    applyPrintPageStyle({paper:'A4', orient:'portrait', mt:0, mb:0, ml:0, mr:0, fs:'m', lh:'s', items:{}});
+      return h;
+    };
+    var cards = [], start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
+    for(var i = 0; i < start; i++) cards.push(null);
+    list.forEach(function(p, i){ cards.push({p:p, fs:fs[i] || ''}); });
+    var tests = []; for(var t = 1; t <= 10; t++) tests.push({n:t});
+    box.innerHTML = '<div class="gc-run-cards">' + sheets(cards, false) + '</div><div class="gc-run-test">' + sheets(tests, true) + '</div>';
+  }
+  // test：位置合わせの試し刷り（カードの枠と番号・十字・10cm の線だけ）
+  // ここでは重いことをせず、すぐ印刷を呼ぶ（ボタンを押したその場で呼ばないと Safari が止める）
+  function gcPrint(test){
+    if(!test && !gcChosen().length){ showToast('印刷するギフトを選んでください'); return; }
+    if(!document.querySelector('#gc-print .gc-sheet')) gcBuildPrint();
+    applyPrintPageStyle({paper:'A4', orient:'portrait', mt:11, mb:11, ml:14, mr:14, fs:'m', lh:'s', items:{}});
     clearPrintMode(); document.body.classList.add('print-gc');
+    document.body.classList.toggle('gc-test', !!test);
     lastPrintBuiltAt = Date.now();
-    // ボタンを押したその場で印刷を呼ぶ（あとから呼ぶと Safari が「自動的に印刷」として止める）
     window.print();
   }
   document.getElementById('btn-gift-cards').addEventListener('click', gcOpen);
