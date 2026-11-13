@@ -458,9 +458,12 @@
     body.print-gc #gc-print{position:static; left:auto; width:auto; height:auto; overflow:visible; visibility:visible; display:block !important;}
     body.print-gc.gc-test #gc-print .gc-run-cards, body.print-gc:not(.gc-test) #gc-print .gc-run-test{display:none !important;}
     /* 1枚 = 用紙の余白の内側。並び（182×275mm）を左右の真ん中に */
-    #gc-print .gc-sheet{position:relative; width:100%; height:274mm; break-after:page; page-break-after:always;}
-    #gc-print .gc-run-cards .gc-sheet:last-child, #gc-print .gc-run-test .gc-sheet:last-child{break-after:auto; page-break-after:auto;}
-    #gc-print .gc-sheet-in{position:absolute; left:50%; top:0; margin-left:-91mm; width:182mm; height:275mm; transform-origin:50% 0;}
+    /* 1回に1枚。並び（182×275mm）を、印刷できる所の上下左右の真ん中に固定する。
+       iPad は上下にも余白（約13mm）をとるので、ふつうに並べると下が入りきらず2ページ目に行く。固定なら2ページ目は出ない
+       （はみ出す外側の端は少し切れるが、文字は内側なので切れない） */
+    body.print-gc #gc-print{height:1px;}
+    #gc-print .gc-sheet{position:fixed; left:50%; top:50%; width:182mm; height:275mm; margin:-137.5mm 0 0 -91mm;}
+    #gc-print .gc-sheet-in{position:absolute; left:0; top:0; width:182mm; height:275mm; transform-origin:50% 50%;}
     #gc-print .gc-cell{position:absolute; width:91mm; height:55mm;}
     #gc-print .gc-cell .gc-card{position:absolute; left:18mm; top:-18mm; transform:rotate(-90deg);}
     #gc-print .gc-testcell{position:absolute; inset:0; border:0.2mm solid #000; box-sizing:border-box;}
@@ -1390,7 +1393,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.106</div>
+      <div class="brand-ver">ver.107</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -11694,7 +11697,7 @@
         '<label>用紙の<select id="gc-start">' + starts + '</select></label>' +
       '</div>' +
       '<details class="gc-adjust"><summary>印刷の位置・大きさを合わせる</summary>' +
-        '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、矢印でずれた向きと反対へ動かして、もう一度試し刷りします（例：枠が2mm 右にずれていたら ◀ を4回）。9・10番の線が10cmより長い・短いときは「大きさ」を直します。</p>' +
+        '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、矢印でずれた向きと反対へ動かして、もう一度試し刷りします（例：枠が2mm 右にずれていたら ◀ を4回）。9・10番の線が10cmでないときは、測った長さを下に入れて「大きさを直す」を押します。</p>' +
         '<div class="gc-adj"><div class="gc-pad">' +
           '<span></span><button type="button" class="btn btn-sm" data-gcmv="0,-0.5" aria-label="上へ">▲</button><span></span>' +
           '<button type="button" class="btn btn-sm" data-gcmv="-0.5,0" aria-label="左へ">◀</button><span class="gc-padc">0.5mm<br>ずつ</span><button type="button" class="btn btn-sm" data-gcmv="0.5,0" aria-label="右へ">▶</button>' +
@@ -11702,8 +11705,10 @@
         '</div><div class="gc-adjv">' +
           '<div id="gc-pos"></div>' +
           '<div class="gc-scrow">大きさ <button type="button" class="btn btn-sm" data-gcsc="-0.5">−</button><b id="gc-scv"></b><button type="button" class="btn btn-sm" data-gcsc="0.5">＋</button></div>' +
-          '<div style="display:flex; gap:6px; flex-wrap:wrap;"><button type="button" class="btn btn-sm" id="gc-adj-reset">もとに戻す</button><button type="button" class="btn btn-sm btn-primary" id="gc-test">位置合わせの試し刷り</button></div>' +
+          '<div class="gc-scrow" style="flex-wrap:wrap;">試し刷りの線を測ったら<input type="number" id="gc-meas" min="50" max="150" step="0.5" placeholder="93" style="width:5em; font-size:16px;">mm<button type="button" class="btn btn-sm" id="gc-meas-go">大きさを直す</button></div>' +
+          '<div style="display:flex; gap:6px; flex-wrap:wrap;"><button type="button" class="btn btn-sm" id="gc-adj-reset">位置をもとに戻す</button><button type="button" class="btn btn-sm btn-primary" id="gc-test">位置合わせの試し刷り</button></div>' +
         '</div></div></details>' +
+      '<div class="gc-opts" id="gc-pages"></div>' +
       '<div class="gc-preview" id="gc-preview"></div>' +
       '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn btn-primary" id="gc-print-btn">印刷</button></div>';
     document.getElementById('gc-modal-body').innerHTML = h;
@@ -11727,18 +11732,35 @@
     };
     adjText();
     body.querySelectorAll('[data-gcmv]').forEach(function(b){ b.addEventListener('click', function(){ var v = b.dataset.gcmv.split(','); conf.dx = Math.max(-30, Math.min(30, r1((Number(conf.dx) || 0) + Number(v[0])))); conf.dy = Math.max(-30, Math.min(30, r1((Number(conf.dy) || 0) + Number(v[1])))); scheduleSave(); adjText(); gcBuildPrint(); }); });
-    body.querySelectorAll('[data-gcsc]').forEach(function(b){ b.addEventListener('click', function(){ conf.sc = Math.max(80, Math.min(120, r1((Number(conf.sc) || 100) + Number(b.dataset.gcsc)))); scheduleSave(); adjText(); gcBuildPrint(); }); });
-    document.getElementById('gc-adj-reset').addEventListener('click', function(){ conf.dx = 0; conf.dy = 0; conf.sc = 100; scheduleSave(); adjText(); gcBuildPrint(); });
+    body.querySelectorAll('[data-gcsc]').forEach(function(b){ b.addEventListener('click', function(){ conf.sc = Math.max(70, Math.min(140, r1((Number(conf.sc) || 100) + Number(b.dataset.gcsc)))); scheduleSave(); adjText(); gcBuildPrint(); }); });
+    document.getElementById('gc-meas-go').addEventListener('click', function(){
+      var m = parseFloat(document.getElementById('gc-meas').value);
+      if(!(m >= 50 && m <= 150)){ showToast('試し刷りの線の長さ（mm）を入れてください'); return; }
+      var cur = Number(conf.sc) || 100;
+      conf.sc = Math.max(70, Math.min(140, Math.round(cur * 100 / m * 10) / 10));
+      scheduleSave(); adjText(); gcBuildPrint();
+      document.getElementById('gc-meas').value = '';
+      showToast('大きさを ' + cur + '% → ' + conf.sc + '% にしました。もう一度試し刷りしてください');
+    });
+    document.getElementById('gc-adj-reset').addEventListener('click', function(){ conf.dx = 0; conf.dy = 0; scheduleSave(); adjText(); gcBuildPrint(); });
     document.getElementById('gc-close').addEventListener('click', gcClose);
     document.getElementById('gc-print-btn').addEventListener('click', function(){ gcPrint(false); });
     document.getElementById('gc-test').addEventListener('click', function(){ gcPrint(true); });
   }
+  var gcPage = 0;   // 何枚目の用紙を印刷するか（1回に1枚）
+  function gcSheetCount(){ var n = gcChosen().length + Math.max(1, Math.min(10, Number(gcConf().start) || 1)) - 1; return Math.max(1, Math.ceil(n / 10)); }
   function gcChosen(){ return gcGifts().filter(function(p){ return gcSel && gcSel[p.id]; }); }
   function gcPreview(){
     var box = document.getElementById('gc-preview'); if(!box) return;
     var list = gcChosen(), conf = gcConf();
     box.innerHTML = list.length ? list.map(function(p){ return gcCardHtml(p, conf); }).join('') : '<p class="hint" style="margin:0;">印刷するギフトを選んでください。</p>';
     box.querySelectorAll('.gc-card').forEach(gcFit);
+    var pgBox = document.getElementById('gc-pages'), n = gcSheetCount();
+    if(gcPage >= n) gcPage = n - 1;
+    if(pgBox){
+      pgBox.innerHTML = n > 1 ? '<span>用紙1枚ずつ印刷します：</span>' + Array.from({length:n}, function(_, i){ return '<button type="button" class="btn btn-sm' + (i === gcPage ? ' btn-primary' : '') + '" data-gcpg="' + i + '">' + (i + 1) + '枚目</button>'; }).join('') : '';
+      pgBox.querySelectorAll('[data-gcpg]').forEach(function(b){ b.addEventListener('click', function(){ gcPage = +b.dataset.gcpg; gcPreview(); }); });
+    }
     gcBuildPrint();
   }
   function gcClose(){ document.getElementById('gc-modal-backdrop').hidden = true; clearPrintMode(); }
@@ -11753,7 +11775,8 @@
     var k = GC_BASE_SC * (Number(conf.sc) || 100) / 100, dx = Number(conf.dx) || 0, dy = Number(conf.dy) || 0;
     var sheets = function(slots, test){
       var h = '';
-      for(var s0 = 0; s0 < slots.length; s0 += 10){
+      var pg = test ? 0 : Math.min(gcPage, Math.max(0, Math.ceil(slots.length / 10) - 1));
+      for(var s0 = pg * 10; s0 < slots.length && s0 < pg * 10 + 10; s0 += 10){
         h += '<div class="gc-sheet"><div class="gc-sheet-in" style="transform:translate(' + dx + 'mm,' + dy + 'mm) scale(' + k + ');">';
         for(var c = 0; c < 10 && s0 + c < slots.length; c++){
           var x = slots[s0 + c]; if(!x) continue;
