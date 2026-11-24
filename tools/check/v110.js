@@ -72,5 +72,27 @@ const SP=process.env.SP||'/tmp';
  console.log('E panel:', await panelTxt());
  await procBtn(0,'やってある'); console.log('E やってある後:', await panelTxt());
  await close(); console.log('E moves:', await moves());
+ // ver.112
+ // F1) 計量を次へ（焼きも一緒に）→ 計量を前へ（焼きも一緒に戻る）
+ await reset(); await openDay(0); await tapChip(0,await firstRow(0),'アイテムA');
+ await procBtn(1,'次の営業日へ'); console.log('F1 計量次:', await panelTxt());
+ await procBtn(1,'次の営業日へ'); console.log('F1 もう一度次:', await panelTxt());
+ await procBtn(1,'前の営業日へ'); console.log('F1 前へ:', await panelTxt());
+ await procBtn(1,'前の営業日へ'); console.log('F1 もう一度前へ:', await panelTxt());
+ await close(); console.log('F1 moves:', await moves());
+ // F2) 計量をやってある → 前の営業日へ（止められずに動く）
+ await reset(); await openDay(0); await tapChip(0,await firstRow(0),'アイテムA');
+ await procBtn(1,'やってある'); await procBtn(1,'前の営業日へ'); console.log('F2 やってある→前:', await panelTxt());
+ await close(); console.log('F2 moves:', await moves());
+ // F3) 計量をやってある → 次の営業日へ（計量だけやるに戻して次へ。焼きは順番がくずれるときだけ）
+ await reset(); await openDay(0); await tapChip(0,await firstRow(0),'アイテムA');
+ await procBtn(1,'やってある'); await procBtn(1,'次の営業日へ'); console.log('F3 やってある→次:', await panelTxt());
+ await procBtn(1,'次の営業日へ'); console.log('F3 もう一度次:', await panelTxt());
+ await close(); console.log('F3 moves:', await moves());
+ // F4) 反映しないで閉じる
+ await reset(); await openDay(0); await tapChip(0,await firstRow(0),'アイテムA');
+ await btn('まるごと次の営業日へ'); console.log('F4 buttons:', await fr.evaluate(()=>[...document.querySelectorAll('.pvclosebox button')].map(x=>x.textContent).join(',')));
+ await fr.evaluate(()=>document.querySelector('.pvdiscard').click()); await p.waitForTimeout(400);
+ console.log('F4 moves:', await moves(), 'panel:', await fr.evaluate(()=>!!document.querySelector('.pvpanel')));
  console.log('errors', errs); await b.close();
 })();
