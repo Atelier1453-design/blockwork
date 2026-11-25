@@ -23,6 +23,7 @@ const {open}=require('./setup.js');
    if(opt.procDays){ v.procs.forEach(x=>{ if(x.id===kB) x.days=opt.procDays; }); }
    if(opt.packDays){ v.procs.forEach(x=>{ if(/袋|包/.test(x.label)) x.days=opt.packDays; }); v.products.forEach(pp=>{ const kP=v.procs.find(x=>/袋|包/.test(x.label)).id; pp.procOrder=[...pp.procOrder,kP]; pp.procs[kP]={[s1]:{setup:0,per:10}}; }); }
    v.routines = opt.wkBusy ? [{id:'rt1',name:'接客',blocks:{0:16,6:16,1:2,2:2,3:2,4:2,5:2},timing:'any',staffId:'auto'}] : (opt.keepRt? v.routines : []);
+   if(opt.cap) v.dayCap=opt.cap;
    if(opt.many){ for(let i=0;i<opt.many;i++) v.products.push(Object.assign(mk('m'+i,'商品'+i,opt.mstock??8,{[kS]:1},20),{safety:2,dow:{0:2,1:2,2:2,3:2,4:2,5:2,6:2}})); }
    st.blockworkValue=JSON.stringify(v); }, opt);
  await p.evaluate(()=>__debug.loadBlockworkFrame(true)); await p.waitForTimeout(2500);
