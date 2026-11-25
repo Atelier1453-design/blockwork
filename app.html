@@ -423,6 +423,7 @@
   .gc-items input{width:20px; height:20px; flex:none;}
   .gc-items .gc-ev{font-size:12px; color:var(--ink-faint);}
   .gc-adjust{margin:4px 0; font-size:14px;}
+  .gc-pdfbox{margin:10px 0 4px; padding:10px 12px; border:1.5px solid #c9b896; border-radius:12px; background:#fbf8f1; font-size:14px;}
   .gc-adjust summary{cursor:pointer; color:var(--ink-soft); font-weight:700; padding:4px 0;}
   .gc-preview{display:flex; flex-wrap:wrap; gap:10px; padding:10px; background:#eee8dc; border-radius:10px; margin-top:8px; justify-content:center;}
   .gc-card{position:relative; width:55mm; height:91mm; box-sizing:border-box; overflow:hidden; background:#fff; color:#2a241c;
@@ -816,6 +817,11 @@
   .row-free{font-family:inherit; font-size:11.5px; padding:3px 7px; margin-right:4px; border:1px dashed var(--border); border-radius:999px; background:transparent; color:var(--ink-soft); cursor:pointer; vertical-align:middle;}
   .row-free.on{border-style:solid; border-color:#5F7048; background:#e3ecd9; color:#4b6a35; font-weight:700;}
   tr.row-is-free .row-amt{color:#4b6a35; font-size:12px; font-weight:600;}
+  .row-roletag{margin-top:3px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+  .row-roletag .mat-role{font-size:11px; padding:1px 7px;}
+  .row-fromset{font-size:11px; color:var(--ink-faint);}
+  tr.row-auto td{background:rgba(201,164,106,.08);}
+  .pkg-boxnote{margin:6px 0 0; padding:8px 10px; border:1px dashed var(--border); border-radius:10px; background:var(--bg);}
   #view-settings .skip-toggle{white-space:normal; align-items:flex-start;}
   #view-settings .skip-toggle input{margin-top:3px;}
   .modal-actions.three{display:grid; grid-template-columns:1fr 1fr; gap:8px; justify-content:stretch;}
@@ -1403,7 +1409,7 @@
     <div class="brand">
       <div class="mark">ATELIER N</div>
       <h1>工房ノート</h1>
-      <div class="brand-ver">ver.117</div>
+      <div class="brand-ver">ver.118</div>
     </div>
     <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="メニューを折りたたむ">◀</button>
     <div class="nav">
@@ -6679,7 +6685,64 @@
       notice.hidden = true;
     }
     tr.dataset.priceMode = newMode;
+    if(tr.dataset.kind === 'pkg') pkgRoleTag(tr, newMode === 'matched' ? m : null);
+    if(tr.dataset.kind === 'pkg' && newMode === 'matched' && !pkgFilling && state.sourceType === 'gift' && m.giftBox && m.giftBox.type && tr.dataset.boxAuto !== m.name) pkgAddBoxSet(tr, m);
     recalc();
+  }
+  // ②の資材の行に、ギフトの役目（器・留め具・飾り…）を色つきで出す（ギフト用の資材だけ）
+  function pkgRoleTag(tr, m){
+    var cell = tr.querySelector('.col-name'); if(!cell) return;
+    var tag = cell.querySelector('.row-roletag');
+    if(!m || !giftUseOf(m) || m.wipOf){ if(tag) tag.remove(); return; }
+    var k = giftRoleOf(m);
+    if(!tag){ tag = document.createElement('div'); tag.className = 'row-roletag'; cell.appendChild(tag); }
+    tag.innerHTML = '<span class="mat-role r-' + giftRoleCss(k) + '">' + escapeHtml(giftRoleName(k)) + '</span>' + (tr.dataset.fromBox ? '<span class="row-fromset">器のセットから</span>' : '');
+  }
+  // 器（箱・袋・缶など）を選んだら、その器の「ギフトのセット」の資材を下に入れる（ギフトのとき・新しく選んだときだけ）
+  var pkgFilling = false, pkgRid = 0;
+  function pkgAddBoxSet(tr, box){
+    var body = document.getElementById('pkg-body');
+    if(!tr.dataset.rid) tr.dataset.rid = 'r' + (++pkgRid);
+    // 前に選んでいた器から入れた行は外す（数を直した行・自分で入れた行はそのまま）
+    [].forEach.call(body.querySelectorAll('tr[data-from-box="' + tr.dataset.rid + '"]'), function(r){ if(!r.dataset.touched) r.remove(); });
+    tr.dataset.boxAuto = box.name;
+    var bq = tr.querySelector('.row-qty'); if(bq && !(parseFloat(bq.value) > 0)) bq.value = 1;
+    var note = pkgBoxNote();
+    var set = giftSetOf(box);
+    var accs = gmAccessories(box).filter(function(a){ return !a._set; });
+    if(!set || !accs.length){
+      note.innerHTML = '「' + escapeHtml(box.name) + '」のギフトのセットは<b>未設定です</b>。留め具・飾り・手提げなどは、これまでどおり手で入れてください（原材料マスタでこの器の「ギフトのセット」を決めると、次から自動で入ります）。';
+      note.hidden = false;
+      return;
+    }
+    var have = {};
+    [].forEach.call(body.querySelectorAll('tr'), function(r){ var n = (r.dataset.materialName || '').trim(); if(n) have[n] = 1; });
+    var after = tr, added = [];
+    pkgFilling = true;
+    try{
+      accs.forEach(function(a){
+        if(have[a.name]) return;
+        var nr = makeRow('pkg');
+        nr.dataset.fromBox = tr.dataset.rid;
+        nr.classList.add('row-auto');
+        after.parentNode.insertBefore(nr, after.nextSibling); after = nr;
+        nr.querySelector('.row-qty').value = gmAccQty(a, box);
+        nr.querySelector('.row-name').value = a.name;
+        setRowMaterial(nr, a.name);
+        if(giftNoPriceOf(a)) setRowFree(nr, true);
+        nr.querySelector('.row-qty').addEventListener('change', function(){ nr.dataset.touched = '1'; });
+        added.push(giftRoleName(giftRoleOf(a)) + '：' + a.name);
+      });
+    } finally { pkgFilling = false; }
+    note.innerHTML = '「' + escapeHtml(box.name) + '」のギフトのセットから、' + (added.length ? added.length + 'つ入れました（' + escapeHtml(added.join('、')) + '）。いらないものは ✕ で消し、数は直せます。値段に入れない添えものは「0円」になっています。' : '入れるものは、もう全部入っていました。');
+    note.hidden = false;
+    state.calcDirty = true;
+    try{ saveCalcDraft(); }catch(e){}
+  }
+  function pkgBoxNote(){
+    var n = document.getElementById('pkg-boxnote');
+    if(!n){ n = document.createElement('p'); n.id = 'pkg-boxnote'; n.className = 'hint pkg-boxnote'; var ts = document.getElementById('pkg-body').closest('.table-scroll'); ts.parentNode.insertBefore(n, ts.nextSibling); }
+    return n;
   }
   function renderIngRow(){ document.getElementById('ing-body').appendChild(makeRow('ing')); }
   function renderPkgRow(){ document.getElementById('pkg-body').appendChild(makeRow('pkg')); }
@@ -8279,6 +8342,12 @@
   function formSignature(){
     var snap = currentFormSnapshot();
     delete snap.savedAt;
+    // 材料の値段・中身の原価など、あとから原材料マスタや商品が変わると変わる数字は、くらべない（入れた中身だけでくらべる）。
+    // 前は、登録したあとに材料の値段を変えると、登録済みなのに「入力途中の内容が、まだ登録されていません」と出ていた
+    var strip = function(rows, keepPrice){ return (rows || []).map(function(r){ var o = Object.assign({}, r); if(!keepPrice(o)){ delete o.unitPrice; delete o.amount; } delete o.unitCost; delete o.cost; return o; }); };
+    snap.ing = strip(snap.ing, function(r){ return r.name && !materialOrWip(r.name); });
+    snap.pkg = strip(snap.pkg, function(r){ return r.name && !materialOrWip(r.name); });
+    snap.contents = strip(snap.contents, function(){ return false; });
     return JSON.stringify(snap);
   }
   function setCalcBaseline(){ try{ calcBaseline = formSignature(); }catch(e){ calcBaseline = null; } }
@@ -8400,6 +8469,9 @@
   function fillRows(bodyId, rows){
     var body = document.getElementById(bodyId);
     body.innerHTML = '';
+    if(bodyId === 'pkg-body'){ var bn = document.getElementById('pkg-boxnote'); if(bn) bn.hidden = true; }
+    var wasFilling = pkgFilling; pkgFilling = true;
+    try{
     (rows && rows.length ? rows : [{}]).forEach(function(r){
       var tr = makeRow(bodyId === 'pkg-body' ? 'pkg' : 'ing');
       body.appendChild(tr);
@@ -8424,6 +8496,7 @@
         }
       }
     });
+    } finally { pkgFilling = wasFilling; }
   }
 
   function loadProductIntoForm(p){
@@ -11684,6 +11757,128 @@
       (upd ? '<div class="gc-date">' + upd + '</div>' : '') +
     '</div>';
   }
+  // ---- PDF で作る（Safari の印刷を通さないので、用紙の寸法どおり：上下11mm・左右14mm）----
+  // 用紙と同じ大きさの絵（1mm＝PXmm 点）にカードを描いて、JPEG にして PDF に入れる。プリンタのアプリなどから等倍（100%）で印刷する
+  var GC_PX = 9.449;   // 240dpi
+  function gcData(p, conf){
+    var ev = evEventsOfProduct(p.id)[0];
+    var rows = [], total = 0;
+    ((p.pack && p.pack.contents) || []).forEach(function(r){
+      var q = Number(r.qty) || 0; if(q <= 0) return;
+      total += q;
+      var price = 0;
+      if(r.groupId){ var gr = findGroup(r.groupId); price = gr ? groupRetailIn(gr) : 0; if(gr && r.mode === 'bulk'){ var ms = groupMembers(gr); var pp = ms.length ? ms.reduce(function(t, m){ return t + ((m.pack && Number(m.pack.piecesPerPackage)) || 1); }, 0) / ms.length : 1; price = price / (pp || 1); } }
+      else { var m = state.products.find(function(x){ return x.id === r.productId; }); if(m){ price = retailOf(m); if(r.mode === 'bulk') price = price / ((m.pack && Number(m.pack.piecesPerPackage)) || 1); } }
+      rows.push({t:(r.name || '') + ' ×' + fmtNum(q), pr: price > 0 ? fmtYen(price * q) : ''});
+    });
+    var box = [], carry = [];
+    ((p.pack && p.pack.items) || []).forEach(function(r){ var m = gcMat(r.name); var k = m ? giftRoleOf(m) : giftRoleOf({name:r.name}); if(k === 'box') box.push(r.name); else if(k === 'carry') carry.push(r.name); });
+    var price = retailOf(p);
+    return {name:p.name || '', total:total, price:price, rows:rows, box:box, carry:carry,
+      upd: p.updatedAt ? (+p.updatedAt.slice(0, 4)) + '年' + (+p.updatedAt.slice(5, 7)) + '月更新' : '',
+      col: ev ? ev.color : '#A8834F', bg: conf.bg ? (ev ? evTint(ev.color, 0.09) : '#FBF6EC') : '#fff'};
+  }
+  var GC_FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Zen Kaku Gothic New","Noto Sans JP",sans-serif';
+  function gcWrap(ctx, text, w){
+    var lines = [], cur = '';
+    String(text).split('').forEach(function(ch){ if(ctx.measureText(cur + ch).width > w && cur){ lines.push(cur); cur = ch; } else cur += ch; });
+    if(cur) lines.push(cur);
+    return lines;
+  }
+  function gcRoundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); }
+  // 1枚のカード（縦 55×91mm）を、いまの座標（mm）に描く
+  function gcDrawCard(ctx, D, conf){
+    var W = 55, H = 91, pt = 0.3528;
+    ctx.fillStyle = D.bg; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = D.col; ctx.lineWidth = 0.35; gcRoundRect(ctx, 5.4, 6.5, W - 10.8, H - 13, 1.6); ctx.stroke();
+    ctx.globalAlpha = 0.6; ctx.lineWidth = 0.15; gcRoundRect(ctx, 6.1, 7.2, W - 12.2, H - 14.4, 1); ctx.stroke(); ctx.globalAlpha = 1;
+    if(conf.hole !== 'none'){ var hx = conf.hole === 'r' ? W - 6.4 - 2.1 : 6.4 + 2.1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(hx, 7.6 + 2.1, 2.1, 0, Math.PI * 2); ctx.fill(); ctx.setLineDash([0.6, 0.5]); ctx.strokeStyle = '#9a8f80'; ctx.lineWidth = 0.25; ctx.stroke(); ctx.setLineDash([]); }
+    var L = 6.6, R = W - 6.6, cw = R - L, y = 12.6, bottom = H - 10.4;
+    ctx.textBaseline = 'top'; ctx.fillStyle = '#2a241c'; ctx.textAlign = 'center';
+    ctx.font = '700 ' + (10.5 * pt) + 'px ' + GC_FONT;
+    gcWrap(ctx, D.name, cw).forEach(function(t){ ctx.fillText(t, W / 2, y); y += 10.5 * pt * 1.3; });
+    ctx.font = (7.5 * pt) + 'px ' + GC_FONT; ctx.fillStyle = '#5c5246'; y += 0.6; ctx.fillText(fmtNum(D.total) + '点入り', W / 2, y); y += 7.5 * pt * 1.4 + 0.6;
+    ctx.fillStyle = '#8B3A1E'; ctx.font = '700 ' + (12 * pt) + 'px ' + GC_FONT;
+    var ptxt = D.price > 0 ? fmtYen(D.price) : '—', pw = ctx.measureText(ptxt).width;
+    ctx.font = (7 * pt) + 'px ' + GC_FONT; var tw = D.price > 0 ? ctx.measureText('（税込）').width : 0;
+    ctx.textAlign = 'left'; ctx.font = '700 ' + (12 * pt) + 'px ' + GC_FONT; ctx.fillText(ptxt, W / 2 - (pw + tw) / 2, y);
+    if(tw){ ctx.font = (7 * pt) + 'px ' + GC_FONT; ctx.fillText('（税込）', W / 2 - (pw + tw) / 2 + pw, y + 12 * pt * 0.35); }
+    y += 12 * pt * 1.3 + 1.2;
+    ctx.strokeStyle = D.col; ctx.globalAlpha = 0.7; ctx.lineWidth = 0.2; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke(); ctx.globalAlpha = 1; y += 1.2;
+    // 一覧：入りきらなければ字を小さく（6.5pt まで）
+    var extra = (D.box.length ? 1 : 0) + (D.carry.length ? 1 : 0), fs = 8;
+    for(; fs > 6.5; fs -= 0.25){ var need = (D.rows.length + extra + (extra ? 0.7 : 0)) * fs * pt * 1.4; if(y + need <= bottom) break; }
+    var lh = fs * pt * 1.4; ctx.fillStyle = '#2a241c'; ctx.font = (fs * pt) + 'px ' + GC_FONT;
+    D.rows.forEach(function(r){ if(y + lh > bottom + 0.1) return; ctx.textAlign = 'left'; var t = r.t, mw = cw - (r.pr ? ctx.measureText(r.pr).width + 1.5 : 0); while(t.length > 1 && ctx.measureText(t).width > mw) t = t.slice(0, -2) + '…'; ctx.fillText(t, L, y); if(r.pr){ ctx.textAlign = 'right'; ctx.fillText(r.pr, R, y); } y += lh; });
+    if(extra){ y += lh * 0.7; ctx.textAlign = 'left'; if(D.box.length){ ctx.fillText('器：' + D.box.join('・'), L, y); y += lh; } if(D.carry.length){ ctx.fillText('手提げ：' + D.carry.join('・'), L, y); y += lh; } }
+    if(D.upd){ ctx.textAlign = 'right'; ctx.fillStyle = '#6b6155'; ctx.font = (6.5 * pt) + 'px ' + GC_FONT; ctx.textBaseline = 'bottom'; ctx.fillText(D.upd, W - 6.6, H - 7.4 + 6.5 * pt); ctx.textBaseline = 'top'; }
+  }
+  // 用紙1枚の絵（slots：10面ぶん。null は空き。test なら枠・十字・10cm の線）
+  function gcSheetCanvas(slots, test, conf){
+    var c = document.createElement('canvas'); c.width = Math.round(210 * GC_PX); c.height = Math.round(297 * GC_PX);
+    var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.scale(GC_PX, GC_PX);
+    for(var i = 0; i < 10; i++){
+      var x = slots[i]; if(!x) continue;
+      var cx = GC_LEFT + (i % 2) * GC_W, cy = GC_TOP + Math.floor(i / 2) * GC_H;
+      ctx.save();
+      if(test){
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 0.2; ctx.strokeRect(cx, cy, GC_W, GC_H);
+        ctx.fillStyle = '#000'; ctx.font = (10 * 0.3528) + 'px ' + GC_FONT; ctx.textBaseline = 'top'; ctx.fillText(String(i + 1), cx + 8, cy + 8);
+        ctx.beginPath(); ctx.moveTo(cx + GC_W / 2 - 4, cy + GC_H / 2); ctx.lineTo(cx + GC_W / 2 + 4, cy + GC_H / 2); ctx.moveTo(cx + GC_W / 2, cy + GC_H / 2 - 4); ctx.lineTo(cx + GC_W / 2, cy + GC_H / 2 + 4); ctx.stroke();
+        if(i === 8){ ctx.beginPath(); ctx.moveTo(cx + 45.5 - 50 + 45.5, cy + 40); ctx.lineTo(cx + 45.5 - 50 + 45.5, cy + 42.5); ctx.lineTo(cx + 45.5 + 50 + 45.5, cy + 42.5); ctx.lineTo(cx + 45.5 + 50 + 45.5, cy + 40); ctx.stroke(); ctx.font = (7 * 0.3528) + 'px ' + GC_FONT; ctx.textAlign = 'center'; ctx.fillText('この線が 10cm なら、等倍で印刷できています', cx + 91, cy + 36); }
+      } else {
+        ctx.beginPath(); ctx.rect(cx, cy, GC_W, GC_H); ctx.clip();
+        ctx.translate(cx, cy + GC_H); ctx.rotate(-Math.PI / 2);
+        gcDrawCard(ctx, gcData(x.p, conf), conf);
+      }
+      ctx.restore();
+    }
+    return c;
+  }
+  function gcPdfBlob(canvases){
+    var enc = new TextEncoder(), parts = [], len = 0, offs = [];
+    var push = function(x){ var b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+    var b64 = function(u){ var bin = atob(u.slice(u.indexOf(',') + 1)), a = new Uint8Array(bin.length); for(var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return a; };
+    var n = canvases.length, W = 595.28, H = 841.89;
+    push('%PDF-1.4\n');
+    offs[1] = len; push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    offs[2] = len; push('2 0 obj\n<< /Type /Pages /Kids [' + canvases.map(function(_, i){ return (3 + i * 3) + ' 0 R'; }).join(' ') + '] /Count ' + n + ' >>\nendobj\n');
+    canvases.forEach(function(c, i){
+      var pg = 3 + i * 3, im = pg + 1, ct = pg + 2, jpg = b64(c.toDataURL('image/jpeg', 0.92));
+      var cs = 'q ' + W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do Q';
+      offs[pg] = len; push(pg + ' 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + '] /Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + ct + ' 0 R >>\nendobj\n');
+      offs[im] = len; push(im + ' 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + c.width + ' /Height ' + c.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpg.length + ' >>\nstream\n'); push(jpg); push('\nendstream\nendobj\n');
+      offs[ct] = len; push(ct + ' 0 obj\n<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream\nendobj\n');
+    });
+    var total = 3 + n * 3, xref = len, x = 'xref\n0 ' + total + '\n0000000000 65535 f \n';
+    for(var k = 1; k < total; k++) x += String(offs[k]).padStart(10, '0') + ' 00000 n \n';
+    push(x + 'trailer\n<< /Size ' + total + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+    return new Blob(parts, {type:'application/pdf'});
+  }
+  // PDF を作って、iPad なら「共有」（プリンタのアプリ・ファイルに保存・プリント）、ほかはダウンロード
+  function gcMakePdf(test){
+    var conf = gcConf(), list = gcChosen();
+    if(!test && !list.length){ showToast('印刷するギフトを選んでください'); return; }
+    var sheets = [];
+    if(test){ sheets.push(gcSheetCanvas([1,1,1,1,1,1,1,1,1,1], true, conf)); }
+    else {
+      var slots = [], start = Math.max(1, Math.min(10, Number(conf.start) || 1)) - 1;
+      for(var i = 0; i < start; i++) slots.push(null);
+      list.forEach(function(p){ slots.push({p:p}); });
+      for(var s0 = 0; s0 < slots.length; s0 += 10) sheets.push(gcSheetCanvas(slots.slice(s0, s0 + 10), false, conf));
+    }
+    var blob = gcPdfBlob(sheets), name = test ? 'あんちょこカード_位置合わせ.pdf' : 'あんちょこカード.pdf';
+    var file = null; try{ file = new File([blob], name, {type:'application/pdf'}); }catch(e){}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:name}).catch(function(){});
+      return;
+    }
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    window.__gcPdfLast = {size:blob.size, pages:sheets.length};
+  }
   // 中身が多くて入りきらないときは、一覧の文字を少しずつ小さくする（6.5pt まで）
   function gcFit(card){
     var inner = card.querySelector('.gc-in'); if(!inner) return;
@@ -11713,7 +11908,7 @@
         '<label><input type="checkbox" id="gc-bg"' + (conf.bg ? ' checked' : '') + '>背景に色（通年・行事ごと）</label>' +
         '<label>用紙の<select id="gc-start">' + starts + '</select></label>' +
       '</div>' +
-      '<details class="gc-adjust"><summary>印刷の位置・大きさを合わせる</summary>' +
+      '<details class="gc-adjust"><summary>Safari で印刷するときの位置・大きさを合わせる</summary>' +
         '<p class="hint" style="margin:6px 0;">はじめに「位置合わせの試し刷り」をふつうの紙に印刷して、カードの用紙と重ねて明かりに透かしてください。枠がミシン目からずれていたら、矢印でずれた向きと反対へ動かして、もう一度試し刷りします（例：枠が2mm 右にずれていたら ◀ を4回）。9・10番の線が10cmでないときは、測った長さを下に入れて「大きさを直す」を押します。</p>' +
         '<div class="gc-adj"><div class="gc-pad">' +
           '<span></span><button type="button" class="btn btn-sm" data-gcmv="0,-0.5" aria-label="上へ">▲</button><span></span>' +
@@ -11729,7 +11924,9 @@
         '</div></div></details>' +
       '<div class="gc-opts" id="gc-pages"></div>' +
       '<div class="gc-preview" id="gc-preview"></div>' +
-      '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn btn-primary" id="gc-print-btn">印刷</button></div>';
+      '<div class="gc-pdfbox"><b>📄 PDFで作る（おすすめ）</b><p class="hint" style="margin:4px 0 6px;">iPad の Safari の印刷は、余白を足したり縮めたりするので、ミシン目に合いにくいです。PDF は用紙と同じ大きさで作り、カードを上下11mm・左右14mmの位置に置きます。共有から「Canon PRINT」などプリンタのアプリや「ファイル」に保存して、<b>拡大・縮小しないで（等倍・100%）</b>印刷してください。はじめに「位置合わせのPDF」をふつうの紙で試すと安心です。</p>' +
+        '<div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn btn-sm" id="gc-pdf-test">位置合わせのPDF</button><button type="button" class="btn btn-sm btn-primary" id="gc-pdf">カードのPDFを作る</button></div></div>' +
+      '<div class="modal-actions"><button type="button" class="btn btn-ghost" id="gc-close">閉じる</button><button type="button" class="btn" id="gc-print-btn">Safari で印刷</button></div>';
     document.getElementById('gc-modal-body').innerHTML = h;
     document.getElementById('gc-modal-backdrop').hidden = false;
     gcPreview();
@@ -11776,6 +11973,8 @@
     document.getElementById('gc-adj-reset').addEventListener('click', function(){ conf.dx = 0; conf.dy = 0; scheduleSave(); adjText(); gcBuildPrint(); });
     document.getElementById('gc-close').addEventListener('click', gcClose);
     document.getElementById('gc-print-btn').addEventListener('click', function(){ gcPrint(false); });
+    document.getElementById('gc-pdf').addEventListener('click', function(){ gcMakePdf(false); });
+    document.getElementById('gc-pdf-test').addEventListener('click', function(){ gcMakePdf(true); });
     document.getElementById('gc-test').addEventListener('click', function(){ gcPrint(true); });
   }
   var gcPage = 0;   // 何枚目の用紙を印刷するか（1回に1枚）
